@@ -1,0 +1,10 @@
+{
+  "tasks": [
+    {
+      "label": "check env variable",
+      "type": "shell",
+      "command": "echo ${workspaceFolder}/app/src/main/cpp/include/third_party/**"
+    }
+  ],
+  "version": "2.0.0"
+}
