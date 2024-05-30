@@ -3,7 +3,7 @@
     "--config-file",
     "${workspaceFolder}/.vscode/cmake_format_config.json"
   ],
-  "cmake.sourceDirectory": "/Users/intro/Spaces/TestSpace/NodeJsTest/cpp_addon/RunJsInAndroid/JsAudio/app/src/main/cpp",
+  "cmake.sourceDirectory": "/Users/intro/Spaces/JsAudio-Android/app/src/main/cpp",
   "files.associations": {
     "__bit_reference": "cpp",
     "__config": "cpp",
@@ -62,7 +62,25 @@
     "unordered_set": "cpp",
     "variant": "cpp",
     "vector": "cpp",
-    "algorithm": "cpp"
+    "algorithm": "cpp",
+    "memory": "cpp",
+    "__functional_base": "cpp",
+    "__debug": "cpp",
+    "__errc": "cpp",
+    "__mutex_base": "cpp",
+    "__nullptr": "cpp",
+    "__string": "cpp",
+    "__tuple": "cpp",
+    "atomic": "cpp",
+    "bit": "cpp",
+    "chrono": "cpp",
+    "exception": "cpp",
+    "functional": "cpp",
+    "iterator": "cpp",
+    "system_error": "cpp",
+    "type_traits": "cpp",
+    "utility": "cpp",
+    "filesystem": "cpp"
   },
   "C_Cpp.default.compilerPath": "/Users/intro/Library/Android/sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang",
   "C_Cpp.intelliSenseEngineFallback": "disabled"

@@ -12,16 +12,20 @@ cmake_minimum_required(VERSION 3.22.1)
 project("jsaudio")
 
 set(NODE_SHARED_LIBRARY_PATH
-        ${PROJECT_SOURCE_DIR}/library/third_party/node/libnode.so
-        )
+    ${PROJECT_SOURCE_DIR}/library/third_party/node/libnode.so
+    )
 
 set(THIRD_PARTY_INCLUDE ${PROJECT_SOURCE_DIR}/include/third_party)
 set(TOOLS_INCLUDE ${PROJECT_SOURCE_DIR}/include/tools)
-set(NODE_INIT_INCLUDE ${PROJECT_SOURCE_DIR}/node_init)
+set(NODE_INSTANCE_INCLUDE ${PROJECT_SOURCE_DIR}/node_instance)
+set(ARGV_INCLUDE ${PROJECT_SOURCE_DIR}/argv)
 
-set(NODE_INIT_SRC ${PROJECT_SOURCE_DIR}/node_init/node_init.cpp)
+set(NODE_INSTANCE_SRC ${PROJECT_SOURCE_DIR}/node_instance/NodeInstance.cpp)
+set(ARGV_SRC ${PROJECT_SOURCE_DIR}/argv/Argv.cpp)
 
-include_directories(${THIRD_PARTY_INCLUDE}/node ${THIRD_PARTY_INCLUDE}/node/cppgc)
+include_directories(
+        ${THIRD_PARTY_INCLUDE}/node ${THIRD_PARTY_INCLUDE}/node/cppgc
+        )
 
 # Creates and names a library, sets it as either STATIC or SHARED, and provides
 # the relative paths to its source code. You can define multiple libraries, and
@@ -36,7 +40,12 @@ include_directories(${THIRD_PARTY_INCLUDE}/node ${THIRD_PARTY_INCLUDE}/node/cppg
 # System.loadLibrary() and pass the name of the library defined here; for
 # GameActivity/NativeActivity derived applications, the same library name must
 # be used in the AndroidManifest.xml file.
-add_library(${CMAKE_PROJECT_NAME} SHARED ${NODE_INIT_SRC} native-lib.cpp)
+add_library(
+        ${CMAKE_PROJECT_NAME} SHARED
+        ${ARGV_SRC}
+        ${NODE_INSTANCE_SRC}
+        native-lib.cpp
+        )
 
 # Specifies libraries CMake should link to your target library. You can link
 # libraries from various origins, such as libraries defined in this build
@@ -46,13 +55,15 @@ target_link_libraries(
         ${NODE_SHARED_LIBRARY_PATH}
         android
         log
-)
+        )
 
 target_include_directories(
-        ${CMAKE_PROJECT_NAME} SYSTEM
-        PUBLIC ${THIRD_PARTY_INCLUDE}
+        ${CMAKE_PROJECT_NAME} SYSTEM PUBLIC ${THIRD_PARTY_INCLUDE}
+        )
 
-)
-
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${NODE_INIT_INCLUDE}
-        ${TOOLS_INCLUDE})
+target_include_directories(
+        ${CMAKE_PROJECT_NAME}
+        PUBLIC ${ARGV_INCLUDE}
+               ${NODE_INSTANCE_INCLUDE}
+               ${TOOLS_INCLUDE}
+        )

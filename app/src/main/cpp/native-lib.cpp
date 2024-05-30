@@ -1,5 +1,5 @@
+#include "NodeInstance.hpp"
 #include "logger.hpp"
-#include "node_init.hpp"
 #include <jni.h>
 #include <node/node.h>
 #include <node/uv.h>
@@ -10,9 +10,11 @@ Java_com_example_jsaudio_MainActivity_stringFromJNI(JNIEnv *env,
                                                     jobject /* this */) {
   std::string node_init_ret = "Init Node failed";
 
-  int ret = InitNode();
-  if (ret == 0) {
+  NodeInstance *instance = NodeInstance::Create();
+  if (instance != nullptr) {
     node_init_ret = "Init Node success!";
+    delete instance;
   }
+
   return env->NewStringUTF(node_init_ret.c_str());
 }

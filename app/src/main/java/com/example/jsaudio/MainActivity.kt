@@ -11,7 +11,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        Log.d("MainActivity", "Create application")
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -19,9 +19,9 @@ class MainActivity : AppCompatActivity() {
         binding.sampleText.text = stringFromJNI()
     }
 
-    override fun onPause() {
-        super.onPause()
-        Log.d("MainActivity", "Pause application")
+    override fun onStart() {
+        super.onStart()
+        Log.d("MainActivity", "Start application")
     }
 
     override fun onResume() {
@@ -29,10 +29,12 @@ class MainActivity : AppCompatActivity() {
         Log.d("MainActivity", "Resume application")
     }
 
-    override fun onStart() {
-        super.onStart()
-        Log.d("MainActivity", "Start application")
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("MainActivity", "Pause application")
     }
+
 
     override fun onStop() {
         super.onStop()

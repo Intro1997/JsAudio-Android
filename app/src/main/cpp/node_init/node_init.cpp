@@ -82,11 +82,6 @@ int InitNode() {
     return exit_code;
   }
 
-  title = new char[100]();
-  uv_get_process_title(title, 100);
-  LOGD("[jujube check] second check title is %s\n", title);
-  delete[] title;
-
   node_platform = node::MultiIsolatePlatform::Create(4);
   v8::V8::InitializePlatform(node_platform.get());
   v8::V8::Initialize();

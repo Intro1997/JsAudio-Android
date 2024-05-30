@@ -3,7 +3,7 @@
     {
       "label": "check env variable",
       "type": "shell",
-      "command": "echo ${workspaceFolder}/app/src/main/cpp/include/third_party/**"
+      "command": "echo ${workspaceFolder}/app/src/main/cpp/node_instance"
     }
   ],
   "version": "2.0.0"

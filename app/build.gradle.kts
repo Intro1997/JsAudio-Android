@@ -15,6 +15,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
         externalNativeBuild {
             cmake {
                 cppFlags += "-std=c++17"
@@ -26,10 +27,18 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            ndk {
+                abiFilters += "arm64-v8a"
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+        debug {
+            ndk {
+                abiFilters += "arm64-v8a"
+            }
         }
     }
     compileOptions {
