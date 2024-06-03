@@ -1,8 +1,10 @@
 #include "NodeInstance.hpp"
-#include "Argv.hpp"
-#include "logger.hpp"
 #include <node/node.h>
 #include <node/uv.h>
+
+#include "Argv.hpp"
+#include "logger.hpp"
+#include "node_logger.hpp"
 
 #define NI_SUCCESS 0
 #define NI_V8_CREATE_ISOLATE_FAILED 1
@@ -16,8 +18,10 @@ NodeInstance *NodeInstance::instance_ = nullptr;
 NodeInstance::NodeInstance() {}
 
 NodeInstance::~NodeInstance() {
-  this->Stop();
-  this->Destroy();
+  if (platform_) {
+    this->Stop();
+    this->Destroy();
+  }
 }
 
 void NodeInstance::Start() {}
@@ -61,7 +65,7 @@ void NodeInstance::Destroy() {
 
     // Wait until the platform has cleaned up all relevant resources.
     while (!platform_finished) { // intro: access platform_finished here raises
-                                 // thread unsafe here, atomic_bool is better
+      // thread unsafe here, atomic_bool is better
       uv_run(&loop, UV_RUN_ONCE);
     }
     int err = uv_loop_close(&loop);
@@ -185,6 +189,14 @@ int NodeInstance::PrepareNodeEnvData() {
   return exit_code;
 }
 
+void NodeInstance::PrepareInternalModule() {
+  if (!instance_->node_env_) {
+    LOGE("Prepare internal module failed! Node env is invaild!\n");
+  }
+  node::AddLinkedBinding(instance_->node_env_, "node_basic", node_logger::init,
+                         NULL);
+}
+
 int NodeInstance::CreateNodeEnv(const std::vector<std::string> &argv,
                                 const std::vector<std::string> &exec_argv) {
   int exit_code = NI_SUCCESS;
@@ -214,14 +226,25 @@ int NodeInstance::CreateNodeEnv(const std::vector<std::string> &argv,
     node::Environment *env = instance_->node_env_ =
         node::CreateEnvironment(isolate_data, context, argv, exec_argv);
 
+    PrepareInternalModule();
+
+    v8::TryCatch trycatch(isolate);
     v8::MaybeLocal<v8::Value> loadenv_ret = node::LoadEnvironment(
-        env, "const publicRequire ="
-             "  require('module').createRequire(process.cwd() + '/');"
-             "globalThis.require = publicRequire;"
-             "require('vm').runInThisContext(process.argv[1]);");
+        env,
+        "const publicRequire ="
+        "  require('module').createRequire(process.cwd() + '/');"
+        "globalThis.require = publicRequire;"
+        "require('vm').runInThisContext(process.argv[1]);"
+        "const node_logger = process._linkedBinding('node_basic').node_logger;"
+        "node_logger('hello world');");
     if (loadenv_ret.IsEmpty()) {
       // There has been a JS exception.
       LOGE("Load nodejs env failed!\n");
+      if (trycatch.HasCaught()) {
+        v8::Local<v8::Value> exception = trycatch.Exception();
+        v8::String::Utf8Value message(isolate, exception);
+        LOGE("Load node env failed: %s", *message);
+      }
       return NI_LOAD_NODE_ENV_FAILED;
     }
     instance_->SpinEventLoop();

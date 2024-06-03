@@ -24,6 +24,7 @@ private:
   static int PrepareNodeEnv(const std::vector<std::string> &args,
                             const std::vector<std::string> &exec_args);
   static int PrepareNodeEnvData();
+  static void PrepareInternalModule();
   static int CreateNodeEnv(const std::vector<std::string> &argv,
                            const std::vector<std::string> &exec_argv);
 

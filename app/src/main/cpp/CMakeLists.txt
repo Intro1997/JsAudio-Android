@@ -19,9 +19,11 @@ set(THIRD_PARTY_INCLUDE ${PROJECT_SOURCE_DIR}/include/third_party)
 set(TOOLS_INCLUDE ${PROJECT_SOURCE_DIR}/include/tools)
 set(NODE_INSTANCE_INCLUDE ${PROJECT_SOURCE_DIR}/node_instance)
 set(ARGV_INCLUDE ${PROJECT_SOURCE_DIR}/argv)
+set(NODE_LOGGER_INCLUDE ${PROJECT_SOURCE_DIR}/node_logger)
 
 set(NODE_INSTANCE_SRC ${PROJECT_SOURCE_DIR}/node_instance/NodeInstance.cpp)
 set(ARGV_SRC ${PROJECT_SOURCE_DIR}/argv/Argv.cpp)
+set(NODE_LOGGER_SRC ${PROJECT_SOURCE_DIR}/node_logger/node_logger.cpp)
 
 include_directories(
         ${THIRD_PARTY_INCLUDE}/node ${THIRD_PARTY_INCLUDE}/node/cppgc
@@ -44,6 +46,7 @@ add_library(
         ${CMAKE_PROJECT_NAME} SHARED
         ${ARGV_SRC}
         ${NODE_INSTANCE_SRC}
+        ${NODE_LOGGER_SRC}
         native-lib.cpp
         )
 
@@ -66,4 +69,5 @@ target_include_directories(
         PUBLIC ${ARGV_INCLUDE}
                ${NODE_INSTANCE_INCLUDE}
                ${TOOLS_INCLUDE}
+               ${NODE_LOGGER_INCLUDE}
         )
