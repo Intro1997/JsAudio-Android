@@ -16,6 +16,7 @@ public:
   void SpinEventLoop();
 
   static NodeInstance *Create(std::vector<std::string> vec_args = {"node"});
+  static bool Eval(const std::string &code, std::string &result);
   static void Clear();
 
 private:
@@ -31,6 +32,7 @@ private:
   std::unique_ptr<node::MultiIsolatePlatform> platform_;
   uv_loop_t loop_;
   v8::Isolate *isolate_;
+  v8::Persistent<v8::Context> context_;
   node::IsolateData *isolate_data_;
   node::Environment *node_env_;
 

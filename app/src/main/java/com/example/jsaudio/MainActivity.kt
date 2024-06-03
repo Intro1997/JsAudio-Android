@@ -25,6 +25,8 @@ class MainActivity : AppCompatActivity() {
 
         // Example of a call to a native method
         binding.sampleText.text = getNativeNodeInitState()
+        val test_js_code = "node_logger('hello from android')"
+        evalCode(test_js_code)
     }
 
     override fun onStart() {
@@ -66,4 +68,6 @@ class MainActivity : AppCompatActivity() {
      * native node manager api
      */
     private external fun destroyNativeNode(): Unit
+
+    private external fun evalCode(codeStr: String): Unit
 }

@@ -46,6 +46,7 @@ void NodeInstance::Destroy() {
     if (node_env_) {
       node::FreeEnvironment(node_env_);
     }
+    context_.Reset();
   }
   if (isolate_data_) {
     node::FreeIsolateData(isolate_data_);
@@ -203,7 +204,6 @@ int NodeInstance::CreateNodeEnv(const std::vector<std::string> &argv,
   v8::Isolate *isolate = instance_->isolate_;
   node::IsolateData *isolate_data = instance_->isolate_data_;
   uv_loop_t &loop = instance_->loop_;
-  node::MultiIsolatePlatform *platform = instance_->platform_.get();
 
   {
     v8::Locker locker(isolate);
@@ -216,6 +216,7 @@ int NodeInstance::CreateNodeEnv(const std::vector<std::string> &argv,
       LOGE("Failed to initialize V8 Context\n");
       return NI_V8_INIT_CONTEXT_FAILED;
     }
+    instance_->context_.Reset(isolate, context);
 
     // The v8::Context needs to be entered when node::CreateEnvironment() and
     // node::LoadEnvironment() are being called.
@@ -236,7 +237,7 @@ int NodeInstance::CreateNodeEnv(const std::vector<std::string> &argv,
         "globalThis.require = publicRequire;"
         "require('vm').runInThisContext(process.argv[1]);"
         "const node_logger = process._linkedBinding('node_basic').node_logger;"
-        "node_logger('hello world');");
+        "globalThis.node_logger = node_logger;");
     if (loadenv_ret.IsEmpty()) {
       // There has been a JS exception.
       LOGE("Load nodejs env failed!\n");
@@ -250,4 +251,44 @@ int NodeInstance::CreateNodeEnv(const std::vector<std::string> &argv,
     instance_->SpinEventLoop();
   }
   return exit_code;
+}
+
+bool NodeInstance::Eval(const std::string &code, std::string &result) {
+  if (!instance_ || !instance_->isolate_) {
+    result = "Error: evaluate code failed, invalid node env!";
+    return false;
+  }
+
+  v8::Isolate *isolate = instance_->isolate_;
+
+  v8::Locker locker(isolate);
+  v8::Isolate::Scope isolate_scope(isolate);
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context = instance_->context_.Get(isolate);
+  v8::Context::Scope context_scope(context);
+
+  v8::Local<v8::Script> code_script =
+      v8::Script::Compile(
+          context,
+          v8::String::NewFromUtf8(isolate, code.c_str()).ToLocalChecked())
+          .ToLocalChecked();
+  if (code_script.IsEmpty()) {
+    LOGE("Compile js script failed\n");
+    return false;
+  }
+  
+  v8::TryCatch trycatch(isolate);
+  v8::MaybeLocal<v8::Value> maybe_ret = code_script->Run(context);
+  if (maybe_ret.IsEmpty()) {
+    if (trycatch.HasCaught()) {
+      v8::Local<v8::Value> exception = trycatch.Exception();
+      v8::String::Utf8Value exception_message(isolate, exception);
+      result = *exception_message;
+      return false;
+    } else {
+      result = "";
+    }
+  }
+  instance_->SpinEventLoop();
+  return true;
 }

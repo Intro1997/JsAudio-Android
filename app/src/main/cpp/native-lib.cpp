@@ -36,3 +36,15 @@ Java_com_example_jsaudio_MainActivity_destroyNativeNode(JNIEnv *env,
     delete global_node;
   }
 }
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_jsaudio_MainActivity_evalCode(JNIEnv *env, jobject thiz,
+                                               jstring code_str) {
+  jboolean is_copy;
+  const char *code_c_str = env->GetStringUTFChars(code_str, &is_copy);
+  std::string code = code_c_str;
+  std::string result;
+  if (!NodeInstance::Eval(code, result)) {
+    LOGE("Eval code error: \n\tsrc: %s\n\tmsg: %s\n", code.c_str(), result.c_str());
+  }
+}
