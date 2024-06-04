@@ -8,3 +8,5 @@
 .externalNativeBuild
 .cxx
 local.properties
+jsaudio-test/node_modules
+jsaudio-test/package-lock.json

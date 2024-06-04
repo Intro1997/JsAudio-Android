@@ -5,6 +5,7 @@
 #include "Argv.hpp"
 #include "logger.hpp"
 #include "node_logger.hpp"
+#include "sleeper.hpp"
 
 #define NI_SUCCESS 0
 #define NI_V8_CREATE_ISOLATE_FAILED 1
@@ -15,8 +16,6 @@
 
 NodeInstance *NodeInstance::instance_ = nullptr;
 
-NodeInstance::NodeInstance() {}
-
 NodeInstance::~NodeInstance() {
   if (platform_) {
     this->Stop();
@@ -24,11 +23,26 @@ NodeInstance::~NodeInstance() {
   }
 }
 
-void NodeInstance::Start() {}
+bool NodeInstance::is_pause() {
+  std::lock_guard<std::mutex> guard(is_pause_lock_);
+  return is_pause_;
+}
 
-void NodeInstance::Pause() {}
+void NodeInstance::Pause() {
+  LOGD("Pause Node Instance!");
+  std::lock_guard<std::mutex> guard(is_pause_lock_);
+  if (!is_pause_) {
+    is_pause_ = true;
+  }
+}
 
-void NodeInstance::Resume() {}
+void NodeInstance::Resume() {
+  LOGD("Resume Node Instance!");
+  std::lock_guard<std::mutex> guard(is_pause_lock_);
+  if (is_pause_) {
+    is_pause_ = false;
+  }
+}
 
 void NodeInstance::Stop() {
   if (node_env_) {
@@ -85,7 +99,11 @@ void NodeInstance::SpinEventLoop() {
     v8::SealHandleScope seal(instance_->isolate_);
     bool more;
     do {
-      uv_run(&instance_->loop_, UV_RUN_DEFAULT);
+      while (is_pause()) {
+        sleep_for_ms(16);
+      }
+
+      uv_run(&instance_->loop_, UV_RUN_ONCE);
 
       instance_->platform_->DrainTasks(instance_->isolate_);
 
@@ -126,6 +144,7 @@ NodeInstance *NodeInstance::Create(std::vector<std::string> vec_argv) {
   }
 
   instance_ = new NodeInstance();
+  instance_->is_pause_ = false;
   instance_->platform_ = node::MultiIsolatePlatform::Create(4);
   v8::V8::InitializePlatform(instance_->platform_.get());
   v8::V8::Initialize();
@@ -203,7 +222,6 @@ int NodeInstance::CreateNodeEnv(const std::vector<std::string> &argv,
   int exit_code = NI_SUCCESS;
   v8::Isolate *isolate = instance_->isolate_;
   node::IsolateData *isolate_data = instance_->isolate_data_;
-  uv_loop_t &loop = instance_->loop_;
 
   {
     v8::Locker locker(isolate);
@@ -276,7 +294,7 @@ bool NodeInstance::Eval(const std::string &code, std::string &result) {
     LOGE("Compile js script failed\n");
     return false;
   }
-  
+
   v8::TryCatch trycatch(isolate);
   v8::MaybeLocal<v8::Value> maybe_ret = code_script->Run(context);
   if (maybe_ret.IsEmpty()) {
