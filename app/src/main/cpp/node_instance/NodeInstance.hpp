@@ -8,7 +8,7 @@
 
 class NodeInstance {
 public:
-  NodeInstance() = default;
+  NodeInstance();
   ~NodeInstance();
 
   void Pause();
@@ -26,12 +26,12 @@ public:
 private:
   void Stop();
   static int PrepareUvloop(const std::vector<std::string> &vec_argv);
-  static int PrepareNodeEnv(const std::vector<std::string> &args,
-                            const std::vector<std::string> &exec_args);
-  static int PrepareNodeEnvData();
-  static void PrepareInternalModule();
-  static int CreateNodeEnv(const std::vector<std::string> &argv,
-                           const std::vector<std::string> &exec_argv);
+  static int PrepareNodeEnv(std::vector<std::string> &args);
+  static void LoadInternalModule();
+  static node::IsolateData *CreateNodeIsoateData();
+  static node::Environment *
+  CreateNodeEnv(const std::vector<std::string> &argv,
+                const std::vector<std::string> &exec_argv);
 
   std::unique_ptr<node::MultiIsolatePlatform> platform_;
   uv_loop_t loop_;

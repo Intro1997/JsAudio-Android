@@ -8,13 +8,14 @@
 #include "sleeper.hpp"
 
 #define NI_SUCCESS 0
-#define NI_V8_CREATE_ISOLATE_FAILED 1
-#define NI_V8_CREATE_ISOLATE_DATA_FAILED 2
-#define NI_V8_INIT_CONTEXT_FAILED 3
-#define NI_LOAD_NODE_ENV_FAILED 4
-#define NI_UV_LOOP_INIT_FAILED 5
+#define NI_NODE_CREATE_ISOLATE_DATA_FAILED 1
+#define NI_NODE_CREATE_ENV_FAILED 2
+#define NI_UV_LOOP_INIT_FAILED 3
+#define NI_NODE_INITIALIZE_WITH_ARGS_FAILED 4
 
 NodeInstance *NodeInstance::instance_ = nullptr;
+
+NodeInstance::NodeInstance() : is_pause_(false) {}
 
 NodeInstance::~NodeInstance() {
   if (platform_) {
@@ -126,29 +127,13 @@ NodeInstance *NodeInstance::Create(std::vector<std::string> vec_argv) {
   }
 
   instance_ = new NodeInstance();
-  instance_->is_pause_ = false;
 
   if (PrepareUvloop(vec_argv) != NI_SUCCESS) {
+    LOGE("Prepare uv loop failed!\n");
     return nullptr;
   }
 
-  std::vector<std::string> exec_argv;
-  std::vector<std::string> errors;
-
-  if (node::InitializeNodeWithArgs(&vec_argv, &exec_argv, &errors) !=
-      NI_SUCCESS) {
-    LOGE("Init NodeJs failed!\n");
-    for (const auto &e : errors) {
-      LOGE("%s\n", e.c_str());
-    }
-    return nullptr;
-  }
-
-  instance_->platform_ = node::MultiIsolatePlatform::Create(4);
-  v8::V8::InitializePlatform(instance_->platform_.get());
-  v8::V8::Initialize();
-
-  if (PrepareNodeEnv(vec_argv, exec_argv) != NI_SUCCESS) {
+  if (PrepareNodeEnv(vec_argv) != NI_SUCCESS) {
     LOGE("Prepare node env failed!\n");
     NodeInstance::Clear();
     return nullptr;
@@ -173,18 +158,34 @@ int NodeInstance::PrepareUvloop(const std::vector<std::string> &vec_argv) {
   return exit_code;
 }
 
-int NodeInstance::PrepareNodeEnv(const std::vector<std::string> &argv,
-                                 const std::vector<std::string> &exec_argv) {
-  int exit_code = NI_SUCCESS;
-  if ((exit_code = PrepareNodeEnvData()) != NI_SUCCESS) {
-    LOGE("PrepareNodeEnvData failed!\n");
-    return exit_code;
+int NodeInstance::PrepareNodeEnv(std::vector<std::string> &argv) {
+  std::vector<std::string> exec_argv;
+  std::vector<std::string> errors;
+
+  if (node::InitializeNodeWithArgs(&argv, &exec_argv, &errors) != NI_SUCCESS) {
+    LOGE("Init NodeJs failed!\n");
+    for (const auto &e : errors) {
+      LOGE("%s\n", e.c_str());
+    }
+    return NI_NODE_INITIALIZE_WITH_ARGS_FAILED;
   }
-  if ((exit_code = CreateNodeEnv(argv, exec_argv)) != NI_SUCCESS) {
-    LOGE("CreateNodeEnv failed!\n");
-    return exit_code;
+
+  instance_->platform_ = node::MultiIsolatePlatform::Create(4);
+  v8::V8::InitializePlatform(instance_->platform_.get());
+  v8::V8::Initialize();
+
+  node::IsolateData *isolate_data = CreateNodeIsoateData();
+  if (isolate_data == nullptr) {
+    LOGE("Create node isolate data failed!\n");
+    return NI_NODE_CREATE_ISOLATE_DATA_FAILED;
   }
-  return exit_code;
+
+  node::Environment *node_env = CreateNodeEnv(argv, exec_argv);
+  if (node_env == nullptr) {
+    LOGE("Create node env failed!\n");
+    return NI_NODE_CREATE_ENV_FAILED;
+  }
+  return NI_SUCCESS;
 }
 
 void NodeInstance::Clear() {
@@ -194,10 +195,8 @@ void NodeInstance::Clear() {
   }
 }
 
-int NodeInstance::PrepareNodeEnvData() {
-
+node::IsolateData *NodeInstance::CreateNodeIsoateData() {
   uv_loop_t &loop = instance_->loop_;
-
   node::MultiIsolatePlatform *platform = instance_->platform_.get();
 
   std::shared_ptr<node::ArrayBufferAllocator> allocator =
@@ -207,19 +206,19 @@ int NodeInstance::PrepareNodeEnvData() {
 
   if (!instance_->isolate_) {
     LOGE("Create isolate failed\n");
-    return NI_V8_CREATE_ISOLATE_FAILED;
+    return nullptr;
   }
 
   instance_->isolate_data_ = node::CreateIsolateData(instance_->isolate_, &loop,
                                                      platform, allocator.get());
   if (!instance_->isolate_data_) {
     LOGE("Create isolate data failed\n");
-    return NI_V8_CREATE_ISOLATE_DATA_FAILED;
+    return nullptr;
   }
-  return NI_SUCCESS;
+  return instance_->isolate_data_;
 }
 
-void NodeInstance::PrepareInternalModule() {
+void NodeInstance::LoadInternalModule() {
   if (!instance_->node_env_) {
     LOGE("Prepare internal module failed! Node env is invaild!\n");
   }
@@ -227,9 +226,9 @@ void NodeInstance::PrepareInternalModule() {
                          NULL);
 }
 
-int NodeInstance::CreateNodeEnv(const std::vector<std::string> &argv,
-                                const std::vector<std::string> &exec_argv) {
-  int exit_code = NI_SUCCESS;
+node::Environment *
+NodeInstance::CreateNodeEnv(const std::vector<std::string> &argv,
+                            const std::vector<std::string> &exec_argv) {
   v8::Isolate *isolate = instance_->isolate_;
   node::IsolateData *isolate_data = instance_->isolate_data_;
 
@@ -242,7 +241,7 @@ int NodeInstance::CreateNodeEnv(const std::vector<std::string> &argv,
     v8::Local<v8::Context> context = node::NewContext(isolate);
     if (context.IsEmpty()) {
       LOGE("Failed to initialize V8 Context\n");
-      return NI_V8_INIT_CONTEXT_FAILED;
+      return nullptr;
     }
     instance_->context_.Reset(isolate, context);
 
@@ -255,7 +254,7 @@ int NodeInstance::CreateNodeEnv(const std::vector<std::string> &argv,
     node::Environment *env = instance_->node_env_ =
         node::CreateEnvironment(isolate_data, context, argv, exec_argv);
 
-    PrepareInternalModule();
+    LoadInternalModule();
 
     v8::TryCatch trycatch(isolate);
     v8::MaybeLocal<v8::Value> loadenv_ret = node::LoadEnvironment(
@@ -267,18 +266,19 @@ int NodeInstance::CreateNodeEnv(const std::vector<std::string> &argv,
         "const node_logger = process._linkedBinding('node_basic').node_logger;"
         "globalThis.node_logger = node_logger;");
     if (loadenv_ret.IsEmpty()) {
-      // There has been a JS exception.
-      LOGE("Load nodejs env failed!\n");
+      std::string err_msg = "";
       if (trycatch.HasCaught()) {
         v8::Local<v8::Value> exception = trycatch.Exception();
         v8::String::Utf8Value message(isolate, exception);
-        LOGE("Load node env failed: %s", *message);
+        err_msg = "msg: ";
+        err_msg += *message;
       }
-      return NI_LOAD_NODE_ENV_FAILED;
+      LOGE("Load nodejs env failed! %s\n", err_msg.c_str());
+      return nullptr;
     }
     instance_->SpinEventLoop();
   }
-  return exit_code;
+  return instance_->node_env_;
 }
 
 bool NodeInstance::Eval(const std::string &code, std::string &result) {
