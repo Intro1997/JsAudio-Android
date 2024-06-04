@@ -19,13 +19,13 @@ public:
 
   bool Eval(const std::string &code, std::string &result);
 
-    bool is_pause();
+  bool is_pause();
   static NodeInstance *Create(std::vector<std::string> vec_args = {"node"});
   static void Clear();
 
 private:
   void Stop();
-
+  static int PrepareUvloop(const std::vector<std::string> &vec_argv);
   static int PrepareNodeEnv(const std::vector<std::string> &args,
                             const std::vector<std::string> &exec_args);
   static int PrepareNodeEnvData();

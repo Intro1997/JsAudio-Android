@@ -125,10 +125,11 @@ NodeInstance *NodeInstance::Create(std::vector<std::string> vec_argv) {
     return instance_;
   }
 
-  Argv argv(vec_argv);
-  char **argv_cpy = uv_setup_args(argv.count(), argv.get());
-  if (argv_cpy == argv.get()) {
-    LOGW("argv copy failed in libuv\n");
+  instance_ = new NodeInstance();
+  instance_->is_pause_ = false;
+
+  if (PrepareUvloop(vec_argv) != NI_SUCCESS) {
+    return nullptr;
   }
 
   std::vector<std::string> exec_argv;
@@ -143,8 +144,6 @@ NodeInstance *NodeInstance::Create(std::vector<std::string> vec_argv) {
     return nullptr;
   }
 
-  instance_ = new NodeInstance();
-  instance_->is_pause_ = false;
   instance_->platform_ = node::MultiIsolatePlatform::Create(4);
   v8::V8::InitializePlatform(instance_->platform_.get());
   v8::V8::Initialize();
@@ -156,6 +155,22 @@ NodeInstance *NodeInstance::Create(std::vector<std::string> vec_argv) {
   }
 
   return instance_;
+}
+
+int NodeInstance::PrepareUvloop(const std::vector<std::string> &vec_argv) {
+  Argv argv(vec_argv);
+  char **argv_cpy = uv_setup_args(argv.count(), argv.get());
+  if (argv_cpy == argv.get()) {
+    LOGW("argv copy failed in libuv\n");
+  }
+  int exit_code;
+  exit_code = uv_loop_init(&instance_->loop_);
+
+  if (exit_code != NI_SUCCESS) {
+    LOGE("Init uv loop failed\n");
+    return NI_UV_LOOP_INIT_FAILED;
+  }
+  return exit_code;
 }
 
 int NodeInstance::PrepareNodeEnv(const std::vector<std::string> &argv,
@@ -180,12 +195,7 @@ void NodeInstance::Clear() {
 }
 
 int NodeInstance::PrepareNodeEnvData() {
-  int exit_code;
-  exit_code = uv_loop_init(&instance_->loop_);
-  if (exit_code != NI_SUCCESS) {
-    LOGE("Init uv loop failed\n");
-    return NI_UV_LOOP_INIT_FAILED;
-  }
+
   uv_loop_t &loop = instance_->loop_;
 
   node::MultiIsolatePlatform *platform = instance_->platform_.get();
@@ -206,7 +216,7 @@ int NodeInstance::PrepareNodeEnvData() {
     LOGE("Create isolate data failed\n");
     return NI_V8_CREATE_ISOLATE_DATA_FAILED;
   }
-  return exit_code;
+  return NI_SUCCESS;
 }
 
 void NodeInstance::PrepareInternalModule() {
