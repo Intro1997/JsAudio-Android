@@ -15,3 +15,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "JsAudio"
 include(":app")
+include(":nodeenvhandle")
+include(":app:NodeEnvLib")

@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.22.1)
 # PROJECT_NAME}, Since this is the top level CMakeLists.txt, the project name is
 # also accessible with ${CMAKE_PROJECT_NAME} (both CMake variables are in-sync
 # within the top level build script scope).
-project("jsaudio")
+project("node_env")
 
 set(NODE_SHARED_LIBRARY_PATH
     ${PROJECT_SOURCE_DIR}/library/third_party/node/libnode.so
@@ -47,7 +47,7 @@ add_library(
         ${ARGV_SRC}
         ${NODE_INSTANCE_SRC}
         ${NODE_LOGGER_SRC}
-        native-lib.cpp
+        node_env.cpp
         )
 
 # Specifies libraries CMake should link to your target library. You can link
