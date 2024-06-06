@@ -1,4 +1,4 @@
-package com.example.nodeenvlib
+package com.example.node_env
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

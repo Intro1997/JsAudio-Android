@@ -1,4 +1,4 @@
-package com.example.nodeenvlib
+package com.example.node_env
 
 import org.junit.Test
 

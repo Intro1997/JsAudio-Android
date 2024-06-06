@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.example.jsaudio.databinding.ActivityMainBinding
-import com.example.nodeenvlib.NodeEnvHandle
+import com.example.node_env.NodeEnvHandle
 
 class MainActivity : AppCompatActivity() {
     companion object {
