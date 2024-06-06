@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "Create application")
 
-        nodeEnvHandle = NodeEnvHandle.Create()
+        nodeEnvHandle = NodeEnvHandle.create()
 
         val ret = "create node env " + if (nodeEnvHandle == null) "failed" else "success"
 
@@ -35,14 +35,14 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "Resume application")
-        nodeEnvHandle?.Resume()
+        nodeEnvHandle?.resume()
     }
 
 
     override fun onPause() {
         super.onPause()
         Log.d(TAG, "Pause application")
-        nodeEnvHandle?.Pause()
+        nodeEnvHandle?.pause()
     }
 
 
@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "Destroy application")
-        nodeEnvHandle?.Destroy()
+        nodeEnvHandle?.destroy()
     }
 
     private fun getJsEntry(): String {

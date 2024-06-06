@@ -23,7 +23,7 @@ class NodeEnvHandle private constructor() {
         private var isNativeNodeEnvCreated: Boolean = false
         private var isEvaluatingCode = ThreadSafeBool(false)
 
-        fun Create(): NodeEnvHandle? {
+        fun create(): NodeEnvHandle? {
             if (innerNodeEnvHandle == null) {
                 innerNodeEnvHandle = NodeEnvHandle()
                 innerNodeEnvHandle?.let { nodeEnvHandle ->
@@ -62,16 +62,15 @@ class NodeEnvHandle private constructor() {
         }
     }
 
-    fun Pause() {
+    fun pause() {
         innerNodeEnvHandle?.pauseNativeNode()
-
     }
 
-    fun Resume() {
+    fun resume() {
         innerNodeEnvHandle?.resumeNativeNode()
     }
 
-    fun Destroy() {
+    fun destroy() {
         innerNodeEnvHandle?.let { nodeEnvHandle ->
             nodeEnvHandle.destroyNativeNode()
             isNativeNodeEnvCreated = false
