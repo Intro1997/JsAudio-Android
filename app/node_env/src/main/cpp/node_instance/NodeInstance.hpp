@@ -27,7 +27,9 @@ private:
   void Stop();
   static int PrepareUvloop(const std::vector<std::string> &vec_argv);
   static int PrepareNodeEnv(std::vector<std::string> &args);
-  static void LoadInternalModule();
+  static void LoadInternalModule(const char *module_preload_script,
+                                 const char *module_name,
+                                 node::addon_context_register_func init_fn);
   static node::IsolateData *CreateNodeIsoateData();
   static node::Environment *
   CreateNodeEnv(const std::vector<std::string> &argv,
@@ -43,4 +45,5 @@ private:
   std::mutex is_pause_lock_;
 
   static NodeInstance *instance_;
+  static std::string preload_script_;
 };

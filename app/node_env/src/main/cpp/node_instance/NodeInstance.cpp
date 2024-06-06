@@ -5,6 +5,7 @@
 #include "Argv.hpp"
 #include "logger.hpp"
 #include "node_logger.hpp"
+#include "preload_script.hpp"
 #include "sleeper.hpp"
 
 #define NI_SUCCESS 0
@@ -14,6 +15,7 @@
 #define NI_NODE_INITIALIZE_WITH_ARGS_FAILED 4
 
 NodeInstance *NodeInstance::instance_ = nullptr;
+std::string NodeInstance::preload_script_ = NODE_INSTANCE_PRELOAD_SCRIPT;
 
 NodeInstance::NodeInstance() : is_pause_(false) {}
 
@@ -55,6 +57,7 @@ void NodeInstance::Stop() {
 }
 
 void NodeInstance::Destroy() {
+  preload_script_ = NODE_INSTANCE_PRELOAD_SCRIPT;
   if (isolate_) {
     v8::Locker locker(isolate_);
     v8::Isolate::Scope isolate_scope(isolate_);
@@ -218,12 +221,15 @@ node::IsolateData *NodeInstance::CreateNodeIsoateData() {
   return instance_->isolate_data_;
 }
 
-void NodeInstance::LoadInternalModule() {
+void NodeInstance::LoadInternalModule(
+    const char *module_preload_script, const char *module_name,
+    node::addon_context_register_func init_fn) {
   if (!instance_->node_env_) {
     LOGE("Prepare internal module failed! Node env is invaild!\n");
+    return;
   }
-  node::AddLinkedBinding(instance_->node_env_, "node_basic", node_logger::init,
-                         NULL);
+  preload_script_ += module_preload_script;
+  node::AddLinkedBinding(instance_->node_env_, module_name, init_fn, NULL);
 }
 
 node::Environment *
@@ -254,17 +260,12 @@ NodeInstance::CreateNodeEnv(const std::vector<std::string> &argv,
     node::Environment *env = instance_->node_env_ =
         node::CreateEnvironment(isolate_data, context, argv, exec_argv);
 
-    LoadInternalModule();
+    LoadInternalModule(node_logger::GetPreLoadScript(), "node_logger",
+                       node_logger::Init);
 
     v8::TryCatch trycatch(isolate);
-    v8::MaybeLocal<v8::Value> loadenv_ret = node::LoadEnvironment(
-        env,
-        "const publicRequire ="
-        "  require('module').createRequire(process.cwd() + '/');"
-        "globalThis.require = publicRequire;"
-        "require('vm').runInThisContext(process.argv[1]);"
-        "const node_logger = process._linkedBinding('node_basic').node_logger;"
-        "globalThis.node_logger = node_logger;");
+    v8::MaybeLocal<v8::Value> loadenv_ret =
+        node::LoadEnvironment(env, preload_script_.c_str());
     if (loadenv_ret.IsEmpty()) {
       std::string err_msg = "";
       if (trycatch.HasCaught()) {

@@ -9,7 +9,7 @@ static NodeInstance *global_node = nullptr;
 
 extern "C" JNIEXPORT jboolean JNICALL
 Java_com_example_node_1env_NodeEnvHandle_createNativeNode(JNIEnv *env,
-                                                           jobject thiz) {
+                                                          jobject thiz) {
   LOGD("Get in node env handle native function\n");
   global_node = NodeInstance::Create();
   if (!global_node) {
@@ -23,7 +23,7 @@ Java_com_example_node_1env_NodeEnvHandle_createNativeNode(JNIEnv *env,
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_node_1env_NodeEnvHandle_nativeEvalCode(JNIEnv *env, jobject thiz,
-                                                         jstring code_str) {
+                                                        jstring code_str) {
   jboolean is_copy;
   const char *code_c_str = env->GetStringUTFChars(code_str, &is_copy);
   std::string code = code_c_str;
