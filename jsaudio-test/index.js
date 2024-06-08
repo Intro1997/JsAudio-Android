@@ -27,6 +27,11 @@ function set_timeout_test() {
   }, 5000);
 }
 
+function audio_test() {
+  console.log(`add_int(1, 2) = ${add_int(1, 2)}`);
+}
+
 // log_test();
 // schedual_run_test();
-set_timeout_test();
+// set_timeout_test();
+audio_test();

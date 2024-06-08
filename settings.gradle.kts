@@ -17,3 +17,4 @@ rootProject.name = "JsAudio"
 include(":app")
 include(":nodeenvhandle")
 include(":app:node_env")
+include(":app:audio")

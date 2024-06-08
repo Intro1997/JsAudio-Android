@@ -3,6 +3,7 @@ package com.example.jsaudio
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import com.example.audio.AudioHandle
 import com.example.jsaudio.databinding.ActivityMainBinding
 import com.example.node_env.NodeEnvHandle
 
@@ -13,11 +14,13 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var nodeEnvHandle: NodeEnvHandle? = null
+    private var audioHandle: AudioHandle? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "Create application")
 
         nodeEnvHandle = NodeEnvHandle.create()
+        audioHandle = AudioHandle()
 
         val ret = "create node env " + if (nodeEnvHandle == null) "failed" else "success"
 

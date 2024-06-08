@@ -30,6 +30,7 @@ private:
   static void LoadInternalModule(const char *module_preload_script,
                                  const char *module_name,
                                  node::addon_context_register_func init_fn);
+  static void LoadNapiModule(const char *module_preload_script);
   static node::IsolateData *CreateNodeIsoateData();
   static node::Environment *
   CreateNodeEnv(const std::vector<std::string> &argv,

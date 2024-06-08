@@ -3,6 +3,7 @@
 #include <node/uv.h>
 
 #include "Argv.hpp"
+#include "audio.hpp"
 #include "logger.hpp"
 #include "node_logger.hpp"
 #include "preload_script.hpp"
@@ -232,6 +233,10 @@ void NodeInstance::LoadInternalModule(
   node::AddLinkedBinding(instance_->node_env_, module_name, init_fn, NULL);
 }
 
+void NodeInstance::LoadNapiModule(const char *module_preload_script) {
+  preload_script_ += module_preload_script;
+}
+
 node::Environment *
 NodeInstance::CreateNodeEnv(const std::vector<std::string> &argv,
                             const std::vector<std::string> &exec_argv) {
@@ -262,6 +267,7 @@ NodeInstance::CreateNodeEnv(const std::vector<std::string> &argv,
 
     LoadInternalModule(node_logger::GetPreLoadScript(), "node_logger",
                        node_logger::Init);
+    LoadNapiModule(audio::GetPreLoadScript());
 
     v8::TryCatch trycatch(isolate);
     v8::MaybeLocal<v8::Value> loadenv_ret =

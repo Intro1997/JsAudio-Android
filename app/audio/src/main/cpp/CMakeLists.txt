@@ -9,23 +9,21 @@ cmake_minimum_required(VERSION 3.22.1)
 # PROJECT_NAME}, Since this is the top level CMakeLists.txt, the project name is
 # also accessible with ${CMAKE_PROJECT_NAME} (both CMake variables are in-sync
 # within the top level build script scope).
-project("node_env")
+project("audio")
 
+
+#/Users/intro/Spaces/JsAudio-Android/app/audio/src/main/cpp/../../../../node_env/src/main/cpp/library/third_party/node/libnode.so
+# TODO: Fix ../ path reference
 set(NODE_SHARED_LIBRARY_PATH
-    ${PROJECT_SOURCE_DIR}/library/third_party/node/libnode.so
+    ${PROJECT_SOURCE_DIR}/../../../../node_env/src/main/cpp/library/third_party/node/libnode.so
     )
 
-set(THIRD_PARTY_INCLUDE ${PROJECT_SOURCE_DIR}/include/third_party)
-set(TOOLS_INCLUDE ${PROJECT_SOURCE_DIR}/include/tools)
-set(NODE_INSTANCE_INCLUDE ${PROJECT_SOURCE_DIR}/node_instance)
-set(ARGV_INCLUDE ${PROJECT_SOURCE_DIR}/argv)
-set(NODE_LOGGER_INCLUDE ${PROJECT_SOURCE_DIR}/node_logger)
-set(AUDIO_INCLUDE ${PROJECT_SOURCE_DIR}/../../../../audio/src/main/cpp)
-
-set(NODE_INSTANCE_SRC ${PROJECT_SOURCE_DIR}/node_instance/NodeInstance.cpp)
-set(ARGV_SRC ${PROJECT_SOURCE_DIR}/argv/Argv.cpp)
-set(NODE_LOGGER_SRC ${PROJECT_SOURCE_DIR}/node_logger/node_logger.cpp)
-set(AUDIO_SRC ${PROJECT_SOURCE_DIR}/../../../../audio/src/main/cpp/audio.cpp)
+set(THIRD_PARTY_INCLUDE
+    ${PROJECT_SOURCE_DIR}/../../../../node_env/src/main/cpp/include/third_party
+    )
+set(TOOLS_INCLUDE
+    ${PROJECT_SOURCE_DIR}/../../../../node_env/src/main/cpp/include/tools
+    )
 
 include_directories(
         ${THIRD_PARTY_INCLUDE}/node ${THIRD_PARTY_INCLUDE}/node/cppgc
@@ -44,14 +42,7 @@ include_directories(
 # System.loadLibrary() and pass the name of the library defined here; for
 # GameActivity/NativeActivity derived applications, the same library name must
 # be used in the AndroidManifest.xml file.
-add_library(
-        ${CMAKE_PROJECT_NAME} SHARED
-        ${ARGV_SRC}
-        ${NODE_INSTANCE_SRC}
-        ${NODE_LOGGER_SRC}
-        ${AUDIO_SRC}
-        node_env.cpp
-        )
+add_library(${CMAKE_PROJECT_NAME} SHARED audio.cpp)
 
 # Specifies libraries CMake should link to your target library. You can link
 # libraries from various origins, such as libraries defined in this build
@@ -67,11 +58,4 @@ target_include_directories(
         ${CMAKE_PROJECT_NAME} SYSTEM PUBLIC ${THIRD_PARTY_INCLUDE}
         )
 
-target_include_directories(
-        ${CMAKE_PROJECT_NAME}
-        PUBLIC ${ARGV_INCLUDE}
-               ${NODE_INSTANCE_INCLUDE}
-               ${TOOLS_INCLUDE}
-               ${NODE_LOGGER_INCLUDE}
-               ${AUDIO_INCLUDE}
-        )
+target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${TOOLS_INCLUDE})
