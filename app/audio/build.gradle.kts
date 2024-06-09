@@ -3,6 +3,8 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+val cppDependency = "${rootProject.projectDir}/app/dependency/cpp"
+
 android {
     namespace = "com.example.nativelib"
     compileSdk = 34
@@ -15,6 +17,7 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags("")
+                arguments += "-DCPP_DEPENDENCY_PATH=${cppDependency}"
             }
         }
     }
@@ -28,7 +31,6 @@ android {
             ndk { abiFilters += "arm64-v8a" }
         }
         debug {
-
             ndk { abiFilters += "arm64-v8a" }
         }
     }

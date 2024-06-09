@@ -3,6 +3,8 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+val cppDependency = "${rootProject.projectDir}/app/dependency/cpp"
+
 android {
     namespace = "com.example.nodeenvlib"
     compileSdk = 34
@@ -15,7 +17,7 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags += "-std=c++17"
-                arguments += "-DANDROID_STL=c++_shared"
+                arguments.addAll(listOf("-DANDROID_STL=c++_shared", "-DCPP_DEPENDENCY_PATH=${cppDependency}"))
             }
         }
     }
@@ -24,8 +26,7 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
             ndk {
                 abiFilters += "arm64-v8a"

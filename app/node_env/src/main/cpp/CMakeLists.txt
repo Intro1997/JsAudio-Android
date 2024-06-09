@@ -11,12 +11,10 @@ cmake_minimum_required(VERSION 3.22.1)
 # within the top level build script scope).
 project("node_env")
 
-set(NODE_SHARED_LIBRARY_PATH
-    ${PROJECT_SOURCE_DIR}/library/third_party/node/libnode.so
-    )
+set(NODE_SHARED_LIBRARY_PATH ${CPP_DEPENDENCY_PATH}/node/library/libnode.so)
+set(NODE_INCLUDE_PATH ${CPP_DEPENDENCY_PATH}/node/include)
+set(TOOL_INCLUDE_PATH ${CPP_DEPENDENCY_PATH}/tool/include)
 
-set(THIRD_PARTY_INCLUDE ${PROJECT_SOURCE_DIR}/include/third_party)
-set(TOOLS_INCLUDE ${PROJECT_SOURCE_DIR}/include/tools)
 set(NODE_INSTANCE_INCLUDE ${PROJECT_SOURCE_DIR}/node_instance)
 set(ARGV_INCLUDE ${PROJECT_SOURCE_DIR}/argv)
 set(NODE_LOGGER_INCLUDE ${PROJECT_SOURCE_DIR}/node_logger)
@@ -28,7 +26,7 @@ set(NODE_LOGGER_SRC ${PROJECT_SOURCE_DIR}/node_logger/node_logger.cpp)
 set(AUDIO_SRC ${PROJECT_SOURCE_DIR}/../../../../audio/src/main/cpp/audio.cpp)
 
 include_directories(
-        ${THIRD_PARTY_INCLUDE}/node ${THIRD_PARTY_INCLUDE}/node/cppgc
+        ${NODE_INCLUDE_PATH}/node ${NODE_INCLUDE_PATH}/node/cppgc
         )
 
 # Creates and names a library, sets it as either STATIC or SHARED, and provides
@@ -64,14 +62,14 @@ target_link_libraries(
         )
 
 target_include_directories(
-        ${CMAKE_PROJECT_NAME} SYSTEM PUBLIC ${THIRD_PARTY_INCLUDE}
+        ${CMAKE_PROJECT_NAME} SYSTEM PUBLIC ${NODE_INCLUDE_PATH}
         )
 
 target_include_directories(
         ${CMAKE_PROJECT_NAME}
         PUBLIC ${ARGV_INCLUDE}
                ${NODE_INSTANCE_INCLUDE}
-               ${TOOLS_INCLUDE}
+               ${TOOL_INCLUDE_PATH}
                ${NODE_LOGGER_INCLUDE}
                ${AUDIO_INCLUDE}
         )
