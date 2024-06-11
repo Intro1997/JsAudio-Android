@@ -49,6 +49,6 @@ void Init(v8::Local<v8::Object> exports, v8::Local<v8::Value> module,
   NODE_SET_METHOD(exports, "log", Log);
 }
 
-const char *GetPreLoadScript() { return NODE_LOGGER_PRELOAD_SCRIPT; }
+const char *GetPreloadScript() { return NODE_LOGGER_PRELOAD_SCRIPT; }
 
 } // namespace node_logger

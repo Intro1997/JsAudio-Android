@@ -5,11 +5,13 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "http-server -p 20490"
+    "compress": "node compress.js",
+    "start": "npm run compress && http-server -p 20490"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "http-server": "~14.1.1"
+    "http-server": "~14.1.1",
+    "uglify-js": "^3.18.0"
   }
 }

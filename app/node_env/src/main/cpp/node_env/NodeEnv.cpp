@@ -1,12 +1,10 @@
 #include "NodeEnv.hpp"
-#include <node/node.h>
-#include <node/uv.h>
-
 #include "Argv.hpp"
 #include "logger.hpp"
-#include "node_logger.hpp"
 #include "preload_script.hpp"
 #include "sleeper.hpp"
+#include <node/node.h>
+#include <node/uv.h>
 
 #define NI_SUCCESS 0
 #define NI_NODE_CREATE_ISOLATE_DATA_FAILED 1
@@ -14,8 +12,16 @@
 #define NI_UV_LOOP_INIT_FAILED 3
 #define NI_NODE_INITIALIZE_WITH_ARGS_FAILED 4
 
+struct NodeEnv::InternalModule {
+    const char *module_preload_script;
+    const char *module_name;
+    node::addon_context_register_func init_fn;
+};
+
+
 NodeEnv *NodeEnv::instance_ = nullptr;
 std::string NodeEnv::preload_script_ = NODE_INSTANCE_PRELOAD_SCRIPT;
+std::vector<NodeEnv::InternalModule> NodeEnv::internal_modules_;
 
 NodeEnv::NodeEnv() : is_pause_(false) {}
 
@@ -24,6 +30,45 @@ NodeEnv::~NodeEnv() {
     this->Stop();
     this->Destroy();
   }
+}
+
+
+void NodeEnv::AddInternalModule(const char *module_preload_script,
+                                const char *module_name,
+                                node::addon_context_register_func init_fn) {
+  InternalModule internal_module;
+  internal_module.module_preload_script = module_preload_script;
+  internal_module.module_name = module_name;
+  internal_module.init_fn = init_fn;
+  internal_modules_.push_back(internal_module);
+}
+
+NodeEnv *NodeEnv::Create(const char *preload_script) {
+  return Create({"node"}, preload_script);
+}
+
+NodeEnv *NodeEnv::Create(std::vector<std::string> vec_argv,
+                         const char *preload_script) {
+  if (instance_ != nullptr) {
+    return instance_;
+  }
+
+  instance_ = new NodeEnv();
+
+  instance_->preload_script_ += preload_script;
+
+  if (PrepareUvloop(vec_argv) != NI_SUCCESS) {
+    LOGE("Prepare uv loop failed!\n");
+    return nullptr;
+  }
+
+  if (PrepareNodeEnv(vec_argv) != NI_SUCCESS) {
+    LOGE("Prepare node env failed!\n");
+    NodeEnv::Clear();
+    return nullptr;
+  }
+
+  return instance_;
 }
 
 bool NodeEnv::is_pause() {
@@ -58,6 +103,7 @@ void NodeEnv::Stop() {
 
 void NodeEnv::Destroy() {
   preload_script_ = NODE_INSTANCE_PRELOAD_SCRIPT;
+  internal_modules_.clear();
   if (isolate_) {
     v8::Locker locker(isolate_);
     v8::Isolate::Scope isolate_scope(isolate_);
@@ -77,8 +123,8 @@ void NodeEnv::Destroy() {
   if (isolate && uv_loop_alive(&loop)) {
     bool platform_finished = false;
     platform->AddIsolateFinishedCallback(
-        isolate, [](void *data) { *static_cast<bool *>(data) = true; },
-        &platform_finished);
+            isolate, [](void *data) { *static_cast<bool *>(data) = true; },
+            &platform_finished);
     platform->UnregisterIsolate(isolate);
     isolate->Dispose();
 
@@ -124,34 +170,6 @@ void NodeEnv::SpinEventLoop() {
   }
 }
 
-NodeEnv *NodeEnv::Create(const char *preload_script) {
-  return Create({"node"}, preload_script);
-}
-
-NodeEnv *NodeEnv::Create(std::vector<std::string> vec_argv,
-                         const char *preload_script) {
-  if (instance_ != nullptr) {
-    return instance_;
-  }
-
-  instance_ = new NodeEnv();
-
-  instance_->preload_script_ += preload_script;
-
-  if (PrepareUvloop(vec_argv) != NI_SUCCESS) {
-    LOGE("Prepare uv loop failed!\n");
-    return nullptr;
-  }
-
-  if (PrepareNodeEnv(vec_argv) != NI_SUCCESS) {
-    LOGE("Prepare node env failed!\n");
-    NodeEnv::Clear();
-    return nullptr;
-  }
-
-  return instance_;
-}
-
 int NodeEnv::PrepareUvloop(const std::vector<std::string> &vec_argv) {
   Argv argv(vec_argv);
   char **argv_cpy = uv_setup_args(argv.count(), argv.get());
@@ -174,7 +192,7 @@ int NodeEnv::PrepareNodeEnv(std::vector<std::string> &argv) {
 
   if (node::InitializeNodeWithArgs(&argv, &exec_argv, &errors) != NI_SUCCESS) {
     LOGE("Init NodeJs failed!\n");
-    for (const auto &e : errors) {
+    for (const auto &e: errors) {
       LOGE("%s\n", e.c_str());
     }
     return NI_NODE_INITIALIZE_WITH_ARGS_FAILED;
@@ -210,7 +228,7 @@ node::IsolateData *NodeEnv::CreateNodeIsoateData() {
   node::MultiIsolatePlatform *platform = instance_->platform_.get();
 
   std::shared_ptr<node::ArrayBufferAllocator> allocator =
-      node::ArrayBufferAllocator::Create();
+          node::ArrayBufferAllocator::Create();
 
   instance_->isolate_ = node::NewIsolate(allocator, &loop, platform);
 
@@ -228,19 +246,17 @@ node::IsolateData *NodeEnv::CreateNodeIsoateData() {
   return instance_->isolate_data_;
 }
 
-void NodeEnv::LoadInternalModule(const char *module_preload_script,
-                                 const char *module_name,
-                                 node::addon_context_register_func init_fn) {
+void NodeEnv::LoadInternalModules() {
   if (!instance_->node_env_) {
     LOGE("Prepare internal module failed! Node env is invaild!\n");
     return;
   }
-  preload_script_ += module_preload_script;
-  node::AddLinkedBinding(instance_->node_env_, module_name, init_fn, NULL);
-}
 
-void NodeEnv::LoadNapiModule(const char *module_preload_script) {
-  preload_script_ += module_preload_script;
+  for (const auto &module: internal_modules_) {
+    preload_script_ += module.module_preload_script;
+    node::AddLinkedBinding(instance_->node_env_, module.module_name,
+                           module.init_fn, NULL);
+  }
 }
 
 node::Environment *
@@ -269,14 +285,15 @@ NodeEnv::CreateNodeEnv(const std::vector<std::string> &argv,
     // Create a node::Environment instance that will later be released using
     // node::FreeEnvironment().
     node::Environment *env = instance_->node_env_ =
-        node::CreateEnvironment(isolate_data, context, argv, exec_argv);
+                                     node::CreateEnvironment(isolate_data, context, argv,
+                                                             exec_argv);
 
-    LoadInternalModule(node_logger::GetPreLoadScript(), "node_logger",
-                       node_logger::Init);
+    LoadInternalModules();
+    internal_modules_.clear();
 
     v8::TryCatch trycatch(isolate);
     v8::MaybeLocal<v8::Value> loadenv_ret =
-        node::LoadEnvironment(env, preload_script_.c_str());
+            node::LoadEnvironment(env, preload_script_.c_str());
     if (loadenv_ret.IsEmpty()) {
       std::string err_msg = "";
       if (trycatch.HasCaught()) {
@@ -308,10 +325,10 @@ bool NodeEnv::Eval(const std::string &code, std::string &result) {
   v8::Context::Scope context_scope(context);
 
   v8::Local<v8::Script> code_script =
-      v8::Script::Compile(
-          context,
-          v8::String::NewFromUtf8(isolate, code.c_str()).ToLocalChecked())
-          .ToLocalChecked();
+          v8::Script::Compile(
+                  context,
+                  v8::String::NewFromUtf8(isolate, code.c_str()).ToLocalChecked())
+                  .ToLocalChecked();
   if (code_script.IsEmpty()) {
     LOGE("Compile js script failed\n");
     return false;

@@ -1,5 +1,7 @@
 #include "NodeEnv.hpp"
 #include "logger.hpp"
+#include "node_logger.hpp"
+
 #include <jni.h>
 #include <node/node.h>
 #include <node/uv.h>
@@ -15,11 +17,12 @@ Java_com_example_node_1env_NodeEnvHandler_createNativeNode(
   const char *preload_script_cstr =
       env->GetStringUTFChars(preload_script, &is_copy);
 
+  NodeEnv::AddInternalModule(node_logger::GetPreloadScript(), "node_logger",
+                             node_logger::Init);
+
   global_node = NodeEnv::Create(preload_script_cstr);
   if (!global_node) {
     LOGE("Create global node failed\n");
-    delete global_node;
-    global_node = nullptr;
     return false;
   }
   return true;
