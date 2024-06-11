@@ -8,10 +8,14 @@
 static NodeEnv *global_node = nullptr;
 
 extern "C" JNIEXPORT jboolean JNICALL
-Java_com_example_node_1env_NodeEnvHandler_createNativeNode(JNIEnv *env,
-                                                          jobject thiz) {
+Java_com_example_node_1env_NodeEnvHandler_createNativeNode(
+    JNIEnv *env, jobject thiz, jstring preload_script) {
   LOGD("Get in node env handle native function\n");
-  global_node = NodeEnv::Create();
+  jboolean is_copy;
+  const char *preload_script_cstr =
+      env->GetStringUTFChars(preload_script, &is_copy);
+
+  global_node = NodeEnv::Create(preload_script_cstr);
   if (!global_node) {
     LOGE("Create global node failed\n");
     delete global_node;
@@ -20,10 +24,10 @@ Java_com_example_node_1env_NodeEnvHandler_createNativeNode(JNIEnv *env,
   }
   return true;
 }
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_node_1env_NodeEnvHandler_nativeEvalCode(JNIEnv *env, jobject thiz,
-                                                        jstring code_str) {
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_node_1env_NodeEnvHandler_nativeEvalCode(JNIEnv *env,
+                                                         jobject thiz,
+                                                         jstring code_str) {
   jboolean is_copy;
   const char *code_c_str = env->GetStringUTFChars(code_str, &is_copy);
   std::string code = code_c_str;
@@ -33,26 +37,26 @@ Java_com_example_node_1env_NodeEnvHandler_nativeEvalCode(JNIEnv *env, jobject th
          result.c_str());
   }
 }
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_node_1env_NodeEnvHandler_destroyNativeNode(JNIEnv *env, jobject thiz) {
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_node_1env_NodeEnvHandler_destroyNativeNode(JNIEnv *env,
+                                                            jobject thiz) {
   if (global_node) {
     global_node->Destroy();
     delete global_node;
   }
 }
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_node_1env_NodeEnvHandler_pauseNativeNode(JNIEnv *env, jobject thiz) {
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_node_1env_NodeEnvHandler_pauseNativeNode(JNIEnv *env,
+                                                          jobject thiz) {
   if (global_node) {
     global_node->Pause();
   } else {
     LOGW("Pause node failed, global node instance is invalid\n");
   }
 }
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_node_1env_NodeEnvHandler_resumeNativeNode(JNIEnv *env, jobject thiz) {
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_node_1env_NodeEnvHandler_resumeNativeNode(JNIEnv *env,
+                                                           jobject thiz) {
   if (global_node) {
     global_node->Resume();
   } else {

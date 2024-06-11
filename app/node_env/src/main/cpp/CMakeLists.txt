@@ -18,16 +18,12 @@ set(TOOL_INCLUDE_PATH ${CPP_DEPENDENCY_PATH}/tool/include)
 set(NODE_ENV_INCLUDE ${PROJECT_SOURCE_DIR}/node_env)
 set(ARGV_INCLUDE ${PROJECT_SOURCE_DIR}/argv)
 set(NODE_LOGGER_INCLUDE ${PROJECT_SOURCE_DIR}/node_logger)
-set(AUDIO_INCLUDE ${CPP_DEPENDENCY_PATH}/../../audio/src/main/cpp/audio)
 
 set(NODE_ENV_SRC ${PROJECT_SOURCE_DIR}/node_env/NodeEnv.cpp)
 set(ARGV_SRC ${PROJECT_SOURCE_DIR}/argv/Argv.cpp)
 set(NODE_LOGGER_SRC ${PROJECT_SOURCE_DIR}/node_logger/node_logger.cpp)
-set(AUDIO_SRC ${CPP_DEPENDENCY_PATH}/../../audio/src/main/cpp/audio/audio.cpp)
 
-include_directories(
-        ${NODE_INCLUDE_PATH}/node ${NODE_INCLUDE_PATH}/node/cppgc
-        )
+include_directories(${NODE_INCLUDE_PATH}/node ${NODE_INCLUDE_PATH}/node/cppgc)
 
 # Creates and names a library, sets it as either STATIC or SHARED, and provides
 # the relative paths to its source code. You can define multiple libraries, and
@@ -47,7 +43,6 @@ add_library(
         ${ARGV_SRC}
         ${NODE_ENV_SRC}
         ${NODE_LOGGER_SRC}
-        ${AUDIO_SRC}
         node_env_bridge.cpp
         )
 
@@ -71,5 +66,4 @@ target_include_directories(
                ${NODE_ENV_INCLUDE}
                ${TOOL_INCLUDE_PATH}
                ${NODE_LOGGER_INCLUDE}
-               ${AUDIO_INCLUDE}
         )

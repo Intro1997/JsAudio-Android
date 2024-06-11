@@ -20,14 +20,20 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
          * when isNativeNodeEnvCreated is true, innerNodeEnvHandle MUST valid
          */
         private var innerNodeEnvHandler: NodeEnvHandler? = null
+        private var registeredModuleHandler: MutableList<NodeModuleHandler> = mutableListOf()
         private var isNativeNodeEnvCreated: Boolean = false
         private var isEvaluatingCode = ThreadSafeBool(false)
+
+        fun registerNodeModuleHandler(handler: NodeModuleHandler) {
+            registeredModuleHandler.add(handler)
+        }
 
         fun create(): NodeEnvHandler? {
             if (innerNodeEnvHandler == null) {
                 innerNodeEnvHandler = NodeEnvHandler()
                 innerNodeEnvHandler?.let { nodeEnvHandle ->
-                    isNativeNodeEnvCreated = nodeEnvHandle.createNativeNode()
+                    isNativeNodeEnvCreated =
+                        nodeEnvHandle.createNativeNode(getAllModulePreloadScript())
                 }
             }
 
@@ -36,6 +42,14 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
             }
 
             return innerNodeEnvHandler
+        }
+
+        private fun getAllModulePreloadScript(): String {
+            var allPreloadScript = ""
+            registeredModuleHandler.forEach { handler ->
+                allPreloadScript += handler.getPreloadScript()
+            }
+            return allPreloadScript
         }
     }
 
@@ -97,7 +111,7 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
         return ret
     }
 
-    private external fun createNativeNode(): Boolean
+    private external fun createNativeNode(preloadScript: String): Boolean
 
     private external fun pauseNativeNode()
 

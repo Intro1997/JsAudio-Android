@@ -3,7 +3,6 @@
 #include <node/uv.h>
 
 #include "Argv.hpp"
-#include "audio.hpp"
 #include "logger.hpp"
 #include "node_logger.hpp"
 #include "preload_script.hpp"
@@ -125,12 +124,19 @@ void NodeEnv::SpinEventLoop() {
   }
 }
 
-NodeEnv *NodeEnv::Create(std::vector<std::string> vec_argv) {
+NodeEnv *NodeEnv::Create(const char *preload_script) {
+  return Create({"node"}, preload_script);
+}
+
+NodeEnv *NodeEnv::Create(std::vector<std::string> vec_argv,
+                         const char *preload_script) {
   if (instance_ != nullptr) {
     return instance_;
   }
 
   instance_ = new NodeEnv();
+
+  instance_->preload_script_ += preload_script;
 
   if (PrepareUvloop(vec_argv) != NI_SUCCESS) {
     LOGE("Prepare uv loop failed!\n");
@@ -222,9 +228,9 @@ node::IsolateData *NodeEnv::CreateNodeIsoateData() {
   return instance_->isolate_data_;
 }
 
-void NodeEnv::LoadInternalModule(
-    const char *module_preload_script, const char *module_name,
-    node::addon_context_register_func init_fn) {
+void NodeEnv::LoadInternalModule(const char *module_preload_script,
+                                 const char *module_name,
+                                 node::addon_context_register_func init_fn) {
   if (!instance_->node_env_) {
     LOGE("Prepare internal module failed! Node env is invaild!\n");
     return;
@@ -267,7 +273,6 @@ NodeEnv::CreateNodeEnv(const std::vector<std::string> &argv,
 
     LoadInternalModule(node_logger::GetPreLoadScript(), "node_logger",
                        node_logger::Init);
-    LoadNapiModule(audio::GetPreLoadScript());
 
     v8::TryCatch trycatch(isolate);
     v8::MaybeLocal<v8::Value> loadenv_ret =

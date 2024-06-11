@@ -14,13 +14,12 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var nodeEnvHandler: NodeEnvHandler? = null
-    private var audioHandler: AudioHandler? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "Create application")
 
+        NodeEnvHandler.registerNodeModuleHandler(AudioHandler())
         nodeEnvHandler = NodeEnvHandler.create()
-        audioHandler = AudioHandler()
 
         val ret = "create node env " + if (nodeEnvHandler == null) "failed" else "success"
 
