@@ -16,6 +16,9 @@ set(NODE_INCLUDE_PATH ${CPP_DEPENDENCY_PATH}/node/include)
 
 set(TOOL_INCLUDE_PATH ${CPP_DEPENDENCY_PATH}/tool/include)
 
+set(AUDIO_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/audio)
+set(AUDIO_SOURCE_PATH ${PROJECT_SOURCE_DIR}/audio/audio.cpp)
+
 include_directories(${NODE_INCLUDE_PATH}/node ${NODE_INCLUDE_PATH}/node/cppgc)
 
 # Creates and names a library, sets it as either STATIC or SHARED, and provides
@@ -31,7 +34,7 @@ include_directories(${NODE_INCLUDE_PATH}/node ${NODE_INCLUDE_PATH}/node/cppgc)
 # System.loadLibrary() and pass the name of the library defined here; for
 # GameActivity/NativeActivity derived applications, the same library name must
 # be used in the AndroidManifest.xml file.
-add_library(${CMAKE_PROJECT_NAME} SHARED audio/audio.cpp audio_bridge.cpp)
+add_library(${CMAKE_PROJECT_NAME} SHARED ${AUDIO_SOURCE_PATH} audio_bridge.cpp)
 
 # Specifies libraries CMake should link to your target library. You can link
 # libraries from various origins, such as libraries defined in this build
@@ -41,10 +44,12 @@ target_link_libraries(
         ${NODE_SHARED_LIBRARY_PATH}
         android
         log
-)
+        )
 
 target_include_directories(
         ${CMAKE_PROJECT_NAME} SYSTEM PUBLIC ${NODE_INCLUDE_PATH}
-)
+        )
 
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${TOOL_INCLUDE_PATH})
+target_include_directories(
+        ${CMAKE_PROJECT_NAME} PUBLIC ${TOOL_INCLUDE_PATH} ${AUDIO_INCLUDE_PATH}
+        )

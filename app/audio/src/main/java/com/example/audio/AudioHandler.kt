@@ -1,8 +1,9 @@
 package com.example.audio
 
 import android.util.Log
+import com.example.node_env.NodeModuleHandler
 
-class AudioHandler {
+class AudioHandler : NodeModuleHandler {
     companion object {
         private const val TAG = "AudioHandler"
 
@@ -11,4 +12,10 @@ class AudioHandler {
             System.loadLibrary("audio")
         }
     }
+
+    override fun getPreloadScript(): String {
+        return getPreloadScriptFromNative()
+    }
+
+    private external fun getPreloadScriptFromNative(): String
 }

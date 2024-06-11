@@ -6,7 +6,7 @@ import java.net.URL
 import java.io.BufferedInputStream
 import java.io.BufferedReader
 
-class NodeEnvHandler private constructor() {
+class NodeEnvHandler private constructor() : NodeModuleHandler {
     companion object {
         init {
             System.loadLibrary("node_env")
@@ -62,15 +62,15 @@ class NodeEnvHandler private constructor() {
         }
     }
 
-    fun pause() {
+    override fun pause() {
         innerNodeEnvHandler?.pauseNativeNode()
     }
 
-    fun resume() {
+    override fun resume() {
         innerNodeEnvHandler?.resumeNativeNode()
     }
 
-    fun destroy() {
+    override fun destroy() {
         innerNodeEnvHandler?.let { nodeEnvHandle ->
             nodeEnvHandle.destroyNativeNode()
             isNativeNodeEnvCreated = false
