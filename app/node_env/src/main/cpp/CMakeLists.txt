@@ -15,15 +15,15 @@ set(NODE_SHARED_LIBRARY_PATH ${CPP_DEPENDENCY_PATH}/node/library/libnode.so)
 set(NODE_INCLUDE_PATH ${CPP_DEPENDENCY_PATH}/node/include)
 set(TOOL_INCLUDE_PATH ${CPP_DEPENDENCY_PATH}/tool/include)
 
-set(NODE_INSTANCE_INCLUDE ${PROJECT_SOURCE_DIR}/node_instance)
+set(NODE_ENV_INCLUDE ${PROJECT_SOURCE_DIR}/node_env)
 set(ARGV_INCLUDE ${PROJECT_SOURCE_DIR}/argv)
 set(NODE_LOGGER_INCLUDE ${PROJECT_SOURCE_DIR}/node_logger)
-set(AUDIO_INCLUDE ${PROJECT_SOURCE_DIR}/../../../../audio/src/main/cpp)
+set(AUDIO_INCLUDE ${CPP_DEPENDENCY_PATH}/../../audio/src/main/cpp/audio)
 
-set(NODE_INSTANCE_SRC ${PROJECT_SOURCE_DIR}/node_instance/NodeInstance.cpp)
+set(NODE_ENV_SRC ${PROJECT_SOURCE_DIR}/node_env/NodeEnv.cpp)
 set(ARGV_SRC ${PROJECT_SOURCE_DIR}/argv/Argv.cpp)
 set(NODE_LOGGER_SRC ${PROJECT_SOURCE_DIR}/node_logger/node_logger.cpp)
-set(AUDIO_SRC ${PROJECT_SOURCE_DIR}/../../../../audio/src/main/cpp/audio.cpp)
+set(AUDIO_SRC ${CPP_DEPENDENCY_PATH}/../../audio/src/main/cpp/audio/audio.cpp)
 
 include_directories(
         ${NODE_INCLUDE_PATH}/node ${NODE_INCLUDE_PATH}/node/cppgc
@@ -45,10 +45,10 @@ include_directories(
 add_library(
         ${CMAKE_PROJECT_NAME} SHARED
         ${ARGV_SRC}
-        ${NODE_INSTANCE_SRC}
+        ${NODE_ENV_SRC}
         ${NODE_LOGGER_SRC}
         ${AUDIO_SRC}
-        node_env.cpp
+        node_env_bridge.cpp
         )
 
 # Specifies libraries CMake should link to your target library. You can link
@@ -68,7 +68,7 @@ target_include_directories(
 target_include_directories(
         ${CMAKE_PROJECT_NAME}
         PUBLIC ${ARGV_INCLUDE}
-               ${NODE_INSTANCE_INCLUDE}
+               ${NODE_ENV_INCLUDE}
                ${TOOL_INCLUDE_PATH}
                ${NODE_LOGGER_INCLUDE}
                ${AUDIO_INCLUDE}

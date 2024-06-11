@@ -6,10 +6,10 @@
 #include <string>
 #include <vector>
 
-class NodeInstance {
+class NodeEnv {
 public:
-  NodeInstance();
-  ~NodeInstance();
+  NodeEnv();
+  ~NodeEnv();
 
   void Pause();
   void Resume();
@@ -20,7 +20,7 @@ public:
   bool Eval(const std::string &code, std::string &result);
 
   bool is_pause();
-  static NodeInstance *Create(std::vector<std::string> vec_args = {"node"});
+  static NodeEnv *Create(std::vector<std::string> vec_args = {"node"});
   static void Clear();
 
 private:
@@ -45,6 +45,6 @@ private:
   bool is_pause_;
   std::mutex is_pause_lock_;
 
-  static NodeInstance *instance_;
+  static NodeEnv *instance_;
   static std::string preload_script_;
 };

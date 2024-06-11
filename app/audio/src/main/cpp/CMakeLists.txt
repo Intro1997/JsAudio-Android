@@ -11,8 +11,6 @@ cmake_minimum_required(VERSION 3.22.1)
 # within the top level build script scope).
 project("audio")
 
-# /Users/intro/Spaces/JsAudio-Android/app/audio/src/main/cpp/../../../../node_env/src/main/cpp/library/third_party/node/libnode.so
-# TODO: Fix ../ path reference
 set(NODE_SHARED_LIBRARY_PATH ${CPP_DEPENDENCY_PATH}/node/library/libnode.so)
 set(NODE_INCLUDE_PATH ${CPP_DEPENDENCY_PATH}/node/include)
 
@@ -33,7 +31,7 @@ include_directories(${NODE_INCLUDE_PATH}/node ${NODE_INCLUDE_PATH}/node/cppgc)
 # System.loadLibrary() and pass the name of the library defined here; for
 # GameActivity/NativeActivity derived applications, the same library name must
 # be used in the AndroidManifest.xml file.
-add_library(${CMAKE_PROJECT_NAME} SHARED audio.cpp)
+add_library(${CMAKE_PROJECT_NAME} SHARED audio/audio.cpp audio_bridge.cpp)
 
 # Specifies libraries CMake should link to your target library. You can link
 # libraries from various origins, such as libraries defined in this build
@@ -43,10 +41,10 @@ target_link_libraries(
         ${NODE_SHARED_LIBRARY_PATH}
         android
         log
-        )
+)
 
 target_include_directories(
         ${CMAKE_PROJECT_NAME} SYSTEM PUBLIC ${NODE_INCLUDE_PATH}
-        )
+)
 
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${TOOL_INCLUDE_PATH})

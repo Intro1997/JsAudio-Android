@@ -1,4 +1,4 @@
-#include "NodeInstance.hpp"
+#include "NodeEnv.hpp"
 #include <node/node.h>
 #include <node/uv.h>
 
@@ -15,24 +15,24 @@
 #define NI_UV_LOOP_INIT_FAILED 3
 #define NI_NODE_INITIALIZE_WITH_ARGS_FAILED 4
 
-NodeInstance *NodeInstance::instance_ = nullptr;
-std::string NodeInstance::preload_script_ = NODE_INSTANCE_PRELOAD_SCRIPT;
+NodeEnv *NodeEnv::instance_ = nullptr;
+std::string NodeEnv::preload_script_ = NODE_INSTANCE_PRELOAD_SCRIPT;
 
-NodeInstance::NodeInstance() : is_pause_(false) {}
+NodeEnv::NodeEnv() : is_pause_(false) {}
 
-NodeInstance::~NodeInstance() {
+NodeEnv::~NodeEnv() {
   if (platform_) {
     this->Stop();
     this->Destroy();
   }
 }
 
-bool NodeInstance::is_pause() {
+bool NodeEnv::is_pause() {
   std::lock_guard<std::mutex> guard(is_pause_lock_);
   return is_pause_;
 }
 
-void NodeInstance::Pause() {
+void NodeEnv::Pause() {
   LOGD("Pause Node Instance!");
   std::lock_guard<std::mutex> guard(is_pause_lock_);
   if (!is_pause_) {
@@ -40,7 +40,7 @@ void NodeInstance::Pause() {
   }
 }
 
-void NodeInstance::Resume() {
+void NodeEnv::Resume() {
   LOGD("Resume Node Instance!");
   std::lock_guard<std::mutex> guard(is_pause_lock_);
   if (is_pause_) {
@@ -48,7 +48,7 @@ void NodeInstance::Resume() {
   }
 }
 
-void NodeInstance::Stop() {
+void NodeEnv::Stop() {
   if (node_env_) {
     v8::Locker locker(isolate_);
     v8::Isolate::Scope isolate_scope(isolate_);
@@ -57,7 +57,7 @@ void NodeInstance::Stop() {
   }
 }
 
-void NodeInstance::Destroy() {
+void NodeEnv::Destroy() {
   preload_script_ = NODE_INSTANCE_PRELOAD_SCRIPT;
   if (isolate_) {
     v8::Locker locker(isolate_);
@@ -97,7 +97,7 @@ void NodeInstance::Destroy() {
   platform_.reset();
 }
 
-void NodeInstance::SpinEventLoop() {
+void NodeEnv::SpinEventLoop() {
   // you must call this methods after
   // create v8::Locker and v8::Isolate::Scope!
   {
@@ -125,12 +125,12 @@ void NodeInstance::SpinEventLoop() {
   }
 }
 
-NodeInstance *NodeInstance::Create(std::vector<std::string> vec_argv) {
+NodeEnv *NodeEnv::Create(std::vector<std::string> vec_argv) {
   if (instance_ != nullptr) {
     return instance_;
   }
 
-  instance_ = new NodeInstance();
+  instance_ = new NodeEnv();
 
   if (PrepareUvloop(vec_argv) != NI_SUCCESS) {
     LOGE("Prepare uv loop failed!\n");
@@ -139,14 +139,14 @@ NodeInstance *NodeInstance::Create(std::vector<std::string> vec_argv) {
 
   if (PrepareNodeEnv(vec_argv) != NI_SUCCESS) {
     LOGE("Prepare node env failed!\n");
-    NodeInstance::Clear();
+    NodeEnv::Clear();
     return nullptr;
   }
 
   return instance_;
 }
 
-int NodeInstance::PrepareUvloop(const std::vector<std::string> &vec_argv) {
+int NodeEnv::PrepareUvloop(const std::vector<std::string> &vec_argv) {
   Argv argv(vec_argv);
   char **argv_cpy = uv_setup_args(argv.count(), argv.get());
   if (argv_cpy == argv.get()) {
@@ -162,7 +162,7 @@ int NodeInstance::PrepareUvloop(const std::vector<std::string> &vec_argv) {
   return exit_code;
 }
 
-int NodeInstance::PrepareNodeEnv(std::vector<std::string> &argv) {
+int NodeEnv::PrepareNodeEnv(std::vector<std::string> &argv) {
   std::vector<std::string> exec_argv;
   std::vector<std::string> errors;
 
@@ -192,14 +192,14 @@ int NodeInstance::PrepareNodeEnv(std::vector<std::string> &argv) {
   return NI_SUCCESS;
 }
 
-void NodeInstance::Clear() {
+void NodeEnv::Clear() {
   if (instance_ != nullptr) {
     delete instance_;
     instance_ = nullptr;
   }
 }
 
-node::IsolateData *NodeInstance::CreateNodeIsoateData() {
+node::IsolateData *NodeEnv::CreateNodeIsoateData() {
   uv_loop_t &loop = instance_->loop_;
   node::MultiIsolatePlatform *platform = instance_->platform_.get();
 
@@ -222,7 +222,7 @@ node::IsolateData *NodeInstance::CreateNodeIsoateData() {
   return instance_->isolate_data_;
 }
 
-void NodeInstance::LoadInternalModule(
+void NodeEnv::LoadInternalModule(
     const char *module_preload_script, const char *module_name,
     node::addon_context_register_func init_fn) {
   if (!instance_->node_env_) {
@@ -233,13 +233,13 @@ void NodeInstance::LoadInternalModule(
   node::AddLinkedBinding(instance_->node_env_, module_name, init_fn, NULL);
 }
 
-void NodeInstance::LoadNapiModule(const char *module_preload_script) {
+void NodeEnv::LoadNapiModule(const char *module_preload_script) {
   preload_script_ += module_preload_script;
 }
 
 node::Environment *
-NodeInstance::CreateNodeEnv(const std::vector<std::string> &argv,
-                            const std::vector<std::string> &exec_argv) {
+NodeEnv::CreateNodeEnv(const std::vector<std::string> &argv,
+                       const std::vector<std::string> &exec_argv) {
   v8::Isolate *isolate = instance_->isolate_;
   node::IsolateData *isolate_data = instance_->isolate_data_;
 
@@ -288,7 +288,7 @@ NodeInstance::CreateNodeEnv(const std::vector<std::string> &argv,
   return instance_->node_env_;
 }
 
-bool NodeInstance::Eval(const std::string &code, std::string &result) {
+bool NodeEnv::Eval(const std::string &code, std::string &result) {
   if (!instance_ || !instance_->isolate_) {
     result = "Error: evaluate code failed, invalid node env!";
     return false;

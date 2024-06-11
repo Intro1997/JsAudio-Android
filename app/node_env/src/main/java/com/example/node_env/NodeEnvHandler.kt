@@ -6,7 +6,7 @@ import java.net.URL
 import java.io.BufferedInputStream
 import java.io.BufferedReader
 
-class NodeEnvHandle private constructor() {
+class NodeEnvHandler private constructor() {
     companion object {
         init {
             System.loadLibrary("node_env")
@@ -19,23 +19,23 @@ class NodeEnvHandle private constructor() {
          * when isNativeNodeEnvCreated is false, innerNodeEnvHandle MUST be null
          * when isNativeNodeEnvCreated is true, innerNodeEnvHandle MUST valid
          */
-        private var innerNodeEnvHandle: NodeEnvHandle? = null
+        private var innerNodeEnvHandler: NodeEnvHandler? = null
         private var isNativeNodeEnvCreated: Boolean = false
         private var isEvaluatingCode = ThreadSafeBool(false)
 
-        fun create(): NodeEnvHandle? {
-            if (innerNodeEnvHandle == null) {
-                innerNodeEnvHandle = NodeEnvHandle()
-                innerNodeEnvHandle?.let { nodeEnvHandle ->
+        fun create(): NodeEnvHandler? {
+            if (innerNodeEnvHandler == null) {
+                innerNodeEnvHandler = NodeEnvHandler()
+                innerNodeEnvHandler?.let { nodeEnvHandle ->
                     isNativeNodeEnvCreated = nodeEnvHandle.createNativeNode()
                 }
             }
 
             if (!isNativeNodeEnvCreated) {
-                innerNodeEnvHandle = null
+                innerNodeEnvHandler = null
             }
 
-            return innerNodeEnvHandle
+            return innerNodeEnvHandler
         }
     }
 
@@ -44,7 +44,7 @@ class NodeEnvHandle private constructor() {
         if (isEvaluatingCode.getValue()) {
             Log.w(TAG, "Cannot run code, node env is busy!")
         } else {
-            innerNodeEnvHandle?.let { nodeEnvHandle ->
+            innerNodeEnvHandler?.let { nodeEnvHandle ->
                 val jsThread = Thread {
                     run {
                         val fileContent = nodeEnvHandle.loadFileFromHttpUrl(jsEntry)
@@ -63,20 +63,20 @@ class NodeEnvHandle private constructor() {
     }
 
     fun pause() {
-        innerNodeEnvHandle?.pauseNativeNode()
+        innerNodeEnvHandler?.pauseNativeNode()
     }
 
     fun resume() {
-        innerNodeEnvHandle?.resumeNativeNode()
+        innerNodeEnvHandler?.resumeNativeNode()
     }
 
     fun destroy() {
-        innerNodeEnvHandle?.let { nodeEnvHandle ->
+        innerNodeEnvHandler?.let { nodeEnvHandle ->
             nodeEnvHandle.destroyNativeNode()
             isNativeNodeEnvCreated = false
             isEvaluatingCode.setValue(false)
         }
-        innerNodeEnvHandle = null
+        innerNodeEnvHandler = null
     }
 
     private fun loadFileFromHttpUrl(url: String): String {

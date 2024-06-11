@@ -2,10 +2,12 @@ package com.example.audio
 
 import android.util.Log
 
-class AudioHandle {
+class AudioHandler {
     companion object {
+        private const val TAG = "AudioHandler"
+
         init {
-            Log.d("AudioHandle", "load audio library")
+            Log.d(TAG, "load audio library")
             System.loadLibrary("audio")
         }
     }
