@@ -13,11 +13,10 @@
 #define NI_NODE_INITIALIZE_WITH_ARGS_FAILED 4
 
 struct NodeEnv::InternalModule {
-    const char *module_preload_script;
-    const char *module_name;
-    node::addon_context_register_func init_fn;
+  const char *module_preload_script;
+  const char *module_name;
+  node::addon_context_register_func init_fn;
 };
-
 
 NodeEnv *NodeEnv::instance_ = nullptr;
 std::string NodeEnv::preload_script_ = NODE_INSTANCE_PRELOAD_SCRIPT;
@@ -31,7 +30,6 @@ NodeEnv::~NodeEnv() {
     this->Destroy();
   }
 }
-
 
 void NodeEnv::AddInternalModule(const char *module_preload_script,
                                 const char *module_name,
@@ -123,8 +121,8 @@ void NodeEnv::Destroy() {
   if (isolate && uv_loop_alive(&loop)) {
     bool platform_finished = false;
     platform->AddIsolateFinishedCallback(
-            isolate, [](void *data) { *static_cast<bool *>(data) = true; },
-            &platform_finished);
+        isolate, [](void *data) { *static_cast<bool *>(data) = true; },
+        &platform_finished);
     platform->UnregisterIsolate(isolate);
     isolate->Dispose();
 
@@ -192,7 +190,7 @@ int NodeEnv::PrepareNodeEnv(std::vector<std::string> &argv) {
 
   if (node::InitializeNodeWithArgs(&argv, &exec_argv, &errors) != NI_SUCCESS) {
     LOGE("Init NodeJs failed!\n");
-    for (const auto &e: errors) {
+    for (const auto &e : errors) {
       LOGE("%s\n", e.c_str());
     }
     return NI_NODE_INITIALIZE_WITH_ARGS_FAILED;
@@ -228,7 +226,7 @@ node::IsolateData *NodeEnv::CreateNodeIsoateData() {
   node::MultiIsolatePlatform *platform = instance_->platform_.get();
 
   std::shared_ptr<node::ArrayBufferAllocator> allocator =
-          node::ArrayBufferAllocator::Create();
+      node::ArrayBufferAllocator::Create();
 
   instance_->isolate_ = node::NewIsolate(allocator, &loop, platform);
 
@@ -252,7 +250,7 @@ void NodeEnv::LoadInternalModules() {
     return;
   }
 
-  for (const auto &module: internal_modules_) {
+  for (const auto &module : internal_modules_) {
     preload_script_ += module.module_preload_script;
     node::AddLinkedBinding(instance_->node_env_, module.module_name,
                            module.init_fn, NULL);
@@ -285,15 +283,14 @@ NodeEnv::CreateNodeEnv(const std::vector<std::string> &argv,
     // Create a node::Environment instance that will later be released using
     // node::FreeEnvironment().
     node::Environment *env = instance_->node_env_ =
-                                     node::CreateEnvironment(isolate_data, context, argv,
-                                                             exec_argv);
+        node::CreateEnvironment(isolate_data, context, argv, exec_argv);
 
     LoadInternalModules();
     internal_modules_.clear();
 
     v8::TryCatch trycatch(isolate);
     v8::MaybeLocal<v8::Value> loadenv_ret =
-            node::LoadEnvironment(env, preload_script_.c_str());
+        node::LoadEnvironment(env, preload_script_.c_str());
     if (loadenv_ret.IsEmpty()) {
       std::string err_msg = "";
       if (trycatch.HasCaught()) {
@@ -325,10 +322,10 @@ bool NodeEnv::Eval(const std::string &code, std::string &result) {
   v8::Context::Scope context_scope(context);
 
   v8::Local<v8::Script> code_script =
-          v8::Script::Compile(
-                  context,
-                  v8::String::NewFromUtf8(isolate, code.c_str()).ToLocalChecked())
-                  .ToLocalChecked();
+      v8::Script::Compile(
+          context,
+          v8::String::NewFromUtf8(isolate, code.c_str()).ToLocalChecked())
+          .ToLocalChecked();
   if (code_script.IsEmpty()) {
     LOGE("Compile js script failed\n");
     return false;

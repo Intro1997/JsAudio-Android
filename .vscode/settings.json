@@ -3,7 +3,6 @@
     "--config-file",
     "${workspaceFolder}/.vscode/cmake_format_config.json"
   ],
-  "cmake.sourceDirectory": "/Users/intro/Spaces/JsAudio-Android/app/node_env/src/main/cpp",
   "files.associations": {
     "__bit_reference": "cpp",
     "__config": "cpp",
@@ -82,6 +81,6 @@
     "utility": "cpp",
     "filesystem": "cpp"
   },
-  "C_Cpp.default.compilerPath": "/Users/intro/Library/Android/sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang",
+  "C_Cpp.default.compilerPath": "/Users/intro/Library/Android/sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++",
   "C_Cpp.intelliSenseEngineFallback": "disabled"
 }

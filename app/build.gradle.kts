@@ -7,6 +7,30 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+val printBuildFinishedMessage by tasks.creating(Task::class) {
+    doLast {
+        val cmdWorkingPath = rootDir.path
+        var terminalType = "bash"
+        var subCmd = "-c"
+        val os = System.getProperty("os.name")
+        if (os.contains("windows")) {
+            terminalType = "cmd"
+            subCmd = "/c"
+        }
+        exec {
+            commandLine(terminalType, subCmd, "npm run combine").apply {
+                this.workingDir = File(cmdWorkingPath)
+            }
+        }
+    }
+}
+
+tasks.whenTaskAdded {
+    if (this.name == "assembleDebug") {
+        this.finalizedBy(printBuildFinishedMessage)
+    }
+}
+
 android {
     namespace = "com.example.jsaudio"
     compileSdk = 34

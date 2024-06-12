@@ -28,7 +28,7 @@ public:
   static void Clear();
 
 public:
-    struct InternalModule;
+  struct InternalModule;
 
 private:
   void Stop();
@@ -49,7 +49,6 @@ private:
   node::Environment *node_env_;
   bool is_pause_;
   std::mutex is_pause_lock_;
-
 
   static std::vector<InternalModule> internal_modules_;
 

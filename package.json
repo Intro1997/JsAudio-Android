@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "compress": "node compress.js",
+    "compress": "node js_task/compress.js",
+    "combine": "node js_task/combine_compile_commands.js",
     "start": "npm run compress && http-server -p 20490"
   },
   "author": "",

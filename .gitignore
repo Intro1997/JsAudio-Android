@@ -10,3 +10,5 @@
 local.properties
 node_modules
 package-lock.json
+**/preload_script.hpp
+.vscode/compile_commands.json
