@@ -3,6 +3,7 @@
     "--config-file",
     "${workspaceFolder}/.vscode/cmake_format_config.json"
   ],
+  "editor.tabSize": 2,
   "files.associations": {
     "__bit_reference": "cpp",
     "__config": "cpp",
