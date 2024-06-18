@@ -1,6 +1,8 @@
 package com.example.jsaudio
 
+import android.media.AudioManager
 import android.os.Bundle
+import android.provider.MediaStore.Audio
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.example.audio.AudioHandler
@@ -18,6 +20,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "Create application")
 
+        // 48000 is a device suggest sample rate of audio
+        // 144 is a device suggest output frame per buffer
+        
         NodeEnvHandler.registerNodeModuleHandler(AudioHandler())
         nodeEnvHandler = NodeEnvHandler.create()
 

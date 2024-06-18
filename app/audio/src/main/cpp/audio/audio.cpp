@@ -3,13 +3,33 @@
 #include <node/node_api.h>
 #include <string>
 
+#include "AudioBufferQueuePlayer.hpp"
+#include "AudioEngine.hpp"
 #include "audio.hpp"
 #include "logger.hpp"
 #include "preload_script.hpp"
+/*
+AduioEngine
+  1. AudioEngine is a singleton design, can only exist one engine at a given
+time
+  2. AudioEngine has thread-safe mode and thread-unsafe mode, can be specified
+at engine object creation.
+  3. AudioEngine uses SLThreadSyncItf to make thread-safe. But you should create
+thread-safe AudioEngine first!
+  4. You can query implementation-specific capabilities by AudioEngine
 
-namespace audio {
+AudioMedia
+  1. Types: player, recorder, etc.
+  2. Defined by process operation, input data type and output data type
+  3. Input data is located in data source;
+  4. Output data is sended to data sink;
+  5. Data is defined by FORMAT(PCM or other) and LOCATION(Buffer, file or other)
+
+*/
+
+namespace js_audio {
 const char *GetPreLoadScript() { return AUDIO_PRELOAD_SCRIPT; }
-} // namespace audio
+} // namespace js_audio
 
 static napi_value AddInt(napi_env env, napi_callback_info info) {
   size_t argc = 2;
@@ -46,6 +66,21 @@ static napi_value AddInt(napi_env env, napi_callback_info info) {
 }
 
 static napi_value Init(napi_env env, napi_value exports) {
+  std::weak_ptr<js_audio::AudioEngine> audio_engine =
+      js_audio::AudioEngine::Get();
+
+  if (!audio_engine.expired()) {
+    auto audio_engine_lock = audio_engine.lock();
+    audio_engine_lock->CreateAudioBufferQueuePlayer(
+        4, SL_DATAFORMAT_PCM, 2, SL_SAMPLINGRATE_44_1,
+        SL_PCMSAMPLEFORMAT_FIXED_16, SL_PCMSAMPLEFORMAT_FIXED_16,
+        SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT,
+        SL_BYTEORDER_LITTLEENDIAN, SL_DATALOCATOR_OUTPUTMIX);
+    std::weak_ptr<js_audio::AudioPlayer> audio_player =
+        audio_engine_lock->GetAudioPlayer();
+    audio_player.lock()->Start();
+  }
+
   napi_status status;
   napi_value fn;
 

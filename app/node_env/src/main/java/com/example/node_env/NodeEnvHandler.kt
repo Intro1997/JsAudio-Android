@@ -78,13 +78,22 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
 
     override fun pause() {
         innerNodeEnvHandler?.pauseNativeNode()
+        registeredModuleHandler.forEach { handler ->
+            handler.pause()
+        }
     }
 
     override fun resume() {
         innerNodeEnvHandler?.resumeNativeNode()
+        registeredModuleHandler.forEach { handler ->
+            handler.resume()
+        }
     }
 
     override fun destroy() {
+        registeredModuleHandler.forEach { handler ->
+            handler.destroy()
+        }
         innerNodeEnvHandler?.let { nodeEnvHandle ->
             nodeEnvHandle.destroyNativeNode()
             isNativeNodeEnvCreated = false

@@ -16,8 +16,8 @@ android {
         consumerProguardFiles("consumer-rules.pro")
         externalNativeBuild {
             cmake {
-                cppFlags("")
-                arguments += "-DCPP_DEPENDENCY_PATH=${cppDependency}"
+                cppFlags += "-std=c++17"
+                arguments.addAll(listOf("-DANDROID_STL=c++_shared", "-DCPP_DEPENDENCY_PATH=${cppDependency}"))
             }
         }
     }

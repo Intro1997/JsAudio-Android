@@ -1,13 +1,14 @@
-#define CHECK_WITH_RET(left, right, ret_value)                                 \
+#pragma once
+#define CHECK_WITH_RET(situation, ret_value)                                   \
   do {                                                                         \
-    if (left == right) {                                                       \
+    if (!(situation)) {                                                        \
       return ret_value;                                                        \
     }                                                                          \
   } while (false)
 
-#define CHECK_WITH_RET_CALL(left, right, ret_value, func_call)            \
+#define CHECK_WITH_RET_CALL(situation, ret_value, func_call)                   \
   do {                                                                         \
-    if (!((left) == (right))) {                                                \
+    if (!(situation)) {                                                        \
       func_call;                                                               \
       return ret_value;                                                        \
     }                                                                          \

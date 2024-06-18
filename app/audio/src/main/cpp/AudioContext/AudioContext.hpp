@@ -1,4 +1,4 @@
 #pragma once
 namespace js_audio {
-const char *GetPreLoadScript();
+class AudioContext {};
 } // namespace js_audio
