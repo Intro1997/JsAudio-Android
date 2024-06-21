@@ -34,6 +34,7 @@ static void AudioPlayerBufferCallback(SLBufferQueueItf sl_buffer_queue_itf,
 #define FA_TONE_FREQ (349.2)
 #define SOL_TONE_FREQ (392)
 #define DETUNE (0)
+#define AUDIO_SEGMENT_DATA_SIZE 4096
 
 static SLint16 *InitPcmData() {
   auto pcm_data = new SLint16[AUDIO_DATA_STORAGE_SIZE]();
@@ -73,7 +74,7 @@ AudioBufferQueuePlayer::AudioBufferQueuePlayer(
       data_source_format_(nullptr),
       data_source_format_type_(source_format_type), data_sink_locator_(nullptr),
       data_sink_locator_type_(sink_locator_type), audio_data_buffer_(nullptr),
-      audio_data_buffer_size_(0), current_play_size_(0) {
+      audio_data_buffer_size_(0), current_play_offset_(0) {
 
   SLEngineItf sl_engine_itf = audio_engine->sl_engine_interface_;
   if (!sl_engine_itf) {
@@ -204,11 +205,6 @@ bool AudioBufferQueuePlayer::GetAudioDataCopied(void *receive_ptr,
   return true;
 }
 
-/**
- * return data length in bytes
- */
-size_t AudioBufferQueuePlayer::GetAudioDataLength(size_t &each_element_bytes) {}
-
 void AudioBufferQueuePlayer::Start() {
   AudioPlayer::Start();
   if (!audio_data_buffer_ || audio_data_buffer_size_ == 0) {
@@ -229,7 +225,8 @@ void AudioBufferQueuePlayer::Start() {
 
   result = (*sl_player_source_buffer_itf_)
                ->Enqueue(sl_player_source_buffer_itf_, audio_data_buffer_,
-                         audio_data_buffer_size_ * sizeof(SLint16));
+                         AUDIO_SEGMENT_DATA_SIZE * sizeof(SLint16));
+  SetCurrentOffset(GetCurrentOffset() + AUDIO_SEGMENT_DATA_SIZE);
 
   if (result != SL_RESULT_SUCCESS) {
     LOGE("Start audio player failed! Enqueue audio data to player failed! "
@@ -273,6 +270,36 @@ void AudioBufferQueuePlayer::Destroy() {
   ReleaseAudioData();
 
   is_valid_ = false;
+}
+
+bool AudioBufferQueuePlayer::IsEnd() {
+  return current_play_offset_ == audio_data_buffer_size_;
+}
+
+size_t AudioBufferQueuePlayer::GetCurrentOffset() {
+  return current_play_offset_;
+}
+
+void AudioBufferQueuePlayer::SetCurrentOffset(size_t offset) {
+  if (offset > audio_data_buffer_size_) {
+    LOGE("Offset large than total audio data size, set current offset to total "
+         "audio data size\n");
+    offset = audio_data_buffer_size_;
+  }
+  current_play_offset_ = offset;
+}
+
+size_t AudioBufferQueuePlayer::GetAudioDataTotalSize() {
+  return audio_data_buffer_size_;
+}
+
+size_t AudioBufferQueuePlayer::GetEachSampleByteSize() {
+  // TODO: make it configurable
+  return sizeof(SLuint16);
+}
+
+void *AudioBufferQueuePlayer::GetAudioDataPointer() {
+  return audio_data_buffer_;
 }
 
 template <typename... Args>
@@ -394,7 +421,7 @@ void AudioBufferQueuePlayer::ReleaseDataSink() {
 
 void AudioBufferQueuePlayer::ReleaseAudioData() {
   delete[] audio_data_buffer_;
-  audio_data_buffer_size_ = current_play_size_ = 0;
+  audio_data_buffer_size_ = current_play_offset_ = 0;
 }
 
 } // namespace js_audio
@@ -476,6 +503,23 @@ static void AudioPlayerBufferCallback(SLBufferQueueItf sl_buffer_queue_itf,
   auto audio_player_ptr =
       static_cast<js_audio::AudioBufferQueuePlayer *>(context);
   LOGE("Get in audio player buffer callback\n");
-  // size_t player
-  // (*sl_buffer_queue_itf)->Enqueue(sl_buffer_queue_itf, )
+
+  if (!audio_player_ptr->IsEnd()) {
+    size_t audio_data_current_offset = audio_player_ptr->GetCurrentOffset();
+    size_t audio_data_total_size = audio_player_ptr->GetAudioDataTotalSize();
+    size_t enqueue_size = AUDIO_SEGMENT_DATA_SIZE;
+    // TODO: use variable sample size, not fixed sluint16
+    SLuint16 *audio_data_ptr =
+        (SLuint16 *)audio_player_ptr->GetAudioDataPointer() +
+        audio_data_current_offset;
+    if (audio_data_current_offset + AUDIO_SEGMENT_DATA_SIZE >
+        audio_data_total_size) {
+      enqueue_size = audio_data_total_size - audio_data_current_offset;
+    }
+    audio_player_ptr->SetCurrentOffset(audio_data_current_offset +
+                                       enqueue_size);
+    (*sl_buffer_queue_itf)
+        ->Enqueue(sl_buffer_queue_itf, audio_data_ptr + enqueue_size,
+                  enqueue_size * sizeof(SLuint16));
+  }
 }

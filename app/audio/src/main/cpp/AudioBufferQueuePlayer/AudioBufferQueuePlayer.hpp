@@ -26,11 +26,6 @@ public:
   bool GetAudioDataCopied(void *receive_ptr, size_t start_bytes,
                           size_t copy_length);
 
-  /**
-   * return data length in bytes
-   */
-  size_t GetAudioDataLength(size_t &each_element_bytes);
-
   void Start() override;
 
   void Pause() override;
@@ -40,6 +35,30 @@ public:
   void Stop() override;
 
   void Destroy() override;
+
+  bool IsEnd();
+
+  /**
+   * return: return offset elements, not BYTES;
+   */
+  size_t GetCurrentOffset();
+
+  /**
+   * offset: elements offset, not BYTES;
+   */
+  void SetCurrentOffset(size_t offset);
+
+  /**
+   * return: return data length in element size, not BYTES
+   */
+  size_t GetAudioDataTotalSize();
+
+  /**
+   * return: return byte size of a audio sample
+   */
+  size_t GetEachSampleByteSize();
+
+  void* GetAudioDataPointer();
 
 private:
   /**
@@ -84,7 +103,7 @@ private:
 
   SLint16 *audio_data_buffer_;
   size_t audio_data_buffer_size_; // element size, not bytes
-  size_t current_play_size_;      // playing progress, not in bytes
+  size_t current_play_offset_;    // playing progress, not in bytes
 };
 
 } // namespace js_audio
