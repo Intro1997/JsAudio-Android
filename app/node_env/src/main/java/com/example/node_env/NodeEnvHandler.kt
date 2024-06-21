@@ -76,6 +76,13 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
         }
     }
 
+    override fun stop() {
+        innerNodeEnvHandler?.pauseNativeNode()
+        registeredModuleHandler.forEach { handler ->
+            handler.stop()
+        }
+    }
+
     override fun pause() {
         innerNodeEnvHandler?.pauseNativeNode()
         registeredModuleHandler.forEach { handler ->

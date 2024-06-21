@@ -33,6 +33,12 @@ public:
 
   void Start() override;
 
+  void Pause() override;
+
+  void Resume() override;
+
+  void Stop() override;
+
   void Destroy() override;
 
 private:
@@ -52,9 +58,13 @@ private:
   template <typename... Args>
   void *CreateDataFormat(SLuint32 format_type, Args... args);
 
+  void ReleaseSlAudioPlayer();
+
   void ReleaseDataSource();
 
   void ReleaseDataSink();
+
+  void ReleaseAudioData();
 
 private:
   void *data_source_locator_;

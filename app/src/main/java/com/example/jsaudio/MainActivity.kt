@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
 
         // 48000 is a device suggest sample rate of audio
         // 144 is a device suggest output frame per buffer
-        
+
         NodeEnvHandler.registerNodeModuleHandler(AudioHandler())
         nodeEnvHandler = NodeEnvHandler.create()
 
@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         Log.d(TAG, "Stop application")
-
+        nodeEnvHandler?.stop()
     }
 
     override fun onDestroy() {

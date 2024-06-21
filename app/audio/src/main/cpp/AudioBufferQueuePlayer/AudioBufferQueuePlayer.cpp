@@ -239,10 +239,40 @@ void AudioBufferQueuePlayer::Start() {
   }
 }
 
+void AudioBufferQueuePlayer::Pause() {
+  SLresult result =
+      (*sl_player_itf_)->SetPlayState(sl_player_itf_, SL_PLAYSTATE_PAUSED);
+  if (result != SL_RESULT_SUCCESS) {
+    LOGE("Pause audio buffer queue player failed!\n");
+  }
+}
+
+void AudioBufferQueuePlayer::Resume() {
+  SLresult result =
+      (*sl_player_itf_)->SetPlayState(sl_player_itf_, SL_PLAYSTATE_PLAYING);
+  if (result != SL_RESULT_SUCCESS) {
+    LOGE("Resume audio buffer queue player failed!\n");
+  }
+}
+
+void AudioBufferQueuePlayer::Stop() {
+  SLresult result =
+      (*sl_player_itf_)->SetPlayState(sl_player_itf_, SL_PLAYSTATE_STOPPED);
+  if (result != SL_RESULT_SUCCESS) {
+    LOGE("Stop audio buffer queue player failed!\n");
+  }
+}
+
 void AudioBufferQueuePlayer::Destroy() {
-  AudioPlayer::Destroy();
+  Stop();
+
+  (*sl_player_object_)->Destroy(sl_player_object_);
+
   ReleaseDataSink();
   ReleaseDataSource();
+  ReleaseAudioData();
+
+  is_valid_ = false;
 }
 
 template <typename... Args>
@@ -300,6 +330,13 @@ void *AudioBufferQueuePlayer::CreateDataFormat(SLuint32 format_type,
   }
 }
 
+void AudioBufferQueuePlayer::ReleaseSlAudioPlayer() {
+  Stop();
+  (*sl_player_object_)->Destroy(sl_player_object_);
+  ReleaseDataSink();
+  ReleaseDataSource();
+}
+
 void AudioBufferQueuePlayer::ReleaseDataSource() {
   if (data_source_locator_) {
     switch (data_source_locator_type_) {
@@ -335,6 +372,8 @@ void AudioBufferQueuePlayer::ReleaseDataSource() {
 }
 
 void AudioBufferQueuePlayer::ReleaseDataSink() {
+  (*sl_outputmix_object_)->Destroy(sl_outputmix_object_);
+
   if (data_sink_locator_) {
     switch (data_sink_locator_type_) {
     case SL_DATALOCATOR_OUTPUTMIX: {
@@ -351,6 +390,11 @@ void AudioBufferQueuePlayer::ReleaseDataSink() {
     }
     }
   }
+}
+
+void AudioBufferQueuePlayer::ReleaseAudioData() {
+  delete[] audio_data_buffer_;
+  audio_data_buffer_size_ = current_play_size_ = 0;
 }
 
 } // namespace js_audio

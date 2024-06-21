@@ -9,6 +9,12 @@ public:
 
   virtual void Start();
 
+  virtual void Pause();
+
+  virtual void Resume();
+
+  virtual void Stop();
+
   virtual void Destroy();
 
   bool Valid() const;
