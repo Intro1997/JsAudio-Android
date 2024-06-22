@@ -22,30 +22,6 @@ public:
 protected:
   bool is_valid_;
 
-private:
-  struct SLDataConfig {
-    void *data_locator_;
-    void *data_format_;
-    SLuint32 data_locator_type_;
-    SLuint32 data_format_type_;
-  };
-
-  struct SLData {
-    void *pLocator;
-    void *pFormat;
-    operator SLDataSource() const { return {pLocator, pFormat}; }
-    operator SLDataSink() const { return {pLocator, pFormat}; }
-  };
-  /**
-   * CreateSLDataSource:
-   * data_source_locator_type: SL_DATALOCATOR_XXX
-   * data_source_foramt_type: SL_DATAFORMAT_XXX
-   */
-
-  SLObjectItf sl_audio_player_itf_;
-  SLDataConfig data_source_config_;
-  SLDataConfig data_sink_config_;
-
 public:
   /**
    * SLEngineItf sl_engine_itf
