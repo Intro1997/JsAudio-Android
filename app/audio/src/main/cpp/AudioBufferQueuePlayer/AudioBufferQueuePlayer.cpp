@@ -20,9 +20,6 @@ DecayTuple(const std::tuple<Args...> &) {
   return std::make_tuple(std::decay_t<Args>{}...);
 }
 
-static void AudioPlayerBufferCallback(SLBufferQueueItf sl_buffer_queue_itf,
-                                      void *context);
-
 #define PCM_SAMPLE_LENGTH 9
 #define PCM_SAMPLE_CHANNEL 2
 #define AUDIO_DATA_STORAGE_SIZE (44100 * PCM_SAMPLE_CHANNEL * PCM_SAMPLE_LENGTH)
@@ -62,7 +59,6 @@ static SLint16 *InitPcmData() {
 }
 
 namespace js_audio {
-
 AudioBufferQueuePlayer::AudioBufferQueuePlayer(
     /* source data buffer queue locator params */ SLuint32 num_buffers,
     /* source data pcm format params */ SLuint32 source_format_type,
@@ -70,7 +66,9 @@ AudioBufferQueuePlayer::AudioBufferQueuePlayer(
     SLuint32 container_size, SLuint32 channel_mask, SLuint32 endianness,
     /* sink data output mix locator params */ SLuint32 sink_locator_type,
     std::shared_ptr<AudioEngine> audio_engine)
-    : AudioPlayer(), data_source_locator_(nullptr),
+    : AudioPlayer(), num_channels_(num_channels),
+      samples_per_sec_(samples_per_sec), bits_per_sample_(bits_per_sample),
+      endianness_(endianness), data_source_locator_(nullptr),
       data_source_format_(nullptr),
       data_source_format_type_(source_format_type), data_sink_locator_(nullptr),
       data_sink_locator_type_(sink_locator_type), audio_data_buffer_(nullptr),
@@ -89,6 +87,13 @@ AudioBufferQueuePlayer::AudioBufferQueuePlayer(
       LOGE("Create data source locator failed\n");
       break;
     }
+
+    // use force config heres
+    num_channels = 2;
+    samples_per_sec = SL_SAMPLINGRATE_44_1;
+    bits_per_sample = container_size = SL_PCMSAMPLEFORMAT_FIXED_16;
+    channel_mask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
+
     data_source_format_ = CreateDataFormat(
         source_format_type, num_channels, samples_per_sec, bits_per_sample,
         container_size, channel_mask, endianness);
@@ -298,10 +303,6 @@ size_t AudioBufferQueuePlayer::GetEachSampleByteSize() {
   return sizeof(SLuint16);
 }
 
-void *AudioBufferQueuePlayer::GetAudioDataPointer() {
-  return audio_data_buffer_;
-}
-
 template <typename... Args>
 void *AudioBufferQueuePlayer::CreateDataLocator(SLuint32 data_locator_type,
                                                 Args... args) {
@@ -424,6 +425,31 @@ void AudioBufferQueuePlayer::ReleaseAudioData() {
   audio_data_buffer_size_ = current_play_offset_ = 0;
 }
 
+void AudioBufferQueuePlayer::AudioPlayerBufferCallback(
+    SLBufferQueueItf sl_buffer_queue_itf, void *context) {
+  auto audio_player_ptr =
+      static_cast<js_audio::AudioBufferQueuePlayer *>(context);
+
+  if (!audio_player_ptr->IsEnd()) {
+    size_t audio_data_current_offset = audio_player_ptr->GetCurrentOffset();
+    size_t audio_data_total_size = audio_player_ptr->GetAudioDataTotalSize();
+    size_t enqueue_size = AUDIO_SEGMENT_DATA_SIZE;
+    // TODO: use variable sample size, not fixed sluint16
+    SLuint16 *audio_data_ptr =
+        (SLuint16 *)audio_player_ptr->audio_data_buffer_ +
+        audio_data_current_offset;
+    if (audio_data_current_offset + AUDIO_SEGMENT_DATA_SIZE >
+        audio_data_total_size) {
+      enqueue_size = audio_data_total_size - audio_data_current_offset;
+    }
+    audio_player_ptr->SetCurrentOffset(audio_data_current_offset +
+                                       enqueue_size);
+    (*sl_buffer_queue_itf)
+        ->Enqueue(sl_buffer_queue_itf, audio_data_ptr + enqueue_size,
+                  enqueue_size * sizeof(SLuint16));
+  }
+}
+
 } // namespace js_audio
 
 static void *CreateSlPCMDataFormat(size_t params_cnt, ...) {
@@ -496,30 +522,4 @@ static void *CreateOutputMixSlDataLocator(size_t params_cnt, ...) {
     LOGE("Create SL_DATALOCATOR_OUTPUTMIX failed! Error code: 0x%x\n", result);
   }
   return nullptr;
-}
-
-static void AudioPlayerBufferCallback(SLBufferQueueItf sl_buffer_queue_itf,
-                                      void *context) {
-  auto audio_player_ptr =
-      static_cast<js_audio::AudioBufferQueuePlayer *>(context);
-  LOGE("Get in audio player buffer callback\n");
-
-  if (!audio_player_ptr->IsEnd()) {
-    size_t audio_data_current_offset = audio_player_ptr->GetCurrentOffset();
-    size_t audio_data_total_size = audio_player_ptr->GetAudioDataTotalSize();
-    size_t enqueue_size = AUDIO_SEGMENT_DATA_SIZE;
-    // TODO: use variable sample size, not fixed sluint16
-    SLuint16 *audio_data_ptr =
-        (SLuint16 *)audio_player_ptr->GetAudioDataPointer() +
-        audio_data_current_offset;
-    if (audio_data_current_offset + AUDIO_SEGMENT_DATA_SIZE >
-        audio_data_total_size) {
-      enqueue_size = audio_data_total_size - audio_data_current_offset;
-    }
-    audio_player_ptr->SetCurrentOffset(audio_data_current_offset +
-                                       enqueue_size);
-    (*sl_buffer_queue_itf)
-        ->Enqueue(sl_buffer_queue_itf, audio_data_ptr + enqueue_size,
-                  enqueue_size * sizeof(SLuint16));
-  }
 }

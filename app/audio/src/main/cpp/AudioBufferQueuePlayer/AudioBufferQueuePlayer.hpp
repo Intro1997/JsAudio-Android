@@ -58,8 +58,6 @@ public:
    */
   size_t GetEachSampleByteSize();
 
-  void* GetAudioDataPointer();
-
 private:
   /**
    * data_locator_type: use SLES locator type, like SL_DATALOCATOR_BUFFERQUEUE
@@ -85,7 +83,15 @@ private:
 
   void ReleaseAudioData();
 
+  static void AudioPlayerBufferCallback(SLBufferQueueItf sl_buffer_queue_itf,
+                                        void *context);
+
 private:
+  SLuint32 num_channels_;
+  SLuint32 samples_per_sec_;
+  SLuint32 bits_per_sample_;
+  SLuint32 endianness_;
+
   void *data_source_locator_;
   void *data_source_format_;
   const SLuint32 data_source_locator_type_ = SL_DATALOCATOR_BUFFERQUEUE;
