@@ -6,5 +6,10 @@
   do {                                                                         \
     using namespace std::chrono_literals;                                      \
     std::this_thread::sleep_for(ms_time##ms);                                  \
-    continue;                                                                  \
+  } while (false)
+
+#define sleep_for_us(us_time)                                                  \
+  do {                                                                         \
+    using namespace std::chrono_literals;                                      \
+    std::this_thread::sleep_for(us_time##us);                                  \
   } while (false)
