@@ -1,1 +1,1 @@
-globalThis.add_int = process._linkedBinding("audio").add_int;
+globalThis.AudioContext = process._linkedBinding("audio").AudioContext;

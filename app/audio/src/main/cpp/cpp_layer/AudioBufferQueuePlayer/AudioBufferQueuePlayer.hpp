@@ -1,4 +1,5 @@
 #pragma once
+#include "AudioContext.hpp"
 #include "AudioEngine.hpp"
 #include "AudioPlayer.hpp"
 namespace js_audio {

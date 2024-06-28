@@ -23,20 +23,26 @@ set(TOOL_INCLUDE_PATH ${CPP_DEPENDENCY_PATH}/tool/include)
 set(AUDIO_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/audio)
 set(AUDIO_SOURCE_PATH ${PROJECT_SOURCE_DIR}/audio/audio.cpp)
 
-set(AUDIO_ENGINE_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/AudioEngine)
-set(AUDIO_ENGINE_SOURCE_PATH ${PROJECT_SOURCE_DIR}/AudioEngine/AudioEngine.cpp)
-set(AUDIO_PLAYER_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/AudioPlayer)
-set(AUDIO_PLAYER_SOURCE_PATH ${PROJECT_SOURCE_DIR}/AudioPlayer/AudioPlayer.cpp)
-set(AUDIO_BUFFERQUEUE_PLAYER_INCLUDE_PATH
-    ${PROJECT_SOURCE_DIR}/AudioBufferQueuePlayer
-    )
-set(AUDIO_BUFFERQUEUE_PLAYER_SOURCE_PATH
-    ${PROJECT_SOURCE_DIR}/AudioBufferQueuePlayer/AudioBufferQueuePlayer.cpp
-    )
-set(AUDIO_CONTEXT_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/AudioContext)
-set(AUDIO_CONTEXT_SOURCE_PATH
-    ${PROJECT_SOURCE_DIR}/AudioContext/AudioContext.cpp
-    )
+file(
+        GLOB
+        CPP_LAYER_SOURCE_PATH
+        ${PROJECT_SOURCE_DIR}/cpp_layer/**/*.cpp
+        )
+file(
+        GLOB
+        CPP_LAYER_HEADER_PATH
+        ${PROJECT_SOURCE_DIR}/cpp_layer/**
+        )
+file(
+        GLOB
+        JS_LAYER_SOURCE_PATH
+        ${PROJECT_SOURCE_DIR}/js_layer/**/*.cpp
+        )
+file(
+        GLOB
+        JS_LAYER_HEADER_PATH
+        ${PROJECT_SOURCE_DIR}/js_layer/**
+        )
 
 include_directories(${NODE_INCLUDE_PATH}/node ${NODE_INCLUDE_PATH}/node/cppgc)
 
@@ -55,11 +61,9 @@ include_directories(${NODE_INCLUDE_PATH}/node ${NODE_INCLUDE_PATH}/node/cppgc)
 # be used in the AndroidManifest.xml file.
 add_library(
         ${CMAKE_PROJECT_NAME} SHARED
+        ${CPP_LAYER_SOURCE_PATH}
+        ${JS_LAYER_SOURCE_PATH}
         ${AUDIO_SOURCE_PATH}
-        ${AUDIO_ENGINE_SOURCE_PATH}
-        ${AUDIO_CONTEXT_SOURCE_PATH}
-        ${AUDIO_PLAYER_SOURCE_PATH}
-        ${AUDIO_BUFFERQUEUE_PLAYER_SOURCE_PATH}
         audio_bridge.cpp
         )
 
@@ -82,8 +86,6 @@ target_include_directories(
         ${CMAKE_PROJECT_NAME}
         PUBLIC ${TOOL_INCLUDE_PATH}
                ${AUDIO_INCLUDE_PATH}
-               ${AUDIO_ENGINE_INCLUDE_PATH}
-               ${AUDIO_PLAYER_INCLUDE_PATH}
-               ${AUDIO_BUFFERQUEUE_PLAYER_INCLUDE_PATH}
-               ${AUDIO_CONTEXT_INCLUDE_PATH}
+               ${CPP_LAYER_HEADER_PATH}
+               ${JS_LAYER_HEADER_PATH}
         )

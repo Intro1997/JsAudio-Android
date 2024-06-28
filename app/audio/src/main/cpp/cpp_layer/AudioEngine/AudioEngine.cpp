@@ -76,29 +76,39 @@ std::weak_ptr<AudioEngine> AudioEngine::Get() {
 
 void AudioEngine::Start() {
   LOGD("Native AudioEngine::Start()\n");
-  audio_player_->Start();
+  if (audio_player_) {
+    audio_player_->Start();
+  }
 }
 
 void AudioEngine::Pause() {
   LOGD("Native AudioEngine::Pause()\n");
-  audio_player_->Pause();
+  if (audio_player_) {
+    audio_player_->Pause();
+  }
 }
 
 void AudioEngine::Resume() {
   LOGD("Native AudioEngine::Resume()\n");
-  audio_player_->Resume();
+  if (audio_player_) {
+    audio_player_->Resume();
+  }
 }
 
 void AudioEngine::Stop() {
   LOGD("Native AudioEngine::Stop()\n");
   // audio player stop means reset play process
   // when start playing, player will play from beginning
-  audio_player_->Pause();
+  if (audio_player_) {
+    audio_player_->Pause();
+  }
 }
 
 void AudioEngine::Destroy() {
   LOGD("Native AudioEngine::Destroy()\n");
-  audio_player_->Destroy();
+  if (audio_player_) {
+    audio_player_->Destroy();
+  }
 }
 
 std::weak_ptr<AudioPlayer> AudioEngine::CreateAudioBufferQueuePlayer(

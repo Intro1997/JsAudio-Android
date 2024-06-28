@@ -28,7 +28,31 @@ function set_timeout_test() {
 }
 
 function audio_test() {
-  console.log(`add_int(1, 2) = ${add_int(1, 2)}`);
+  const audioCtx = new AudioContext();
+  console.log(tracePrototypeChainOf(audioCtx));
+  console.log(tracePrototypeChainOf(audioCtx.destination));
+  console.log(
+    `audioCtx.destination.numberOfInputs = ${audioCtx.destination.numberOfInputs}`
+  );
+  console.log(
+    `audioCtx.destination.numberOfOutputs = ${audioCtx.destination.numberOfOutputs}`
+  );
+  console.log(
+    `audioCtx.destination.channelCount = ${audioCtx.destination.channelCount}`
+  );
+}
+
+function tracePrototypeChainOf(object) {
+  var proto = object.constructor.prototype;
+  var result = "";
+
+  while (proto) {
+    result += " -> " + proto.constructor.name + ".prototype";
+    proto = Object.getPrototypeOf(proto);
+  }
+
+  result += " -> null";
+  return result;
 }
 
 // log_test();
