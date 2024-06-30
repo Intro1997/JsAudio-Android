@@ -1,5 +1,5 @@
 #pragma once
-#include <node/napi.h>
+#include <napi/napi.h>
 namespace js_audio {
 class JSAudioNode : public Napi::ObjectWrap<JSAudioNode> {
 public:

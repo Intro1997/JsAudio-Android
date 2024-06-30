@@ -44,7 +44,11 @@ file(
         ${PROJECT_SOURCE_DIR}/js_layer/**
         )
 
-include_directories(${NODE_INCLUDE_PATH}/node ${NODE_INCLUDE_PATH}/node/cppgc)
+include_directories(
+        ${NODE_INCLUDE_PATH}/node
+        ${NODE_INCLUDE_PATH}/node/cppgc
+        ${NODE_INCLUDE_PATH}/napi
+        )
 
 # Creates and names a library, sets it as either STATIC or SHARED, and provides
 # the relative paths to its source code. You can define multiple libraries, and

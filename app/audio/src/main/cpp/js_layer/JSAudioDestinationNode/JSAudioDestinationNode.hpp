@@ -1,6 +1,6 @@
 #pragma once
 #include "JSAudioNode.hpp"
-#include <node/napi.h>
+#include <napi/napi.h>
 
 namespace js_audio {
 class JSAudioDestinationNode : public JSAudioNode {

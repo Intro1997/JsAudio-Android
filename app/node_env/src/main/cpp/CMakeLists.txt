@@ -9,8 +9,6 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
-
 # Declares the project name. The project name can be accessed via ${
 # PROJECT_NAME}, Since this is the top level CMakeLists.txt, the project name is
 # also accessible with ${CMAKE_PROJECT_NAME} (both CMake variables are in-sync
@@ -29,7 +27,11 @@ set(NODE_ENV_SRC ${PROJECT_SOURCE_DIR}/node_env/NodeEnv.cpp)
 set(ARGV_SRC ${PROJECT_SOURCE_DIR}/argv/Argv.cpp)
 set(NODE_LOGGER_SRC ${PROJECT_SOURCE_DIR}/node_logger/node_logger.cpp)
 
-include_directories(${NODE_INCLUDE_PATH}/node ${NODE_INCLUDE_PATH}/node/cppgc)
+include_directories(
+        ${NODE_INCLUDE_PATH}/node
+        ${NODE_INCLUDE_PATH}/node/cppgc
+        ${NODE_INCLUDE_PATH}/napi
+        )
 
 # Creates and names a library, sets it as either STATIC or SHARED, and provides
 # the relative paths to its source code. You can define multiple libraries, and

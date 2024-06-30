@@ -1,6 +1,6 @@
 
 #include <jni.h>
-#include <node/napi.h>
+#include <napi/napi.h>
 #include <string>
 
 #include "AudioBufferQueuePlayer.hpp"
