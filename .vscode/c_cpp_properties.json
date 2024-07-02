@@ -4,7 +4,8 @@
       "name": "cmake_config",
       "includePath": [
         "/Users/intro/Library/Android/sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/**",
-        "${workspaceFolder}/**"
+        "${workspaceFolder}/**",
+        "${workspaceFolder}/app/dependency/cpp/node/include",
       ],
       "macFrameworkPath": [
         "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks"

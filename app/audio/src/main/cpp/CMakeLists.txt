@@ -48,6 +48,7 @@ include_directories(
         ${NODE_INCLUDE_PATH}/node
         ${NODE_INCLUDE_PATH}/node/cppgc
         ${NODE_INCLUDE_PATH}/napi
+        ${NODE_INCLUDE_PATH}/napi_ih
         )
 
 # Creates and names a library, sets it as either STATIC or SHARED, and provides

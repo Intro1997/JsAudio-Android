@@ -40,6 +40,9 @@ function audio_test() {
   console.log(
     `audioCtx.destination.channelCount = ${audioCtx.destination.channelCount}`
   );
+  console.log(
+    `audioCtx.destination.destinationSpecified = ${audioCtx.destination.destinationSpecified}`
+  );
 }
 
 function tracePrototypeChainOf(object) {
