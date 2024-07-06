@@ -1,89 +1,231 @@
+#ifndef NAPI_IH_INL_HPP
+#define NAPI_IH_INL_HPP
 
 #include "napi_ih.hpp"
 
 namespace Napi_IH {
-template <typename T>
-Napi::FunctionReference IHObjectWrap<T>::js_class_constructor_;
+inline IHCallbackInfo::IHCallbackInfo(const Napi::CallbackInfo &info,
+                                      void *user_data)
+    : info_(info), user_data_(user_data) {}
+
+inline Napi::Env IHCallbackInfo::Env() const { return info_.Env(); }
+
+inline Napi::Value IHCallbackInfo::NewTarget() const {
+  return info_.NewTarget();
+}
+
+inline bool IHCallbackInfo::IsConstructCall() const {
+  return info_.IsConstructCall();
+}
+
+inline size_t IHCallbackInfo::Length() const { return info_.Length(); }
+
+inline const Napi::Value IHCallbackInfo::operator[](size_t index) const {
+  return info_.operator[](index);
+}
+
+inline Napi::Value IHCallbackInfo::This() const { return info_.This(); }
+
+inline void *IHCallbackInfo::Data() const {
+  return user_data_ ? user_data_ : info_.Data();
+}
+
+inline const Napi::CallbackInfo &IHCallbackInfo::InnerCallbackInfo() const {
+  return info_;
+}
+
+template <typename T> class ClassMetaInfoInstance {
+public:
+  static ClassMetaInfo &GetInstance() { return meta_info_; }
+
+private:
+  static ClassMetaInfo meta_info_;
+};
+
+template <typename T> ClassMetaInfo ClassMetaInfoInstance<T>::meta_info_;
+
+inline std::map<ClassMetaInfo *, Napi::FunctionReference>
+    Registration::ctor_table_;
+
+inline std::map<const char *, ClassMetaInfo *> Registration::meta_info_table_;
+
+class MethodWrapper : public Napi::ObjectWrap<MethodWrapper> {
+  using PropertyDescriptor = Napi::ClassPropertyDescriptor<MethodWrapper>;
+
+public:
+  MethodWrapper(const Napi::CallbackInfo &info)
+      : Napi::ObjectWrap<MethodWrapper>(info) {
+    ClassMetaInfo *meta_info = reinterpret_cast<ClassMetaInfo *>(info.Data());
+    if (meta_info->ctor) {
+      wrapped_ = meta_info->ctor({info, meta_info->data});
+    }
+  }
+
+  template <typename T>
+  static std::unique_ptr<IHObjectWrap>
+  ConstructObject(const Napi_IH::IHCallbackInfo &info) {
+    if (!std::is_base_of<IHObjectWrap, T>::value) {
+      return nullptr;
+    }
+    return std::move(std::make_unique<T>(info));
+  }
+
+  static Napi::Function
+  DefineClass(Napi::Env env, const char *name,
+              const std::vector<PropertyDescriptor> descriptors,
+              void *data = nullptr) {
+    return Napi::ObjectWrap<MethodWrapper>::DefineClass(env, name, descriptors,
+                                                        data);
+  }
+
+  template <typename T, void (T::*method)(const Napi::CallbackInfo &)>
+  void CallInstanceVoidMethodCallback(const Napi::CallbackInfo &info) {
+    if (wrapped_ && std::is_base_of<IHObjectWrap, T>::value) {
+      T *origin_ptr = reinterpret_cast<T *>(wrapped_.get());
+    }
+  }
+
+  template <typename T, Napi::Value (T::*method)(const Napi::CallbackInfo &)>
+  Napi::Value CallInstanceMethodCallback(const Napi::CallbackInfo &info) {
+    if (wrapped_ && std::is_base_of<IHObjectWrap, T>::value) {
+      T *origin_ptr = reinterpret_cast<T *>(wrapped_.get());
+      return (origin_ptr->*method)(info);
+    }
+    return {};
+  }
+
+  template <typename T, Napi::Value (T::*method)(const Napi::CallbackInfo &)>
+  Napi::Value CallInstanceGetterCallback(const Napi::CallbackInfo &info) {
+    if (wrapped_ && std::is_base_of<IHObjectWrap, T>::value) {
+      T *origin_ptr = reinterpret_cast<T *>(wrapped_.get());
+      return (origin_ptr->*method)(info);
+    }
+    return {};
+  }
+
+  template <typename T,
+            void (T::*method)(const Napi::CallbackInfo &, const Napi::Value &)>
+  void CallInstanceSetterCallback(const Napi::CallbackInfo &info,
+                                  const Napi::Value &value) {
+    if (wrapped_ && std::is_base_of<IHObjectWrap, T>::value) {
+      T *origin_ptr = reinterpret_cast<T *>(wrapped_.get());
+      (origin_ptr->*method)(info, value);
+    }
+  }
+
+  template <typename T>
+  static PropertyDescriptor
+  InstanceMethod(const char *utf8name,
+                 Napi::Value (T::*method)(const Napi::CallbackInfo &info),
+                 napi_property_attributes attributes = napi_default,
+                 void *data = nullptr) {
+    return ObjectWrap<MethodWrapper>::InstanceMethod<
+        &CallInstanceMethodCallback<T, method>>(utf8name);
+  }
+  template <typename T,
+            Napi::Value (T::*getter)(const Napi::CallbackInfo &info),
+            void (T::*setter)(const Napi::CallbackInfo &info,
+                              const Napi::Value &value)>
+  static PropertyDescriptor
+  InstanceAccessor(const char *utf8name,
+                   napi_property_attributes attributes = napi_default,
+                   void *data = nullptr) {
+    return ObjectWrap<MethodWrapper>::InstanceAccessor(
+        utf8name, &MethodWrapper::CallInstanceMethodCallback<T, getter>,
+        &MethodWrapper::CallInstanceSetterCallback<T, setter>);
+  }
+
+private:
+  std::unique_ptr<IHObjectWrap> wrapped_;
+};
+
+inline IHObjectWrap::IHObjectWrap(const Napi_IH::IHCallbackInfo &) {}
 
 template <typename T>
-ClassMetaInfo IHObjectWrap<T>::class_meta_info_(js_class_constructor_);
-
-template <typename T>
-template <typename Base>
-void IHObjectWrap<T>::DefineClass(
+void IHObjectWrap::DefineClass(
     Napi::Env env, const char *utf8name,
-    const std::initializer_list<Napi::PropertyDescriptor> &properties,
+    const std::initializer_list<IHObjectWrap::PropertyDescriptor> &properties,
     void *data) {
-  DefineClass<Base>(
+  DefineClass<T>(
       env, utf8name, properties.size(),
       reinterpret_cast<const napi_property_descriptor *>(properties.begin()),
       data);
 }
 
-template <typename T> ClassMetaInfo &IHObjectWrap<T>::GetMetaInfoRef() {
-  return class_meta_info_;
-}
-
 template <typename T>
-template <typename Base>
-void IHObjectWrap<T>::DefineClass(
+void IHObjectWrap::DefineClass(
     Napi::Env env, const char *utf8name,
-    const std::vector<Napi::PropertyDescriptor> &properties, void *data) {
-  DefineClass<Base>(
+    const std::vector<IHObjectWrap::PropertyDescriptor> &properties,
+    void *data) {
+  DefineClass<T>(
       env, utf8name, properties.size(),
       reinterpret_cast<const napi_property_descriptor *>(properties.data()),
       data);
 }
 
-template <typename T>
-template <typename Base>
-void IHObjectWrap<T>::DefineClass(
-    Napi::Env env, const char *utf8name, const size_t props_count,
-    const napi_property_descriptor *descriptors, void *data) {
-  ClassMetaInfo &info_handle = IHObjectWrap<T>::GetMetaInfoRef();
+template <typename T, typename Base>
+inline void IHObjectWrap::DefineClass(
+    Napi::Env env, const char *utf8name,
+    const std::initializer_list<IHObjectWrap::PropertyDescriptor> &properties,
+    void *data) {
+  DefineClass<T, Base>(
+      env, utf8name, properties.size(),
+      reinterpret_cast<const napi_property_descriptor *>(properties.begin()),
+      data);
+}
 
-  IHObjectWrap<T>::SetMetaInfoName(utf8name);
-  IHObjectWrap<T>::template SetMetaInfoParent<Base>();
-  AddMetaInfoDescriptor(props_count, descriptors);
-  SetMetaInfoDefineClassFunc([](ClassMetaInfo &info,
-                                Napi::Env env) -> Napi::Function {
-    return Napi::ObjectWrap<T>::DefineClass(env, info.name, info.descriptors);
-  });
+template <typename T, typename Base>
+inline void IHObjectWrap::DefineClass(
+    Napi::Env env, const char *utf8name,
+    const std::vector<IHObjectWrap::PropertyDescriptor> &properties,
+    void *data) {
+  DefineClass<T, Base>(env, utf8name, properties.size(), properties.data(),
+                       data);
+}
+
+template <typename T>
+inline IHObjectWrap::PropertyDescriptor
+IHObjectWrap::InstanceMethod(const char *utf8name,
+                             InstanceMethodCallback<T> method,
+                             napi_property_attributes attributes, void *data) {
+  return MethodWrapper::InstanceMethod<T>(utf8name, method, attributes, data);
+}
+
+template <typename T, IHObjectWrap::InstanceGetterCallback<T> getter,
+          IHObjectWrap::InstanceSetterCallback<T> setter>
+inline IHObjectWrap::PropertyDescriptor IHObjectWrap::InstanceAccessor(
+    const char *utf8name, napi_property_attributes attributes, void *data) {
+  return MethodWrapper::InstanceAccessor<T, getter, setter>(utf8name,
+                                                            attributes, data);
+}
+
+template <typename T> inline Napi::Function IHObjectWrap::FindClass() {
+  return Registration::FindClass<T>();
+}
+
+template <typename T, typename Base>
+void IHObjectWrap::DefineClass(Napi::Env env, const char *utf8name,
+                               const size_t props_count,
+                               const napi_property_descriptor *descriptors,
+                               void *data) {
+  ClassMetaInfo &info_handle = ClassMetaInfoInstance<T>::GetInstance();
+
+  info_handle.name = utf8name;
+  if (!std::is_same<Base, NonBase>::value) {
+    info_handle.parent = &(ClassMetaInfoInstance<Base>::GetInstance());
+  }
+  info_handle.ctor = MethodWrapper::ConstructObject<T>;
+  info_handle.descriptors = {descriptors, descriptors + props_count};
+  info_handle.data = data;
   Registration::AddClassMetaInfo(utf8name, &info_handle);
 }
 
-template <typename T>
-void IHObjectWrap<T>::SetMetaInfoName(const char *name) {
-  GetMetaInfoRef().name = name;
-}
-
-template <typename T>
-template <typename Base>
-void IHObjectWrap<T>::SetMetaInfoParent() {
-  ClassMetaInfo &info_handle = IHObjectWrap<T>::GetMetaInfoRef();
-  info_handle.parent = &(Base::class_meta_info_);
-}
-
-template <typename T>
-void IHObjectWrap<T>::AddMetaInfoDescriptor(
-    const size_t props_count, const napi_property_descriptor *descriptors) {
-  ClassMetaInfo &info_handle = IHObjectWrap<T>::GetMetaInfoRef();
-  info_handle.descriptors.reserve(info_handle.descriptors.size() + props_count);
-  info_handle.descriptors.insert(info_handle.descriptors.end(), descriptors,
-                                 descriptors + props_count);
-}
-
-template <typename T>
-inline void IHObjectWrap<T>::SetMetaInfoDefineClassFunc(
-    const std::function<Napi::Function(ClassMetaInfo &, Napi::Env env)>
-        &define_class_func) {
-  GetMetaInfoRef().define_class_func = define_class_func;
-}
-
-inline void Registration::StartRegistration(Napi::Env env) {
-  auto &class_meta_infos = GetClassMetaInfoMap();
+inline void Registration::StartRegistration(Napi::Env env,
+                                            Napi::Object exports) {
+  auto &class_meta_infos = meta_info_table_;
+  auto &ctor_table = ctor_table_;
   for (auto &info : class_meta_infos) {
-    ProcessClassMetaInfo(env, info.second);
+    ProcessClassMetaInfo(env, exports, info.second, ctor_table);
   }
   for (auto &info : class_meta_infos) {
     ClearClassMetaInfoMap(info.second);
@@ -94,33 +236,36 @@ inline void Registration::StartRegistration(Napi::Env env) {
 inline void Registration::ClearClassMetaInfoMap(ClassMetaInfo *info) {
   info->name = nullptr;
   info->descriptors.clear();
-  info->class_ctor.Reset();
   info->parent = nullptr;
 }
 
 inline void Registration::AddClassMetaInfo(const char *name,
                                            ClassMetaInfo *info) {
-  auto &class_meta_infos = GetClassMetaInfoMap();
-  if (class_meta_infos.find(name) == class_meta_infos.end()) {
+  auto &class_meta_infos = meta_info_table_;
+  if (class_meta_infos.find(name) != class_meta_infos.end()) {
     return;
   }
   class_meta_infos[name] = info;
 }
 
-inline void Registration::ProcessClassMetaInfo(Napi::Env env,
-                                               ClassMetaInfo *info) {
-  // TODO:
-  // check if info.class_ctor_ is valid
-  if (!info->class_ctor.IsEmpty()) {
-    // - if valid, return
+template <typename T> Napi::Function Registration::FindClass() {
+  const auto &ctor_element =
+      ctor_table_.find(&(ClassMetaInfoInstance<T>::GetInstance()));
+  if (ctor_element == ctor_table_.end()) {
+    return {};
+  }
+  return ctor_element->second.Value();
+}
+
+inline void Registration::ProcessClassMetaInfo(
+    Napi::Env env, Napi::Object exports, ClassMetaInfo *info,
+    std::map<ClassMetaInfo *, Napi::FunctionReference> &ctor_table) {
+  if (ctor_table_.find(info) != ctor_table_.end()) {
     return;
   }
-  // if parent is not nullptr
   ClassMetaInfo *parent = info->parent;
   if (parent != nullptr) {
-    // - call ProcessClassMetaInfo(*parent)
-    ProcessClassMetaInfo(env, parent);
-    // - insert parent's descriptors_ to current info.descriptors_
+    ProcessClassMetaInfo(env, exports, parent, ctor_table);
     // TODO: this can be optimized mem space by while loop
     info->descriptors.reserve(info->descriptors.size() +
                               parent->descriptors.size());
@@ -128,28 +273,28 @@ inline void Registration::ProcessClassMetaInfo(Napi::Env env,
                              parent->descriptors.begin(),
                              parent->descriptors.end());
   }
-  // call DefineClass of napi, and set return value to info.class_ctor_
-  if (info->define_class_func) {
-    info->define_class_func(*info, env);
-  }
-  if (info->parent) {
+
+  Napi::Function clazz =
+      MethodWrapper::DefineClass(env, info->name, info->descriptors, info);
+
+  auto parent_element_in_map = ctor_table_.find(info->parent);
+
+  if (info->parent && parent_element_in_map != ctor_table_.end()) {
     Napi::Object global = env.Global();
     Napi::Object Object = global.Get("Object").As<Napi::Object>();
     Napi::Function setPrototypeOf =
         Object.Get("setPrototypeOf").As<Napi::Function>();
-    Napi::Function clazz = info->class_ctor.Value();
-    Napi::Function parent_clazz = info->parent->class_ctor.Value();
+    Napi::Function parent_clazz = parent_element_in_map->second.Value();
 
     setPrototypeOf.Call({clazz, parent_clazz});
     setPrototypeOf.Call(
         {clazz.Get("prototype"), parent_clazz.Get("prototype")});
   }
-}
 
-inline std::map<const char *, ClassMetaInfo *> &
-Registration::GetClassMetaInfoMap() {
-  static std::map<const char *, ClassMetaInfo *> class_meta_info_map_ = {};
-  return class_meta_info_map_;
+  ctor_table_[info] = Napi::Persistent(clazz);
+  exports.Set(info->name, ctor_table_[info].Value());
 }
 
 } // namespace Napi_IH
+
+#endif // NAPI_IH_INL_HPP

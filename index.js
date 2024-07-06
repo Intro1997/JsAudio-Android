@@ -43,6 +43,10 @@ function audio_test() {
   console.log(
     `audioCtx.destination.destinationSpecified = ${audioCtx.destination.destinationSpecified}`
   );
+  audioCtx.destination.destinationSpecified = 424242;
+  console.log(
+    `audioCtx.destination.destinationSpecified [after modify] = ${audioCtx.destination.destinationSpecified}`
+  );
 }
 
 function tracePrototypeChainOf(object) {

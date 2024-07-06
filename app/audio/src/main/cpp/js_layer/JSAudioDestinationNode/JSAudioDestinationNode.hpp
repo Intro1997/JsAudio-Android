@@ -1,20 +1,19 @@
 #pragma once
 #include "JSAudioNode.hpp"
-// #include <napi/napi.h>
 #include <napi_ih/napi_ih.hpp>
 
 namespace js_audio {
-class JSAudioDestinationNode : public Napi_IH::IHObjectWrap<JSAudioDestinationNode> {
+class JSAudioDestinationNode : public JSAudioNode {
 public:
-  static Napi::Function GetClass(Napi::Env env);
+  JSAudioDestinationNode(const Napi_IH::IHCallbackInfo &info);
 
-public:
-  JSAudioDestinationNode(const Napi::CallbackInfo &info);
   static void Init(Napi::Env env, Napi::Object exports);
+
   Napi::Value GetDestinationSpecified(const Napi::CallbackInfo &info);
+  void SetDestinationSpecified(const Napi::CallbackInfo &info,
+                               const Napi::Value &value);
 
 private:
-  static Napi::FunctionReference js_destination_node_class_ref_;
   uint32_t destination_specified_;
 };
 } // namespace js_audio

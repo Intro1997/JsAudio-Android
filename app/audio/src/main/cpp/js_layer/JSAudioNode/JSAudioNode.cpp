@@ -4,8 +4,8 @@
 namespace js_audio {
 Napi::FunctionReference JSAudioNode::js_audio_node_class_ref_;
 
-JSAudioNode::JSAudioNode(const Napi::CallbackInfo &info)
-    : ObjectWrap<JSAudioNode>(info) {
+JSAudioNode::JSAudioNode(const Napi_IH::IHCallbackInfo &info)
+    : Napi_IH::IHObjectWrap(info) {
   if (info.Length() < 3) {
     LOGE(
         "Create JSAudioDestinationNode failed, need 3 arguments but get %zu.\n",
@@ -26,7 +26,14 @@ JSAudioNode::JSAudioNode(const Napi::CallbackInfo &info)
 }
 
 void JSAudioNode::Init(Napi::Env env, Napi::Object exports) {
-  JSAudioNode::GetClass(env);
+  DefineClass<JSAudioNode>(
+      env, "AudioNode",
+      {InstanceAccessor<JSAudioNode, &JSAudioNode::GetNumberOfInputs>(
+           "numberOfInputs"),
+       InstanceAccessor<JSAudioNode, &JSAudioNode::GetNumberOfOutputs>(
+           "numberOfOutputs"),
+       InstanceAccessor<JSAudioNode, &JSAudioNode::GetChannelCount>(
+           "channelCount")});
 }
 
 Napi::Value JSAudioNode::GetNumberOfInputs(const Napi::CallbackInfo &info) {
@@ -41,18 +48,4 @@ Napi::Value JSAudioNode::GetChannelCount(const Napi::CallbackInfo &info) {
   return Napi::Value::From(info.Env(), channel_count_);
 }
 
-Napi::Function JSAudioNode::GetClass(Napi::Env env) {
-  if (js_audio_node_class_ref_.IsEmpty()) {
-    Napi::Function js_class = DefineClass(
-        env, "AudioNode",
-        {
-            InstanceAccessor<&JSAudioNode::GetNumberOfInputs>("numberOfInputs"),
-            InstanceAccessor<&JSAudioNode::GetNumberOfOutputs>(
-                "numberOfOutputs"),
-            InstanceAccessor<&JSAudioNode::GetChannelCount>("channelCount"),
-        });
-    js_audio_node_class_ref_ = Napi::Persistent(js_class);
-  }
-  return js_audio_node_class_ref_.Value();
-}
 } // namespace js_audio
