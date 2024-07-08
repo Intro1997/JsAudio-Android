@@ -320,29 +320,29 @@ bool NodeEnv::Eval(const std::string &code, std::string &result) {
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = instance_->context_.Get(isolate);
   v8::Context::Scope context_scope(context);
+  v8::TryCatch trycatch(isolate);
 
-  v8::Local<v8::Script> code_script =
-      v8::Script::Compile(
-          context,
-          v8::String::NewFromUtf8(isolate, code.c_str()).ToLocalChecked())
-          .ToLocalChecked();
-  if (code_script.IsEmpty()) {
-    LOGE("Compile js script failed\n");
+  v8::MaybeLocal<v8::Script> maybe_script = v8::Script::Compile(
+      context, v8::String::NewFromUtf8(isolate, code.c_str()).ToLocalChecked());
+
+  if (!maybe_script.IsEmpty()) {
+    v8::Local<v8::Script> code_script = maybe_script.ToLocalChecked();
+    v8::MaybeLocal<v8::Value> maybe_ret = code_script->Run(context);
+    if (!maybe_ret.IsEmpty()) {
+      instance_->SpinEventLoop();
+      return true;
+    }
+  }
+
+  if (trycatch.HasCaught()) {
+    v8::Local<v8::Value> exception = trycatch.Exception();
+    v8::String::Utf8Value exception_message(isolate, exception);
+    result = *exception_message;
+    return false;
+  } else {
+    result = "unknown error\n";
     return false;
   }
 
-  v8::TryCatch trycatch(isolate);
-  v8::MaybeLocal<v8::Value> maybe_ret = code_script->Run(context);
-  if (maybe_ret.IsEmpty()) {
-    if (trycatch.HasCaught()) {
-      v8::Local<v8::Value> exception = trycatch.Exception();
-      v8::String::Utf8Value exception_message(isolate, exception);
-      result = *exception_message;
-      return false;
-    } else {
-      result = "";
-    }
-  }
-  instance_->SpinEventLoop();
   return true;
 }
