@@ -11,6 +11,10 @@ const preload_files = [
     path: "app/node_env/src/main/cpp/node_env/preload_script.js",
   },
   {
+    title: "NODE_HTTP_REQUIRE_SCRIPT",
+    path: "app/node_env/src/main/cpp/node_http_require/preload_script.js",
+  },
+  {
     title: "AUDIO_PRELOAD_SCRIPT",
     path: "app/audio/src/main/cpp/audio/preload_script.js",
   },

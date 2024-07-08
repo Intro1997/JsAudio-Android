@@ -1,0 +1,1 @@
+All cases come from [wpt(web-platform-test)](https://github.com/web-platform-tests/wpt), which is descriped in [mozilla wiki](https://wiki.mozilla.org/Auto-tools/Projects/web-platform-tests). I think this a reliable repo to test Web Audio API.

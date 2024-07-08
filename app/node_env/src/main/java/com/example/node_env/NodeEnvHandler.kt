@@ -13,6 +13,7 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
         }
 
         private const val TAG = "NodeEnvHandle"
+        private var jsEntry = ""
 
         /**
          * innerNodeEnvHandle is relative to isNativeNodeEnvCreated
@@ -28,7 +29,8 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
             registeredModuleHandler.add(handler)
         }
 
-        fun create(): NodeEnvHandler? {
+        fun create(jsEntry: String): NodeEnvHandler? {
+            this.jsEntry = jsEntry
             if (innerNodeEnvHandler == null) {
                 innerNodeEnvHandler = NodeEnvHandler()
                 innerNodeEnvHandler?.let { nodeEnvHandle ->
@@ -51,19 +53,40 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
             }
             return allPreloadScript
         }
+
+        @JvmStatic
+        fun loadFileFromJsEntry(entryFile: String): String {
+            val url = jsEntry + entryFile
+            var ret = ""
+            try {
+                val urlObj = URL(url)
+                val urlConnection = urlObj.openConnection() as HttpURLConnection
+
+                try {
+                    val inputStream = BufferedInputStream(urlConnection.inputStream)
+                    ret = inputStream.bufferedReader().use(BufferedReader::readText)
+                } finally {
+                    urlConnection.disconnect()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Load file from url <$url> failed! msg: ${e.message}")
+            }
+            return ret
+        }
     }
 
 
-    fun evalCode(jsEntry: String) {
+    fun evalCodeFromEntryFile(jsEntryFile: String) {
         if (isEvaluatingCode.getValue()) {
             Log.w(TAG, "Cannot run code, node env is busy!")
         } else {
+            Thread.currentThread()
             innerNodeEnvHandler?.let { nodeEnvHandle ->
                 val jsThread = Thread {
                     run {
-                        val fileContent = nodeEnvHandle.loadFileFromHttpUrl(jsEntry)
+                        val fileContent = loadFileFromJsEntry(jsEntryFile)
                         if (fileContent.isNotEmpty()) {
-                            Log.d(TAG, "load file success, file content: $fileContent")
+//                            Log.d(TAG, "load file success, file content: $fileContent")
                             isEvaluatingCode.setValue(true)
                             nodeEnvHandle.nativeEvalCode(fileContent)
                             isEvaluatingCode.setValue(false)
@@ -109,23 +132,6 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
         innerNodeEnvHandler = null
     }
 
-    private fun loadFileFromHttpUrl(url: String): String {
-        var ret = ""
-        try {
-            val urlObj = URL(url)
-            val urlConnection = urlObj.openConnection() as HttpURLConnection
-
-            try {
-                val inputStream = BufferedInputStream(urlConnection.inputStream)
-                ret = inputStream.bufferedReader().use(BufferedReader::readText)
-            } finally {
-                urlConnection.disconnect()
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Load file from url <$url> failed! msg: ${e.message}")
-        }
-        return ret
-    }
 
     private external fun createNativeNode(preloadScript: String): Boolean
 

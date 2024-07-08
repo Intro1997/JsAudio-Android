@@ -1,5 +1,7 @@
 #include "NodeEnv.hpp"
 #include "logger.hpp"
+#include "node_http_require.hpp"
+#include "node_jni_env.hpp"
 #include "node_logger.hpp"
 
 #include <jni.h>
@@ -8,6 +10,11 @@
 #include <string>
 
 static NodeEnv *global_node = nullptr;
+
+JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
+  NodeJniVm::Init(vm);
+  return JNI_VERSION_1_6;
+}
 
 extern "C" JNIEXPORT jboolean JNICALL
 Java_com_example_node_1env_NodeEnvHandler_createNativeNode(
@@ -19,6 +26,8 @@ Java_com_example_node_1env_NodeEnvHandler_createNativeNode(
 
   NodeEnv::AddInternalModule(node_logger::GetPreloadScript(), "node_logger",
                              node_logger::Init);
+  NodeEnv::AddInternalModule(node_http_require::GetPreloadScript(),
+                             "node_http_require", node_http_require::Init);
 
   global_node = NodeEnv::Create(preload_script_cstr);
   if (!global_node) {
@@ -35,9 +44,13 @@ Java_com_example_node_1env_NodeEnvHandler_nativeEvalCode(JNIEnv *env,
   const char *code_c_str = env->GetStringUTFChars(code_str, &is_copy);
   std::string code = code_c_str;
   std::string result;
-  if (!global_node->Eval(code, result)) {
-    LOGE("Eval code error: \n\tsrc: %s\n\tmsg: %s\n", code.c_str(),
-         result.c_str());
+  try {
+    if (!global_node->Eval(code, result)) {
+      LOGE("Eval code error:\n");
+      LOGE("src: %s\n", code.c_str());
+      LOGE("msg: %s\n", result.c_str());
+    }
+  } catch (std::exception e) {
   }
 }
 extern "C" JNIEXPORT void JNICALL
