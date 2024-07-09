@@ -1,7 +1,2 @@
-
-const {
-  OscillatorTest,
-  AudioContextTest,
-} = require("js_tests/oscillator_test.js");
-OscillatorTest();
+const { AudioContextTest } = require("js_tests/audio_context_test.js");
 AudioContextTest();
