@@ -1,17 +1,16 @@
 #pragma once
+#include "JSBaseAudioContext.hpp"
 #include <napi/napi.h>
 namespace js_audio {
-class JSAudioContext : public Napi::ObjectWrap<JSAudioContext> {
+class JSAudioContext : public JSBaseAudioContext {
 public:
-  static Napi::Value Init(Napi::Env napi_env, Napi::Object exports);
+  static void Init(Napi::Env napi_env, Napi::Object exports);
 
 public:
-  JSAudioContext(const Napi::CallbackInfo &info);
+  JSAudioContext(const Napi_IH::IHCallbackInfo &info);
 
-private:
-  Napi::Value GetSampleRate(const Napi::CallbackInfo &info);
-  Napi::Value GetDestinationNode(const Napi::CallbackInfo &info);
-  Napi::ObjectReference js_destination_node_ref_;
-  double sample_rate_;
+  Napi::Value Resume(const Napi::CallbackInfo &info);
+  Napi::Value Suspend(const Napi::CallbackInfo &info);
+  Napi::Value Close(const Napi::CallbackInfo &info);
 };
 } // namespace js_audio

@@ -15,7 +15,8 @@ void JSAudioDestinationNode::Init(Napi::Env env, Napi::Object exports) {
                            &JSAudioDestinationNode::GetDestinationSpecified,
                            &JSAudioDestinationNode::SetDestinationSpecified>(
               "destinationSpecified"),
-      });
+      },
+      false);
 }
 
 Napi::Value JSAudioDestinationNode::GetDestinationSpecified(

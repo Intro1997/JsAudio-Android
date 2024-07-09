@@ -52,6 +52,7 @@ struct ClassMetaInfo {
   ClassMetaInfo *parent = nullptr;
   ConstructorFunc ctor;
   std::vector<Napi::ClassPropertyDescriptor<MethodWrapper>> descriptors;
+  bool need_export = true;
   void *data = nullptr;
 };
 
@@ -84,23 +85,23 @@ public:
   static void
   DefineClass(Napi::Env env, const char *utf8name,
               const std::initializer_list<PropertyDescriptor> &properties,
-              void *data = nullptr);
+              bool need_export = true, void *data = nullptr);
 
   template <typename T>
   static void DefineClass(Napi::Env env, const char *utf8name,
                           const std::vector<PropertyDescriptor> &properties,
-                          void *data = nullptr);
+                          bool need_export = true, void *data = nullptr);
 
   template <typename T, typename Base>
   static void
   DefineClass(Napi::Env env, const char *utf8name,
               const std::initializer_list<PropertyDescriptor> &properties,
-              void *data = nullptr);
+              bool need_export = true, void *data = nullptr);
 
   template <typename T, typename Base>
   static void DefineClass(Napi::Env env, const char *utf8name,
                           const std::vector<PropertyDescriptor> &properties,
-                          void *data = nullptr);
+                          bool need_export = true, void *data = nullptr);
   template <typename T>
   using InstanceVoidMethodCallback = void (T::*)(const Napi::CallbackInfo &);
   template <typename T>
@@ -110,9 +111,10 @@ public:
   template <typename T>
   using InstanceSetterCallback = void (T::*)(const Napi::CallbackInfo &,
                                              const Napi::Value &);
-  template <typename T>
+
+  template <typename T, IHObjectWrap::InstanceMethodCallback<T> method>
   static PropertyDescriptor
-  InstanceMethod(const char *utf8name, InstanceMethodCallback<T> method,
+  InstanceMethod(const char *utf8name,
                  napi_property_attributes attributes = napi_default,
                  void *data = nullptr);
   template <typename T, InstanceGetterCallback<T> getter,
@@ -128,7 +130,7 @@ private:
   static void DefineClass(Napi::Env env, const char *utf8name,
                           const size_t props_count,
                           const napi_property_descriptor *descriptors,
-                          void *data = nullptr);
+                          bool need_export = true, void *data = nullptr);
 
 protected:
   static Napi::FunctionReference js_class_constructor_;

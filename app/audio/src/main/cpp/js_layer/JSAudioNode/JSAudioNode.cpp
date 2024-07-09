@@ -33,7 +33,8 @@ void JSAudioNode::Init(Napi::Env env, Napi::Object exports) {
        InstanceAccessor<JSAudioNode, &JSAudioNode::GetNumberOfOutputs>(
            "numberOfOutputs"),
        InstanceAccessor<JSAudioNode, &JSAudioNode::GetChannelCount>(
-           "channelCount")});
+           "channelCount")},
+      false);
 }
 
 Napi::Value JSAudioNode::GetNumberOfInputs(const Napi::CallbackInfo &info) {

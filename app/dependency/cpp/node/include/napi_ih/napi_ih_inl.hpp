@@ -113,15 +113,16 @@ public:
     }
   }
 
-  template <typename T>
+  template <typename T, Napi::Value (T::*method)(const Napi::CallbackInfo &)>
   static PropertyDescriptor
   InstanceMethod(const char *utf8name,
-                 Napi::Value (T::*method)(const Napi::CallbackInfo &info),
                  napi_property_attributes attributes = napi_default,
                  void *data = nullptr) {
-    return ObjectWrap<MethodWrapper>::InstanceMethod<
-        &CallInstanceMethodCallback<T, method>>(utf8name);
+    return ObjectWrap<MethodWrapper>::InstanceMethod(
+        utf8name, &MethodWrapper::CallInstanceMethodCallback<T, method>,
+        attributes, data);
   }
+
   template <typename T,
             Napi::Value (T::*getter)(const Napi::CallbackInfo &info),
             void (T::*setter)(const Napi::CallbackInfo &info,
@@ -131,8 +132,9 @@ public:
                    napi_property_attributes attributes = napi_default,
                    void *data = nullptr) {
     return ObjectWrap<MethodWrapper>::InstanceAccessor(
-        utf8name, &MethodWrapper::CallInstanceMethodCallback<T, getter>,
-        &MethodWrapper::CallInstanceSetterCallback<T, setter>);
+        utf8name, &MethodWrapper::CallInstanceGetterCallback<T, getter>,
+        &MethodWrapper::CallInstanceSetterCallback<T, setter>, attributes,
+        data);
   }
 
 private:
@@ -145,50 +147,49 @@ template <typename T>
 void IHObjectWrap::DefineClass(
     Napi::Env env, const char *utf8name,
     const std::initializer_list<IHObjectWrap::PropertyDescriptor> &properties,
-    void *data) {
+    bool need_export, void *data) {
   DefineClass<T>(
       env, utf8name, properties.size(),
       reinterpret_cast<const napi_property_descriptor *>(properties.begin()),
-      data);
+      need_export, data);
 }
 
 template <typename T>
 void IHObjectWrap::DefineClass(
     Napi::Env env, const char *utf8name,
     const std::vector<IHObjectWrap::PropertyDescriptor> &properties,
-    void *data) {
+    bool need_export, void *data) {
   DefineClass<T>(
       env, utf8name, properties.size(),
       reinterpret_cast<const napi_property_descriptor *>(properties.data()),
-      data);
+      need_export, data);
 }
 
 template <typename T, typename Base>
 inline void IHObjectWrap::DefineClass(
     Napi::Env env, const char *utf8name,
     const std::initializer_list<IHObjectWrap::PropertyDescriptor> &properties,
-    void *data) {
+    bool need_export, void *data) {
   DefineClass<T, Base>(
       env, utf8name, properties.size(),
       reinterpret_cast<const napi_property_descriptor *>(properties.begin()),
-      data);
+      need_export, data);
 }
 
 template <typename T, typename Base>
 inline void IHObjectWrap::DefineClass(
     Napi::Env env, const char *utf8name,
     const std::vector<IHObjectWrap::PropertyDescriptor> &properties,
-    void *data) {
+    bool need_export, void *data) {
   DefineClass<T, Base>(env, utf8name, properties.size(), properties.data(),
-                       data);
+                       need_export, data);
 }
 
-template <typename T>
+template <typename T, IHObjectWrap::InstanceMethodCallback<T> method>
 inline IHObjectWrap::PropertyDescriptor
 IHObjectWrap::InstanceMethod(const char *utf8name,
-                             InstanceMethodCallback<T> method,
                              napi_property_attributes attributes, void *data) {
-  return MethodWrapper::InstanceMethod<T>(utf8name, method, attributes, data);
+  return MethodWrapper::InstanceMethod<T, method>(utf8name, attributes, data);
 }
 
 template <typename T, IHObjectWrap::InstanceGetterCallback<T> getter,
@@ -207,7 +208,7 @@ template <typename T, typename Base>
 void IHObjectWrap::DefineClass(Napi::Env env, const char *utf8name,
                                const size_t props_count,
                                const napi_property_descriptor *descriptors,
-                               void *data) {
+                               bool need_export, void *data) {
   ClassMetaInfo &info_handle = ClassMetaInfoInstance<T>::GetInstance();
 
   info_handle.name = utf8name;
@@ -217,6 +218,7 @@ void IHObjectWrap::DefineClass(Napi::Env env, const char *utf8name,
   info_handle.ctor = MethodWrapper::ConstructObject<T>;
   info_handle.descriptors = {descriptors, descriptors + props_count};
   info_handle.data = data;
+  info_handle.need_export = need_export;
   Registration::AddClassMetaInfo(utf8name, &info_handle);
 }
 
@@ -292,7 +294,9 @@ inline void Registration::ProcessClassMetaInfo(
   }
 
   ctor_table_[info] = Napi::Persistent(clazz);
-  exports.Set(info->name, ctor_table_[info].Value());
+  if (info->need_export) {
+    exports.Set(info->name, ctor_table_[info].Value());
+  }
 }
 
 } // namespace Napi_IH
