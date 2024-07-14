@@ -257,12 +257,68 @@ void MethodName(const Napi::CallbackInfo &, const Napi::Value &) {}
 ### FindClass\<T\>()
 
 ```cpp
-template <typename T> static Napi::Function FindClass();
+template <typename T> static Napi_IH::FunctionWrapper FindClass();
 ```
 
 - `[in] T`: The cpp class of the js class that you want to find.
 
-Returns `Napi::Function` object that represents js class constructor.
+Returns `Napi_IH::FunctionWrapper` object that wrapped a `Napi::Function`.
+
+## Napi_IH::FunctionWrapper
+
+A wrapper of `Napi::Function` to make sure you can pass parameters other than `const Napi::CallbackInfo&` type.
+
+### Constructor
+
+```cpp
+  FunctionWrapper() = default;
+  FunctionWrapper(const Napi::Function &function);
+```
+
+### NewWithArgs
+
+```cpp
+  template <typename T, typename... Args>
+  Napi::MaybeOrValue<Napi::Object>
+  NewWithArgs(const std::initializer_list<napi_value> &args,
+              Args... ctor_args) const;
+  template <typename T, typename... Args>
+  Napi::MaybeOrValue<Napi::Object>
+  NewWithArgs(const std::vector<napi_value> &args, Args... ctor_args) const;
+  template <typename T, typename... Args>
+  Napi::MaybeOrValue<Napi::Object>
+  NewWithArgs(size_t argc, const napi_value *args, Args... ctor_args) const;
+```
+
+You can call your js constructor with arguments other than `const Napi::CallbackInfo&`. But these parameter in constructor must having default value!
+Here's an example:
+
+```cpp
+class JSObjectA : Napi_IH::IHObjectWrap {
+public:
+  JSObjectA(const Napi_IH::IHCallbackInfo &info, int a = 123, double b = 123,
+            const char *name = nullptr) {}
+  static void Init(/* necessary parameters */) {
+    // DefineClass to add JSObjectA as a js class
+  }
+};
+
+class JSObjectB : Napi_IH::IHObjectWrap {
+public:
+  JSObjectB(const Napi_IH::IHCallbackInfo &info) {
+    Napi_IH::FunctionWrapper js_object_a_ctor =
+        IHObjectWrap::FindClass<JSObjectA>();
+    Napi::Object js_object_a = js_object_a_ctor.NewWithArgs<JSObjectA>(
+        {/* args need to be saved in info */}, 42, 233, "hello");
+    js_object_a_ref_ = Napi::Persistent(js_object_a);
+  }
+
+private:
+  Napi::ObjectReference js_object_a_ref_;
+};
+```
+
+WARN: this api MUST be used in SYNC!
 
 # Thanks
 

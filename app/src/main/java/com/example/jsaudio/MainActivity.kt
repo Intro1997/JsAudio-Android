@@ -1,6 +1,11 @@
 package com.example.jsaudio
 
+import android.content.Context
+import android.media.AudioManager
+import android.media.MediaPlayer
+import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore.Audio
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.example.audio.AudioHandler
@@ -18,10 +23,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "Create application")
 
-        // 48000 is a device suggest sample rate of audio
-        // 144 is a device suggest output frame per buffer
 
-        NodeEnvHandler.registerNodeModuleHandler(AudioHandler())
+        NodeEnvHandler.registerNodeModuleHandler(AudioHandler(this))
         nodeEnvHandler = NodeEnvHandler.create(getJsEntry())
 
         val ret = "create node env " + if (nodeEnvHandler == null) "failed" else "success"
@@ -34,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         Log.d(TAG, "Start application")
+        // TODO: set entry point to nodeEnvHandler, then eval code in nodeEnvHandler.start()
         nodeEnvHandler?.evalCodeFromEntryFile("index.js")
     }
 

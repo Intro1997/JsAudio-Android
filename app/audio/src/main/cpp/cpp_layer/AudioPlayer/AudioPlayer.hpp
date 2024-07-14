@@ -1,11 +1,29 @@
 #pragma once
+#include "BaseAudioContext.hpp"
 #include <SLES/OpenSLES.h>
 #include <tuple>
+#include <vector>
 
 namespace js_audio {
+struct AudioPlayerConfig {
+  // source data buffer queue locator params
+  SLuint32 num_buffers;
+  // source data pcm format params
+  SLuint32 source_format_type;
+  SLuint32 num_channels;
+  SLuint32 channel_mask;
+  SLuint32 sample_rate_milli_hz;
+  SLuint32 bits_per_sample;
+  SLuint32 container_size;
+  SLuint32 endianness;
+  // sink data output mix locator params
+  SLuint32 sink_locator_type;
+  uint32_t frames_per_buffer;
+};
+
 class AudioPlayer {
 public:
-  AudioPlayer(); // TODO: remove it
+  AudioPlayer(const AudioPlayerConfig &audio_player_config); // TODO: remove it
 
   virtual void Start();
 
@@ -19,8 +37,17 @@ public:
 
   bool Valid() const;
 
+  void AddBaseAudioContext(std::weak_ptr<BaseAudioContext> base_audio_context);
+
 protected:
   bool is_valid_;
+  AudioPlayerConfig audio_player_config_;
+
+private:
+  AudioPlayerConfig
+  ReplaceInvalidConfig(const AudioPlayerConfig &audio_player_config);
+
+  std::vector<std::weak_ptr<BaseAudioContext>> base_audio_context_vec_;
 
 public:
   /**
@@ -49,5 +76,11 @@ public:
    * SLuint32 container_type;
    */
   using DataFormatMimeType = std::tuple<SLchar *, SLuint32>;
+
+  static const uint32_t kDefaultSampleRate;
+  static const uint32_t kDefaultFramesPerBuffer;
+  static const uint32_t kMaxSampleRate;
+  static const uint32_t kMinSampleRate;
+  static const AudioPlayerConfig kAudioPlayerConfig;
 };
 } // namespace js_audio

@@ -1,7 +1,8 @@
 #pragma once
 #include "AudioDestinationNode.hpp"
+#include "BaseAudioContext.hpp"
 namespace js_audio {
-class AudioContext {
+class AudioContext : public BaseAudioContext{
 public:
   AudioContext();
 

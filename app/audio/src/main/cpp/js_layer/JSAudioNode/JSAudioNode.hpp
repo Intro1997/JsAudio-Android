@@ -1,10 +1,15 @@
 #pragma once
+#include "AudioNode.hpp"
 #include <napi_ih/napi_ih.hpp>
 namespace js_audio {
 class JSAudioNode : public Napi_IH::IHObjectWrap {
 public:
-  JSAudioNode(const Napi_IH::IHCallbackInfo &info);
+  JSAudioNode(const Napi_IH::IHCallbackInfo &info,
+              std::shared_ptr<AudioNode> audio_destination_node_ptr = nullptr);
   static void Init(Napi::Env env, Napi::Object exports);
+
+protected:
+  std::shared_ptr<AudioNode> audio_node_ptr_;
 
 private:
   Napi::Value GetNumberOfInputs(const Napi::CallbackInfo &info);

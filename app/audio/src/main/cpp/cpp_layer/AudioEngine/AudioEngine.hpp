@@ -8,7 +8,7 @@
 
 namespace js_audio {
 
-void DeletePcmData(); // TODO: just for test, remove it!
+enum class AudioPlayerType { kBufferQueuePlayer = 0 };
 
 class AudioEngine {
   friend class AudioBufferQueuePlayer;
@@ -17,6 +17,8 @@ public:
   ~AudioEngine();
 
   static std::weak_ptr<AudioEngine> Get();
+  static void SetPlayerSampleRate(const uint32_t &sample_rate);
+  static void SetPlayerFramesPerBuffer(const uint32_t &frames_per_buffer);
 
   void Start();
   void Pause();
@@ -24,14 +26,12 @@ public:
   void Stop();
   void Destroy();
 
-  std::weak_ptr<AudioPlayer> CreateAudioBufferQueuePlayer(
-      /* source data bufferqueue locator params */ SLuint32 num_buffers,
-      /* source data pcm format params */ SLuint32 source_format_type,
-      SLuint32 num_channels, SLuint32 samples_per_sec, SLuint32 bits_per_sample,
-      SLuint32 container_size, SLuint32 channel_mask, SLuint32 endianness,
-      /* sink data output mix locator params */ SLuint32 sink_locator_type);
+  std::weak_ptr<AudioPlayer>
+  GetAudioPlayer(const AudioPlayerType &audio_player_type);
 
-  std::weak_ptr<AudioPlayer> GetAudioPlayer() const;
+  static AudioPlayerConfig audio_player_config();
+  static void
+  set_audio_player_config(const AudioPlayerConfig &audio_player_config);
 
 protected:
   AudioEngine() = default;
@@ -39,10 +39,14 @@ protected:
 private:
   bool Init();
 
-  static std::shared_ptr<AudioEngine> audio_engine_;
+  void InitAudioBufferQueuePlayer();
+
+  static std::shared_ptr<AudioEngine> audio_engine_ptr_;
+  static AudioPlayerConfig audio_player_config_;
+
   SLObjectItf sl_engine_object_;
   SLEngineItf sl_engine_interface_;
 
-  std::shared_ptr<AudioPlayer> audio_player_;
+  std::shared_ptr<AudioPlayer> audio_buffer_queue_player_;
 };
 }; // namespace js_audio

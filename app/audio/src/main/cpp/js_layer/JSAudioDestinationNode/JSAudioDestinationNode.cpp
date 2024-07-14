@@ -1,37 +1,20 @@
 #include "JSAudioDestinationNode.hpp"
 #include "logger.hpp"
+#include <memory>
 
 namespace js_audio {
 
 JSAudioDestinationNode::JSAudioDestinationNode(
-    const Napi_IH::IHCallbackInfo &info)
-    : JSAudioNode(info), destination_specified_(123123123) {}
+    const Napi_IH::IHCallbackInfo &info,
+    std::shared_ptr<AudioDestinationNode> audio_destination_node_ptr)
+    : JSAudioNode(info, audio_destination_node_ptr),
+      audio_destination_node_ref_(
+          std::static_pointer_cast<AudioDestinationNode>(
+              JSAudioNode::audio_node_ptr_)) {}
 
 void JSAudioDestinationNode::Init(Napi::Env env, Napi::Object exports) {
-  DefineClass<JSAudioDestinationNode, JSAudioNode>(
-      env, "AudioDestinationNode",
-      {
-          InstanceAccessor<JSAudioDestinationNode,
-                           &JSAudioDestinationNode::GetDestinationSpecified,
-                           &JSAudioDestinationNode::SetDestinationSpecified>(
-              "destinationSpecified"),
-      },
-      false);
-}
-
-Napi::Value JSAudioDestinationNode::GetDestinationSpecified(
-    const Napi::CallbackInfo &info) {
-  return Napi::Number::From(info.Env(), destination_specified_);
-}
-
-void JSAudioDestinationNode::SetDestinationSpecified(
-    const Napi::CallbackInfo &info, const Napi::Value &value) {
-  if (value.IsNumber()) {
-    destination_specified_ = value.As<Napi::Number>().Uint32Value();
-  } else {
-    LOGE(
-        "Value is not number type! Cannot set value to destinationSpecified\n");
-  }
+  DefineClass<JSAudioDestinationNode, JSAudioNode>(env, "AudioDestinationNode",
+                                                   {}, false);
 }
 
 }; // namespace js_audio

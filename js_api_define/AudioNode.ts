@@ -1,4 +1,30 @@
 interface AudioNode {
+  readonly context: BaseAudioContext
+
+  /**
+   * inner type: uint32_t
+   */
+  readonly numberOfInputs: number
+
+  /**
+   * inner type: uint32_t
+   */
+  readonly numberOfOutputs: number
+
+  /**
+   * inner type: uint32_t
+   * default value: 2
+   */
+  // @ts-ignore
+  readonly channelCount: number
+
+  /**
+   * inner type: string
+   * default value: "explicit"
+   */
+  // @ts-ignore
+  readonly channelCountMode: ChannelCountMode
+
   /**
    * 
    * @param destinationNode 
@@ -10,24 +36,5 @@ interface AudioNode {
   connect(destinationNode: AudioNode): AudioNode
 
   disconnect()
-  readonly context: BaseAudioContext
 
-  /**
-   * inner type: unsigned long
-   */
-  readonly numberOfInputs: number
-
-  /**
-   * inner type: unsigned long
-   */
-  readonly numberOfOutputs: number
-
-  /**
-   * inner type: unsigned long
-   */
-  // @ts-ignore
-  readonly channelCount: number
-
-  // @ts-ignore
-  readonly channelCountMode: ChannelCountMode
 };

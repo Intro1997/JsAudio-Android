@@ -5,13 +5,8 @@
 namespace js_audio {
 class AudioBufferQueuePlayer : public AudioPlayer {
 public:
-  AudioBufferQueuePlayer(
-      /* source data bufferqueue locator params */ SLuint32 num_buffers,
-      /* source data pcm format params */ SLuint32 source_format_type,
-      SLuint32 num_channels, SLuint32 samples_per_sec, SLuint32 bits_per_sample,
-      SLuint32 container_size, SLuint32 channel_mask, SLuint32 endianness,
-      /* sink data output mix locator params */
-      SLuint32 sink_locator_type, std::shared_ptr<AudioEngine> audio_engine);
+  AudioBufferQueuePlayer(const AudioPlayerConfig &audio_player_config,
+                         std::shared_ptr<AudioEngine> audio_engine_ptr);
 
   /**
    * audio_data_pointer: a pointer to audio data.
@@ -88,11 +83,6 @@ private:
                                         void *context);
 
 private:
-  SLuint32 num_channels_;
-  SLuint32 samples_per_sec_;
-  SLuint32 bits_per_sample_;
-  SLuint32 endianness_;
-
   void *data_source_locator_;
   void *data_source_format_;
   const SLuint32 data_source_locator_type_ = SL_DATALOCATOR_BUFFERQUEUE;

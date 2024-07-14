@@ -1,6 +1,7 @@
 interface AudioDestinationNode extends AudioNode {
   /**
-   * inner type: unsigned long 
+   * inner type: uint32_t 
+   * default: 2 
    */
   readonly maxChannelCount: number
 };

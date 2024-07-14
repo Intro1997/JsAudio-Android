@@ -2,10 +2,12 @@ interface BaseAudioContext {
   readonly destination: AudioDestinationNode
   /**
    * inner type: float
+   * data unit: hz
    */
   readonly sampleRate: number
   /**
    * inner type: double
+   * precision: microsecond
    */
   readonly currentTime: number
 

@@ -3,10 +3,6 @@
 #include "preload_script.hpp"
 #include <jni.h>
 
-//
-// Created by intro on 2024/6/11.
-//
-
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_example_audio_AudioHandler_getPreloadScriptFromNative(JNIEnv *env,
                                                                jobject thiz) {
@@ -66,4 +62,17 @@ Java_com_example_audio_AudioHandler_destroyNativeAudioEngine(JNIEnv *env,
   } else {
     LOGE("Destroy audio engine failed! Audio engine is invalid!\n");
   }
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_audio_AudioHandler_setAudioEngineInitParam(
+    JNIEnv *env, jobject thiz, jint output_sample_rate_hz,
+    jint output_frames_per_buffer) {
+
+  auto audio_player_config = js_audio::AudioEngine::audio_player_config();
+
+  audio_player_config.sample_rate_milli_hz = output_sample_rate_hz * 1e3;
+  audio_player_config.frames_per_buffer = output_frames_per_buffer;
+
+  js_audio::AudioEngine::set_audio_player_config(audio_player_config);
 }

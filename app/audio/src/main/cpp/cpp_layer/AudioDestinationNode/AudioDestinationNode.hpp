@@ -1,9 +1,12 @@
 #pragma once
+#include "AudioNode.hpp"
+
 #include <SLES/OpenSLES.h>
 #include <memory>
-class AudioDestinationNode {
+namespace js_audio {
+class AudioDestinationNode : public AudioNode {
 public:
-  AudioDestinationNode();
+  AudioDestinationNode() = default;
 
   /**
    * produce sample_size count samples
@@ -12,6 +15,12 @@ public:
    */
   void ProduceSamples(float *data, uint32_t sample_size);
 
+  uint32_t max_channel_count() const;
+  void set_max_channel_count(const uint32_t &max_channel_count);
+
 private:
   void GetSourceNodesOutput(float *data, uint32_t sample_size);
+
+  uint32_t max_channel_count_;
 };
+} // namespace js_audio

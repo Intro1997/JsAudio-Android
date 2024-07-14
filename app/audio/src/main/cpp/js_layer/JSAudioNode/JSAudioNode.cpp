@@ -4,8 +4,9 @@
 namespace js_audio {
 Napi::FunctionReference JSAudioNode::js_audio_node_class_ref_;
 
-JSAudioNode::JSAudioNode(const Napi_IH::IHCallbackInfo &info)
-    : Napi_IH::IHObjectWrap(info) {
+JSAudioNode::JSAudioNode(const Napi_IH::IHCallbackInfo &info,
+                         std::shared_ptr<AudioNode> audio_node_ptr)
+    : Napi_IH::IHObjectWrap(info), audio_node_ptr_(audio_node_ptr) {
   if (info.Length() < 3) {
     LOGE(
         "Create JSAudioDestinationNode failed, need 3 arguments but get %zu.\n",

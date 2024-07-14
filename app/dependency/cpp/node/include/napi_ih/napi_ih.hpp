@@ -24,6 +24,42 @@ namespace Napi_IH {
 class MethodWrapper;
 class IHObjectWrap;
 
+class FunctionWrapper {
+public:
+  FunctionWrapper() = default;
+  FunctionWrapper(const Napi::Function &function);
+
+  // If you want use more member functions of
+  // Napi::Function, add them to here, then
+  // call them via Napi::Function function_;
+
+  // WARN: All Args here must be default args
+  // such as JSAudioNode(const Napi::CallbackInfo& info, int a = 0, char * name
+  // = nullptr);
+  // the args will be 'a' and 'name'. We can't use this function
+  // with the constructor has non-default value
+  template <typename T, typename... Args>
+  Napi::MaybeOrValue<Napi::Object>
+  NewWithArgs(const std::initializer_list<napi_value> &args,
+              Args... ctor_args) const;
+  template <typename T, typename... Args>
+  Napi::MaybeOrValue<Napi::Object>
+  NewWithArgs(const std::vector<napi_value> &args, Args... ctor_args) const;
+  template <typename T, typename... Args>
+  Napi::MaybeOrValue<Napi::Object>
+  NewWithArgs(size_t argc, const napi_value *args, Args... ctor_args) const;
+
+  Napi::MaybeOrValue<Napi::Object>
+  New(const std::initializer_list<napi_value> &args) const;
+  Napi::MaybeOrValue<Napi::Object>
+  New(const std::vector<napi_value> &args) const;
+  Napi::MaybeOrValue<Napi::Object> New(size_t argc,
+                                       const napi_value *args) const;
+
+private:
+  Napi::Function function_;
+};
+
 class IHCallbackInfo {
 public:
   IHCallbackInfo(const Napi::CallbackInfo &info, void *user_data = nullptr);
@@ -54,13 +90,16 @@ struct ClassMetaInfo {
   std::vector<Napi::ClassPropertyDescriptor<MethodWrapper>> descriptors;
   bool need_export = true;
   void *data = nullptr;
+  std::function<std::unique_ptr<IHObjectWrap>(
+      const Napi_IH::IHCallbackInfo &info)>
+      ctor_helper;
 };
 
 class Registration {
 public:
   static void StartRegistration(Napi::Env env, Napi::Object exports);
   static void AddClassMetaInfo(const char *name, ClassMetaInfo *info);
-  template <typename T> static Napi::Function FindClass();
+  template <typename T> static Napi_IH::FunctionWrapper FindClass();
 
 private:
   static void ProcessClassMetaInfo(
@@ -123,7 +162,7 @@ public:
   InstanceAccessor(const char *utf8name,
                    napi_property_attributes attributes = napi_default,
                    void *data = nullptr);
-  template <typename T> static Napi::Function FindClass();
+  template <typename T> static Napi_IH::FunctionWrapper FindClass();
 
 private:
   template <typename T, typename Base = NonBase>
@@ -134,7 +173,6 @@ private:
 
 protected:
   static Napi::FunctionReference js_class_constructor_;
-  static ClassMetaInfo class_meta_info_;
   std::function<void *(Napi::CallbackInfo &info)> init_parent_;
 };
 

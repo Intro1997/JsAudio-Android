@@ -1,6 +1,9 @@
 #include "JSAudioContext.hpp"
+#include "AudioContext.hpp"
 #include "JSAudioDestinationNode.hpp"
+
 #include <napi_ih/napi_ih.hpp>
+
 namespace js_audio {
 
 void JSAudioContext::Init(Napi::Env env, Napi::Object exports) {
@@ -14,7 +17,7 @@ void JSAudioContext::Init(Napi::Env env, Napi::Object exports) {
 }
 
 JSAudioContext::JSAudioContext(const Napi_IH::IHCallbackInfo &info)
-    : JSBaseAudioContext(info) {}
+    : JSBaseAudioContext(info, std::make_shared<AudioContext>()) {}
 
 Napi::Value JSAudioContext::Resume(const Napi::CallbackInfo &info) {
   // TODO: make it return promise object

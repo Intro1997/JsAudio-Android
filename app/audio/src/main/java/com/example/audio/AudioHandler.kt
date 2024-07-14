@@ -1,11 +1,27 @@
 package com.example.audio
 
+import android.content.Context
+import android.media.AudioFormat
+import android.media.AudioManager
+import android.media.AudioTrack
 import android.util.Log
 import com.example.node_env.NodeModuleHandler
 
-class AudioHandler : NodeModuleHandler {
+class AudioHandler(context: Context) : NodeModuleHandler {
+    init {
+        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        outputSampleRate =
+            audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE).toInt()
+        outputFramesPerBuffer =
+            audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER).toInt()
+
+        setAudioEngineInitParam(outputSampleRate, outputFramesPerBuffer)
+    }
+
     companion object {
         private const val TAG = "AudioHandler"
+        var outputSampleRate = 0
+        var outputFramesPerBuffer = 0
 
         init {
             Log.d(TAG, "load audio library")
@@ -48,6 +64,12 @@ class AudioHandler : NodeModuleHandler {
     }
 
     private external fun getPreloadScriptFromNative(): String
+
+    private external fun setAudioEngineInitParam(
+        outputSampleRate: Int,
+        outputFramesPerBuffer: Int
+    )
+
     private external fun startNativeAudioEngine()
     private external fun pauseNativeAudioEngine()
     private external fun resumeNativeAudioEngine()

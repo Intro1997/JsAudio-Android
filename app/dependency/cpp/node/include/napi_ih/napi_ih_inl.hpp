@@ -4,6 +4,64 @@
 #include "napi_ih.hpp"
 
 namespace Napi_IH {
+template <typename T> class ClassMetaInfoInstance {
+public:
+  static ClassMetaInfo &GetInstance() { return meta_info_; }
+
+private:
+  static ClassMetaInfo meta_info_;
+};
+
+inline FunctionWrapper::FunctionWrapper(const Napi::Function &function)
+    : function_(function) {}
+
+template <typename T, typename... Args>
+inline Napi::MaybeOrValue<Napi::Object>
+FunctionWrapper::NewWithArgs(const std::initializer_list<napi_value> &args,
+                             Args... ctor_args) const {
+  return FunctionWrapper::NewWithArgs<T>(args.size(), args.begin(),
+                                         ctor_args...);
+}
+
+template <typename T, typename... Args>
+inline Napi::MaybeOrValue<Napi::Object>
+FunctionWrapper::NewWithArgs(const std::vector<napi_value> &args,
+                             Args... ctor_args) const {
+  return FunctionWrapper::NewWithArgs<T>(args.size(), args.data(),
+                                         ctor_args...);
+}
+
+template <typename T, typename... Args>
+inline Napi::MaybeOrValue<Napi::Object>
+FunctionWrapper::NewWithArgs(size_t argc, const napi_value *args,
+                             Args... ctor_args) const {
+  if (function_.IsEmpty()) {
+    return {};
+  }
+  ClassMetaInfo &class_meta_info = ClassMetaInfoInstance<T>::GetInstance();
+  class_meta_info.ctor_helper = [=](const Napi_IH::IHCallbackInfo &info) {
+    return std::move(std::make_unique<T>(info, ctor_args...));
+  };
+
+  auto ret_object = function_.New(argc, args);
+
+  class_meta_info.ctor_helper = nullptr;
+  return ret_object;
+}
+
+inline Napi::MaybeOrValue<Napi::Object>
+FunctionWrapper::New(const std::initializer_list<napi_value> &args) const {
+  return FunctionWrapper::New(args.size(), args.begin());
+}
+inline Napi::MaybeOrValue<Napi::Object>
+FunctionWrapper::New(const std::vector<napi_value> &args) const {
+  return FunctionWrapper::New(args.size(), args.data());
+}
+inline Napi::MaybeOrValue<Napi::Object>
+FunctionWrapper::New(size_t argc, const napi_value *args) const {
+  return function_.New(argc, args);
+}
+
 inline IHCallbackInfo::IHCallbackInfo(const Napi::CallbackInfo &info,
                                       void *user_data)
     : info_(info), user_data_(user_data) {}
@@ -34,14 +92,6 @@ inline const Napi::CallbackInfo &IHCallbackInfo::InnerCallbackInfo() const {
   return info_;
 }
 
-template <typename T> class ClassMetaInfoInstance {
-public:
-  static ClassMetaInfo &GetInstance() { return meta_info_; }
-
-private:
-  static ClassMetaInfo meta_info_;
-};
-
 template <typename T> ClassMetaInfo ClassMetaInfoInstance<T>::meta_info_;
 
 inline std::map<ClassMetaInfo *, Napi::FunctionReference>
@@ -56,7 +106,9 @@ public:
   MethodWrapper(const Napi::CallbackInfo &info)
       : Napi::ObjectWrap<MethodWrapper>(info) {
     ClassMetaInfo *meta_info = reinterpret_cast<ClassMetaInfo *>(info.Data());
-    if (meta_info->ctor) {
+    if (meta_info->ctor_helper) {
+      wrapped_ = meta_info->ctor_helper({info, meta_info->data});
+    } else if (meta_info->ctor) {
       wrapped_ = meta_info->ctor({info, meta_info->data});
     }
   }
@@ -200,7 +252,8 @@ inline IHObjectWrap::PropertyDescriptor IHObjectWrap::InstanceAccessor(
                                                             attributes, data);
 }
 
-template <typename T> inline Napi::Function IHObjectWrap::FindClass() {
+template <typename T>
+inline Napi_IH::FunctionWrapper IHObjectWrap::FindClass() {
   return Registration::FindClass<T>();
 }
 
@@ -219,6 +272,7 @@ void IHObjectWrap::DefineClass(Napi::Env env, const char *utf8name,
   info_handle.descriptors = {descriptors, descriptors + props_count};
   info_handle.data = data;
   info_handle.need_export = need_export;
+  info_handle.ctor_helper = nullptr;
   Registration::AddClassMetaInfo(utf8name, &info_handle);
 }
 
@@ -236,7 +290,6 @@ inline void Registration::StartRegistration(Napi::Env env,
 }
 
 inline void Registration::ClearClassMetaInfoMap(ClassMetaInfo *info) {
-  info->name = nullptr;
   info->descriptors.clear();
   info->parent = nullptr;
 }
@@ -250,13 +303,14 @@ inline void Registration::AddClassMetaInfo(const char *name,
   class_meta_infos[name] = info;
 }
 
-template <typename T> Napi::Function Registration::FindClass() {
+template <typename T> Napi_IH::FunctionWrapper Registration::FindClass() {
   const auto &ctor_element =
       ctor_table_.find(&(ClassMetaInfoInstance<T>::GetInstance()));
   if (ctor_element == ctor_table_.end()) {
     return {};
   }
-  return ctor_element->second.Value();
+  Napi_IH::FunctionWrapper func_wrapper(ctor_element->second.Value());
+  return func_wrapper;
 }
 
 inline void Registration::ProcessClassMetaInfo(

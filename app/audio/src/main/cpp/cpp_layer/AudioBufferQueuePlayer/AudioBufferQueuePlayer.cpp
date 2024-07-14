@@ -60,25 +60,39 @@ static SLint16 *InitPcmData() {
 
 namespace js_audio {
 AudioBufferQueuePlayer::AudioBufferQueuePlayer(
-    /* source data buffer queue locator params */ SLuint32 num_buffers,
-    /* source data pcm format params */ SLuint32 source_format_type,
-    SLuint32 num_channels, SLuint32 samples_per_sec, SLuint32 bits_per_sample,
-    SLuint32 container_size, SLuint32 channel_mask, SLuint32 endianness,
-    /* sink data output mix locator params */ SLuint32 sink_locator_type,
-    std::shared_ptr<AudioEngine> audio_engine)
-    : AudioPlayer(), num_channels_(num_channels),
-      samples_per_sec_(samples_per_sec), bits_per_sample_(bits_per_sample),
-      endianness_(endianness), data_source_locator_(nullptr),
-      data_source_format_(nullptr),
-      data_source_format_type_(source_format_type), data_sink_locator_(nullptr),
-      data_sink_locator_type_(sink_locator_type), audio_data_buffer_(nullptr),
-      audio_data_buffer_size_(0), current_play_offset_(0) {
+    const AudioPlayerConfig &audio_player_config,
+    std::shared_ptr<AudioEngine> audio_engine_ptr)
+    : AudioPlayer(audio_player_config),
+      // TODO: move these to base class
+      /* data source */
+      data_source_locator_(nullptr), data_source_format_(nullptr),
+      data_source_format_type_(audio_player_config_.source_format_type),
+      /* data sink */
+      data_sink_locator_(nullptr), sl_outputmix_object_(nullptr),
+      data_sink_locator_type_(audio_player_config_.sink_locator_type),
+      /* audio player */
+      sl_player_object_(nullptr), sl_player_source_buffer_itf_(nullptr),
+      sl_player_itf_(nullptr),
+      /* audio buffer */
+      audio_data_buffer_(nullptr), audio_data_buffer_size_(0),
+      current_play_offset_(0) {
 
-  SLEngineItf sl_engine_itf = audio_engine->sl_engine_interface_;
+  SLEngineItf sl_engine_itf = audio_engine_ptr->sl_engine_interface_;
   if (!sl_engine_itf) {
     LOGE("Invalid engine interface!\n");
     return;
   }
+
+  SLuint32 num_buffers = audio_player_config_.num_buffers;
+  SLuint32 source_format_type = audio_player_config_.source_format_type;
+  SLuint32 num_channels = audio_player_config_.num_channels;
+  SLuint32 channel_mask = audio_player_config_.channel_mask;
+  SLuint32 sample_rate_milli_hz = audio_player_config_.sample_rate_milli_hz;
+  SLuint32 bits_per_sample = audio_player_config_.bits_per_sample;
+  SLuint32 container_size = audio_player_config_.container_size;
+  SLuint32 endianness = audio_player_config_.endianness;
+  SLuint32 sink_locator_type = audio_player_config_.sink_locator_type;
+  uint32_t frames_per_buffer = audio_player_config_.frames_per_buffer;
 
   do {
     data_source_locator_ =
@@ -88,14 +102,8 @@ AudioBufferQueuePlayer::AudioBufferQueuePlayer(
       break;
     }
 
-    // use force config heres
-    num_channels = 2;
-    samples_per_sec = SL_SAMPLINGRATE_44_1;
-    bits_per_sample = container_size = SL_PCMSAMPLEFORMAT_FIXED_16;
-    channel_mask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
-
     data_source_format_ = CreateDataFormat(
-        source_format_type, num_channels, samples_per_sec, bits_per_sample,
+        source_format_type, num_channels, sample_rate_milli_hz, bits_per_sample,
         container_size, channel_mask, endianness);
     if (data_source_format_ == nullptr) {
       LOGE("Create data source format failed\n");
@@ -154,7 +162,8 @@ AudioBufferQueuePlayer::AudioBufferQueuePlayer(
                                   AudioPlayerBufferCallback, this);
 
   if (result != SL_RESULT_SUCCESS) {
-    LOGE("Get audio player source buffer interface failed! Error code: 0x%x\n",
+    LOGE("Get audio player source buffer interface failed! Error code: "
+         "0x%x\n",
          result);
     AudioBufferQueuePlayer::Destroy();
     return;
@@ -198,7 +207,8 @@ bool AudioBufferQueuePlayer::GetAudioDataCopied(void *receive_ptr,
   size_t audio_data_buffer_bytes = audio_data_buffer_size_ * sizeof(SLint16);
   if (start_bytes >= audio_data_buffer_bytes ||
       copy_length >= audio_data_buffer_bytes - start_bytes) {
-    LOGE("Offset is valid, cannot copy %zu bytes data start with %zu from %zu "
+    LOGE("Offset is valid, cannot copy %zu bytes data start with %zu from "
+         "%zu "
          "origin data bytes.\n",
          copy_length, start_bytes, audio_data_buffer_bytes);
     return false;
@@ -258,6 +268,9 @@ void AudioBufferQueuePlayer::Resume() {
 }
 
 void AudioBufferQueuePlayer::Stop() {
+  if (!sl_player_itf_) {
+    return;
+  }
   SLresult result =
       (*sl_player_itf_)->SetPlayState(sl_player_itf_, SL_PLAYSTATE_STOPPED);
   if (result != SL_RESULT_SUCCESS) {
@@ -267,6 +280,10 @@ void AudioBufferQueuePlayer::Stop() {
 
 void AudioBufferQueuePlayer::Destroy() {
   Stop();
+
+  if (!sl_player_object_) {
+    return;
+  }
 
   (*sl_player_object_)->Destroy(sl_player_object_);
 
@@ -287,7 +304,8 @@ size_t AudioBufferQueuePlayer::GetCurrentOffset() {
 
 void AudioBufferQueuePlayer::SetCurrentOffset(size_t offset) {
   if (offset > audio_data_buffer_size_) {
-    LOGE("Offset large than total audio data size, set current offset to total "
+    LOGE("Offset large than total audio data size, set current offset to "
+         "total "
          "audio data size\n");
     offset = audio_data_buffer_size_;
   }
@@ -322,7 +340,8 @@ void *AudioBufferQueuePlayer::CreateDataLocator(SLuint32 data_locator_type,
     if (!CHECK_TYPE(decltype(DecayTuple(params)),
                     js_audio::AudioPlayer::DataLocatorOutputMixParamsType)) {
       LOGE("Create SL_DATALOCATOR_OUTPUTMIX failed! Valid paramter is "
-           "<SLEngineItf, SLObjectItf *, SLuint32, SLInterfaceID *, SLboolean "
+           "<SLEngineItf, SLObjectItf *, SLuint32, SLInterfaceID *, "
+           "SLboolean "
            "*>\n");
       return nullptr;
     }
@@ -400,6 +419,9 @@ void AudioBufferQueuePlayer::ReleaseDataSource() {
 }
 
 void AudioBufferQueuePlayer::ReleaseDataSink() {
+  if (!sl_outputmix_object_) {
+    return;
+  }
   (*sl_outputmix_object_)->Destroy(sl_outputmix_object_);
 
   if (data_sink_locator_) {
