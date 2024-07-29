@@ -101,6 +101,11 @@ void NodeEnv::Stop() {
 
 void NodeEnv::Destroy() {
   preload_script_ = NODE_INSTANCE_PRELOAD_SCRIPT;
+
+  if (!instance_) {
+    return;
+  }
+
   internal_modules_.clear();
   if (isolate_) {
     v8::Locker locker(isolate_);
@@ -235,8 +240,8 @@ node::IsolateData *NodeEnv::CreateNodeIsoateData() {
     return nullptr;
   }
 
-  instance_->isolate_data_ = node::CreateIsolateData(instance_->isolate_, &loop,
-                                                     platform, allocator_ptr.get());
+  instance_->isolate_data_ = node::CreateIsolateData(
+      instance_->isolate_, &loop, platform, allocator_ptr.get());
   if (!instance_->isolate_data_) {
     LOGE("Create isolate data failed\n");
     return nullptr;
