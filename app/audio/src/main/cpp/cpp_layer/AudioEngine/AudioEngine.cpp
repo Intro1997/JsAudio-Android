@@ -54,10 +54,8 @@ void AudioEngine::Resume() {
 
 void AudioEngine::Stop() {
   LOGD("Native AudioEngine::Stop()\n");
-  // audio player stop means reset play process
-  // when start playing, player will play from beginning
   if (audio_buffer_queue_player_) {
-    audio_buffer_queue_player_->Pause();
+    audio_buffer_queue_player_->Stop();
   }
 }
 
@@ -70,7 +68,7 @@ void AudioEngine::Destroy() {
 
 void AudioEngine::InitAudioBufferQueuePlayer() {
   audio_buffer_queue_player_ = std::make_shared<AudioBufferQueuePlayer>(
-          audio_player_config_, audio_engine_ptr_);
+      audio_player_config_, audio_engine_ptr_);
 }
 
 std::weak_ptr<AudioPlayer>

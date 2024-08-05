@@ -6,7 +6,14 @@ import java.net.URL
 import java.io.BufferedInputStream
 import java.io.BufferedReader
 
+
 class NodeEnvHandler private constructor() : NodeModuleHandler {
+    enum class NodeEnvState(val state: Int) {
+        Running(0x1),
+        Stop(0x2),
+        Pause(0x3)
+    }
+
     companion object {
         init {
             System.loadLibrary("node_env")
@@ -14,6 +21,8 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
 
         private const val TAG = "NodeEnvHandle"
         private var jsEntry = ""
+        private var jsEntryFile = ""
+        private var nodeEnvState = NodeEnvState.Stop
 
         /**
          * innerNodeEnvHandle is relative to isNativeNodeEnvCreated
@@ -75,8 +84,15 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
         }
     }
 
+    fun setJsEntryFile(filePath: String) {
+        jsEntryFile = filePath
+    }
 
-    fun evalCodeFromEntryFile(jsEntryFile: String) {
+    fun getNodeEnvState(): NodeEnvState {
+        return nodeEnvState
+    }
+
+    private fun evalCodeFromEntryFile(jsEntryFile: String) {
         if (isEvaluatingCode.getValue()) {
             Log.w(TAG, "Cannot run code, node env is busy!")
         } else {
@@ -99,11 +115,19 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
         }
     }
 
+    override fun start() {
+        if (jsEntryFile != "") {
+            evalCodeFromEntryFile(jsEntryFile)
+            nodeEnvState = NodeEnvState.Running
+        }
+    }
+
     override fun stop() {
         innerNodeEnvHandler?.pauseNativeNode()
         registeredModuleHandler.forEach { handler ->
             handler.stop()
         }
+        nodeEnvState = NodeEnvState.Stop
     }
 
     override fun pause() {
@@ -111,6 +135,7 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
         registeredModuleHandler.forEach { handler ->
             handler.pause()
         }
+        nodeEnvState = NodeEnvState.Pause
     }
 
     override fun resume() {
@@ -118,6 +143,7 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
         registeredModuleHandler.forEach { handler ->
             handler.resume()
         }
+        nodeEnvState = NodeEnvState.Running
     }
 
     override fun destroy() {
