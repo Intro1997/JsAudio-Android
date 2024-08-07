@@ -264,6 +264,17 @@ template <typename T> static Napi_IH::FunctionWrapper FindClass();
 
 Returns `Napi_IH::FunctionWrapper` object that wrapped a `Napi::Function`.
 
+### UnWrap\<T\>(Napi::Obejct object)
+
+```cpp
+template <typename T> static Napi_IH::FunctionWrapper FindClass();
+```
+
+- `[in] T`: The cpp class of the js class that you want to unwrap.
+- `[in] Napi::Obejct object`: The js object that wraps a cpp object. The cpp object MUST inherits from Napi_IH::IHObjectWrap
+
+Return the cpp object pointer of the cpp object wrapped by js object. If T is not inherition of Napi_IH::IHObjectWrap, function will return nullptr.
+
 ## Napi_IH::FunctionWrapper
 
 A wrapper of `Napi::Function` to make sure you can pass parameters other than `const Napi::CallbackInfo&` type.

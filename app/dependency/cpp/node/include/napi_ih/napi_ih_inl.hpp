@@ -101,6 +101,7 @@ inline std::map<const char *, ClassMetaInfo *> Registration::meta_info_table_;
 
 class MethodWrapper : public Napi::ObjectWrap<MethodWrapper> {
   using PropertyDescriptor = Napi::ClassPropertyDescriptor<MethodWrapper>;
+  friend class IHObjectWrap;
 
 public:
   MethodWrapper(const Napi::CallbackInfo &info)
@@ -255,6 +256,13 @@ inline IHObjectWrap::PropertyDescriptor IHObjectWrap::InstanceAccessor(
 template <typename T>
 inline Napi_IH::FunctionWrapper IHObjectWrap::FindClass() {
   return Registration::FindClass<T>();
+}
+
+template <typename T> T *IHObjectWrap::UnWrap(Napi::Object object) {
+  if (std::is_base_of<IHObjectWrap, T>::value) {
+    return (T *)Napi::ObjectWrap<MethodWrapper>::Unwrap(object)->wrapped_.get();
+  }
+  return (T *)nullptr;
 }
 
 template <typename T, typename Base>

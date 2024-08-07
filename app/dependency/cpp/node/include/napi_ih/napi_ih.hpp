@@ -164,6 +164,9 @@ public:
                    void *data = nullptr);
   template <typename T> static Napi_IH::FunctionWrapper FindClass();
 
+  template<typename T>
+  static T* UnWrap(Napi::Object object);
+
 private:
   template <typename T, typename Base = NonBase>
   static void DefineClass(Napi::Env env, const char *utf8name,
