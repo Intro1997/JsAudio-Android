@@ -12,14 +12,18 @@ protected:
   std::shared_ptr<AudioNode> audio_node_ptr_;
 
 private:
-  Napi::Value GetNumberOfInputs(const Napi::CallbackInfo &info);
-  Napi::Value GetNumberOfOutputs(const Napi::CallbackInfo &info);
-  Napi::Value GetChannelCount(const Napi::CallbackInfo &info);
+  Napi::Value getContext(const Napi::CallbackInfo &info);
+  Napi::Value getNumberOfInputs(const Napi::CallbackInfo &info);
+  Napi::Value getNumberOfOutputs(const Napi::CallbackInfo &info);
+  Napi::Value getChannelCount(const Napi::CallbackInfo &info);
+  Napi::Value getChannelCountMode(const Napi::CallbackInfo &info);
 
-  static Napi::FunctionReference
-      js_audio_node_class_ref_; // constructor of class
-  uint32_t number_of_inputs_;
-  uint32_t number_of_outputs_;
-  uint32_t channel_count_;
+  Napi::Value connect(const Napi::CallbackInfo &info);
+  Napi::Value disconnect(const Napi::CallbackInfo &info);
+
+  bool IsSameAudioContext(const JSAudioNode * other_audio_node);
+
+  // weak ref
+  Napi::ObjectReference napi_audio_context_ref_;
 };
 } // namespace js_audio

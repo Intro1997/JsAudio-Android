@@ -1,53 +1,129 @@
 #include "JSAudioNode.hpp"
+#include "JSBaseAudioContext.hpp"
 #include "logger.hpp"
 
 namespace js_audio {
-Napi::FunctionReference JSAudioNode::js_audio_node_class_ref_;
 
 JSAudioNode::JSAudioNode(const Napi_IH::IHCallbackInfo &info,
                          std::shared_ptr<AudioNode> audio_node_ptr)
     : Napi_IH::IHObjectWrap(info), audio_node_ptr_(audio_node_ptr) {
-  if (info.Length() < 3) {
-    LOGE(
-        "Create JSAudioDestinationNode failed, need 3 arguments but get %zu.\n",
-        info.Length());
+  if (info.Length() < 1 || !info[0].IsObject()) {
+    LOGE("Error: Cannot create AudioNode without AudioContext!\n");
     return;
   }
-  Napi::Number number_of_inputs = info[0].As<Napi::Number>();
-  Napi::Number number_of_outputs = info[1].As<Napi::Number>();
-  Napi::Number channel_count = info[2].As<Napi::Number>();
-  if (number_of_inputs.IsEmpty() || number_of_outputs.IsEmpty() ||
-      channel_count.IsEmpty()) {
-    LOGE("Create JSAudioDestinationNode failed, need 3 number variable!\n");
-    return;
-  }
-  number_of_inputs_ = number_of_inputs.Uint32Value();
-  number_of_outputs_ = number_of_outputs.Uint32Value();
-  channel_count_ = channel_count.Uint32Value();
+
+  napi_audio_context_ref_ = Napi::Weak(info[0].As<Napi::Object>());
 }
 
 void JSAudioNode::Init(Napi::Env env, Napi::Object exports) {
   DefineClass<JSAudioNode>(
       env, "AudioNode",
-      {InstanceAccessor<JSAudioNode, &JSAudioNode::GetNumberOfInputs>(
+      {InstanceAccessor<JSAudioNode, &JSAudioNode::getContext>("context"),
+       InstanceAccessor<JSAudioNode, &JSAudioNode::getNumberOfInputs>(
            "numberOfInputs"),
-       InstanceAccessor<JSAudioNode, &JSAudioNode::GetNumberOfOutputs>(
+       InstanceAccessor<JSAudioNode, &JSAudioNode::getNumberOfOutputs>(
            "numberOfOutputs"),
-       InstanceAccessor<JSAudioNode, &JSAudioNode::GetChannelCount>(
-           "channelCount")},
+       InstanceAccessor<JSAudioNode, &JSAudioNode::getChannelCount>(
+           "channelCount"),
+       InstanceMethod<JSAudioNode, &JSAudioNode::connect>("connect"),
+       InstanceMethod<JSAudioNode, &JSAudioNode::disconnect>("disconnect")},
       false);
 }
 
-Napi::Value JSAudioNode::GetNumberOfInputs(const Napi::CallbackInfo &info) {
-  return Napi::Value::From(info.Env(), number_of_inputs_);
+Napi::Value JSAudioNode::getContext(const Napi::CallbackInfo &info) {
+  Napi::Object napi_audio_context = napi_audio_context_ref_.Value();
+  if (napi_audio_context.IsEmpty()) {
+    LOGW("Warn: the context of AudioNode is expired!\n");
+  }
+
+  return napi_audio_context;
 }
 
-Napi::Value JSAudioNode::GetNumberOfOutputs(const Napi::CallbackInfo &info) {
-  return Napi::Value::From(info.Env(), number_of_outputs_);
+Napi::Value JSAudioNode::getNumberOfInputs(const Napi::CallbackInfo &info) {
+  if (!audio_node_ptr_) {
+    LOGE("Error! Inner audio node ptr is nullptr!\n");
+    return info.Env().Undefined();
+  }
+  return Napi::Value::From(info.Env(), audio_node_ptr_->number_of_inputs());
 }
 
-Napi::Value JSAudioNode::GetChannelCount(const Napi::CallbackInfo &info) {
-  return Napi::Value::From(info.Env(), channel_count_);
+Napi::Value JSAudioNode::getNumberOfOutputs(const Napi::CallbackInfo &info) {
+  if (!audio_node_ptr_) {
+    LOGE("Error! Inner audio node ptr is nullptr!\n");
+    return info.Env().Undefined();
+  }
+  return Napi::Value::From(info.Env(), audio_node_ptr_->number_of_outputs());
+}
+
+Napi::Value JSAudioNode::getChannelCount(const Napi::CallbackInfo &info) {
+  if (!audio_node_ptr_) {
+    LOGE("Error! Inner audio node ptr is nullptr!\n");
+    return info.Env().Undefined();
+  }
+  return Napi::Value::From(info.Env(), audio_node_ptr_->channel_count());
+}
+
+Napi::Value JSAudioNode::getChannelCountMode(const Napi::CallbackInfo &info) {
+  if (!audio_node_ptr_) {
+    LOGE("Error! Inner audio node ptr is nullptr!\n");
+    return info.Env().Undefined();
+  }
+  return Napi::String::New(info.Env(), audio_node_ptr_->channel_count_mode());
+}
+
+Napi::Value JSAudioNode::connect(const Napi::CallbackInfo &info) {
+  if (!audio_node_ptr_) {
+    LOGE("Error! Inner audio node ptr is nullptr!\n");
+    return info.Env().Undefined();
+  }
+
+  if (info.Length() < 1 || !info[0].IsObject()) {
+    LOGE("Error! connect function need one AudioNode object parameter\n");
+    return info.Env().Undefined();
+  }
+
+  Napi::Object napi_dest_audio_node_obj = info[0].As<Napi::Object>();
+  JSAudioNode *js_dest_audio_node_ptr =
+      UnWrap<JSAudioNode>(napi_dest_audio_node_obj);
+
+  if (!js_dest_audio_node_ptr || !js_dest_audio_node_ptr->audio_node_ptr_) {
+    LOGE("Error! Try to connect an invalid AudioNode\n");
+    return info.Env().Undefined();
+  }
+
+  JSBaseAudioContext *js_base_audio_ctx_ptr =
+      UnWrap<JSBaseAudioContext>(napi_audio_context_ref_.Value());
+  JSBaseAudioContext *other_js_base_audio_ctx_ptr = UnWrap<JSBaseAudioContext>(
+      js_dest_audio_node_ptr->napi_audio_context_ref_.Value());
+
+  if (!js_base_audio_ctx_ptr) {
+    LOGE("Error: the context of AudioNode is expired!\n");
+    return info.Env().Undefined();
+  }
+
+  if (!other_js_base_audio_ctx_ptr) {
+    LOGE("Error: the context of destination AudioNode is expired!\n");
+    return info.Env().Undefined();
+  }
+
+  if (js_base_audio_ctx_ptr != other_js_base_audio_ctx_ptr) {
+    LOGE("Error! Cannot connect to the AudioNode of different AudioContext!\n");
+    return info.Env().Undefined();
+  }
+
+  audio_node_ptr_->ConnectTo(js_dest_audio_node_ptr->audio_node_ptr_);
+  js_dest_audio_node_ptr->audio_node_ptr_->BeConnectedTo(audio_node_ptr_);
+
+  return napi_dest_audio_node_obj;
+}
+
+Napi::Value JSAudioNode::disconnect(const Napi::CallbackInfo &info) {
+  if (!audio_node_ptr_) {
+    LOGE("Error! Inner audio node ptr is nullptr!\n");
+  } else {
+    audio_node_ptr_->Disconnect();
+  }
+  return info.Env().Undefined();
 }
 
 } // namespace js_audio

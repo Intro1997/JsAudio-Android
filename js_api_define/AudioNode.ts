@@ -1,5 +1,8 @@
 interface AudioNode {
-  readonly context: BaseAudioContext
+  // in chrome, audioNode.context return AudioContext object
+  // so we use AudioContext here
+  // @ts-ignore
+  readonly context: AudioContext
 
   /**
    * inner type: uint32_t
@@ -35,6 +38,6 @@ interface AudioNode {
    */
   connect(destinationNode: AudioNode): AudioNode
 
-  disconnect()
+  disconnect(): void
 
 };

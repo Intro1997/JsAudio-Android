@@ -259,8 +259,10 @@ inline Napi_IH::FunctionWrapper IHObjectWrap::FindClass() {
 }
 
 template <typename T> T *IHObjectWrap::UnWrap(Napi::Object object) {
-  if (std::is_base_of<IHObjectWrap, T>::value) {
-    return (T *)Napi::ObjectWrap<MethodWrapper>::Unwrap(object)->wrapped_.get();
+  MethodWrapper *method_wrapper_ptr =
+      Napi::ObjectWrap<MethodWrapper>::Unwrap(object);
+  if (std::is_base_of<IHObjectWrap, T>::value && method_wrapper_ptr) {
+    return (T *)method_wrapper_ptr->wrapped_.get();
   }
   return (T *)nullptr;
 }
