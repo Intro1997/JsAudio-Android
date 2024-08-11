@@ -1,7 +1,9 @@
 #include "AudioBufferQueuePlayer.hpp"
+#include "AudioMixer.hpp"
 #include "SLES/OpenSLES_Android.h"
 #include "checker.hpp"
 #include "logger.hpp"
+
 #include <cmath>
 #include <tuple>
 #include <type_traits>
@@ -72,10 +74,7 @@ AudioBufferQueuePlayer::AudioBufferQueuePlayer(
       data_sink_locator_type_(audio_player_config_.sink_locator_type),
       /* audio player */
       sl_player_object_(nullptr), sl_player_source_buffer_itf_(nullptr),
-      sl_player_itf_(nullptr),
-      /* audio buffer */
-      audio_data_buffer_(nullptr), audio_data_buffer_size_(0),
-      current_play_offset_(0) {
+      sl_player_itf_(nullptr) {
 
   SLEngineItf sl_engine_itf = audio_engine_ptr->sl_engine_interface_;
   if (!sl_engine_itf) {
@@ -92,7 +91,10 @@ AudioBufferQueuePlayer::AudioBufferQueuePlayer(
   SLuint32 container_size = audio_player_config_.container_size;
   SLuint32 endianness = audio_player_config_.endianness;
   SLuint32 sink_locator_type = audio_player_config_.sink_locator_type;
-  uint32_t frames_per_buffer = audio_player_config_.frames_per_buffer;
+  uint32_t samples_per_buffer = audio_player_config_.samples_per_buffer;
+
+  sample_buffers_.resize(num_buffers);
+  current_buffer_id_ = 0;
 
   do {
     data_source_locator_ =
@@ -178,54 +180,12 @@ AudioBufferQueuePlayer::AudioBufferQueuePlayer(
     return;
   }
 
-  audio_data_buffer_ = InitPcmData();
-  audio_data_buffer_size_ = AUDIO_DATA_STORAGE_SIZE;
-
   is_valid_ = true;
-}
-
-bool AudioBufferQueuePlayer::UpdateAudioData(SLint16 *audio_data_pointer,
-                                             size_t data_size) {
-  if (audio_data_pointer == nullptr) {
-    return false;
-  }
-  audio_data_buffer_ = new SLint16[data_size]();
-  std::memcpy(audio_data_buffer_, audio_data_pointer,
-              data_size * sizeof(SLint16));
-  audio_data_buffer_size_ = data_size;
-  return true;
-}
-
-bool AudioBufferQueuePlayer::GetAudioDataCopied(void *receive_ptr,
-                                                size_t start_bytes,
-                                                size_t copy_length) {
-  if (receive_ptr == nullptr) {
-    LOGE("Receive pointer is invalid!\n");
-    return false;
-  }
-
-  size_t audio_data_buffer_bytes = audio_data_buffer_size_ * sizeof(SLint16);
-  if (start_bytes >= audio_data_buffer_bytes ||
-      copy_length >= audio_data_buffer_bytes - start_bytes) {
-    LOGE("Offset is valid, cannot copy %zu bytes data start with %zu from "
-         "%zu "
-         "origin data bytes.\n",
-         copy_length, start_bytes, audio_data_buffer_bytes);
-    return false;
-  }
-
-  char *char_buffer_ptr = (char *)audio_data_buffer_;
-  std::memcpy(receive_ptr, char_buffer_ptr + start_bytes, copy_length);
-
-  return true;
 }
 
 void AudioBufferQueuePlayer::Start() {
   AudioPlayer::Start();
-  if (!audio_data_buffer_ || audio_data_buffer_size_ == 0) {
-    LOGE("Start audio player failed! Cannot play empty audio data\n");
-    return;
-  }
+
   SLresult result;
 
   result =
@@ -238,10 +198,12 @@ void AudioBufferQueuePlayer::Start() {
     return;
   }
 
+  std::vector<SLint16> &current_buffer = GetCurrentBuffer();
+  current_buffer.resize(1, 0); // just for starting sles callback
+
   result = (*sl_player_source_buffer_itf_)
-               ->Enqueue(sl_player_source_buffer_itf_, audio_data_buffer_,
-                         AUDIO_SEGMENT_DATA_SIZE * sizeof(SLint16));
-  SetCurrentOffset(GetCurrentOffset() + AUDIO_SEGMENT_DATA_SIZE);
+               ->Enqueue(sl_player_source_buffer_itf_, current_buffer.data(),
+                         current_buffer.size() * sizeof(SLint16));
 
   if (result != SL_RESULT_SUCCESS) {
     LOGE("Start audio player failed! Enqueue audio data to player failed! "
@@ -279,41 +241,8 @@ void AudioBufferQueuePlayer::Stop() {
 }
 
 void AudioBufferQueuePlayer::Destroy() {
-  Stop();
-
-  if (!sl_player_object_) {
-    return;
-  }
-
-  (*sl_player_object_)->Destroy(sl_player_object_);
-
-  ReleaseDataSink();
-  ReleaseDataSource();
-  ReleaseAudioData();
-
+  ReleaseSlAudioPlayer();
   is_valid_ = false;
-}
-
-bool AudioBufferQueuePlayer::IsEnd() {
-  return current_play_offset_ == audio_data_buffer_size_;
-}
-
-size_t AudioBufferQueuePlayer::GetCurrentOffset() {
-  return current_play_offset_;
-}
-
-void AudioBufferQueuePlayer::SetCurrentOffset(size_t offset) {
-  if (offset > audio_data_buffer_size_) {
-    LOGE("Offset large than total audio data size, set current offset to "
-         "total "
-         "audio data size\n");
-    offset = audio_data_buffer_size_;
-  }
-  current_play_offset_ = offset;
-}
-
-size_t AudioBufferQueuePlayer::GetAudioDataTotalSize() {
-  return audio_data_buffer_size_;
 }
 
 size_t AudioBufferQueuePlayer::GetEachSampleByteSize() {
@@ -379,6 +308,9 @@ void *AudioBufferQueuePlayer::CreateDataFormat(SLuint32 format_type,
 
 void AudioBufferQueuePlayer::ReleaseSlAudioPlayer() {
   Stop();
+  if (!sl_player_object_) {
+    return;
+  }
   (*sl_player_object_)->Destroy(sl_player_object_);
   ReleaseDataSink();
   ReleaseDataSource();
@@ -442,34 +374,47 @@ void AudioBufferQueuePlayer::ReleaseDataSink() {
   }
 }
 
-void AudioBufferQueuePlayer::ReleaseAudioData() {
-  delete[] audio_data_buffer_;
-  audio_data_buffer_size_ = current_play_offset_ = 0;
-}
-
 void AudioBufferQueuePlayer::AudioPlayerBufferCallback(
     SLBufferQueueItf sl_buffer_queue_itf, void *context) {
   auto audio_player_ptr =
       static_cast<js_audio::AudioBufferQueuePlayer *>(context);
 
-  if (!audio_player_ptr->IsEnd()) {
-    size_t audio_data_current_offset = audio_player_ptr->GetCurrentOffset();
-    size_t audio_data_total_size = audio_player_ptr->GetAudioDataTotalSize();
-    size_t enqueue_size = AUDIO_SEGMENT_DATA_SIZE;
-    // TODO: use variable sample size, not fixed sluint16
-    SLuint16 *audio_data_ptr =
-        (SLuint16 *)audio_player_ptr->audio_data_buffer_ +
-        audio_data_current_offset;
-    if (audio_data_current_offset + AUDIO_SEGMENT_DATA_SIZE >
-        audio_data_total_size) {
-      enqueue_size = audio_data_total_size - audio_data_current_offset;
-    }
-    audio_player_ptr->SetCurrentOffset(audio_data_current_offset +
-                                       enqueue_size);
+  if (audio_player_ptr) {
+    std::vector<SLint16> &current_buffer = audio_player_ptr->GetCurrentBuffer();
+
+    audio_player_ptr->ProduceSamples(
+        audio_player_ptr->audio_player_config_.samples_per_buffer,
+        current_buffer);
+
     (*sl_buffer_queue_itf)
-        ->Enqueue(sl_buffer_queue_itf, audio_data_ptr + enqueue_size,
-                  enqueue_size * sizeof(SLuint16));
+        ->Enqueue(sl_buffer_queue_itf, current_buffer.data(),
+                  current_buffer.size() * sizeof(SLuint16));
   }
+}
+
+void AudioBufferQueuePlayer::ProduceSamples(size_t sample_size,
+                                            std::vector<SLint16> &output) {
+  std::lock_guard<std::mutex> guard(base_audio_context_vec_lock_);
+
+  output.clear();
+  output.resize(sample_size, 0);
+
+  for (const auto &audio_context_weak : base_audio_context_vec_) {
+    if (auto audio_context_ref = audio_context_weak.lock()) {
+      std::vector<SLint16> audio_context_output;
+      audio_context_ref->ProduceSamples(sample_size, audio_context_output);
+      AudioMixer::MixSample(audio_context_output, output, output);
+    }
+  }
+  if (output.size() < sample_size) {
+    output.resize(sample_size, 0);
+  }
+}
+
+std::vector<SLint16> &AudioBufferQueuePlayer::GetCurrentBuffer() {
+  std::vector<SLint16> &current_buffer = sample_buffers_[current_buffer_id_];
+  current_buffer_id_ = (++current_buffer_id_) % sample_buffers_.size();
+  return current_buffer;
 }
 
 } // namespace js_audio

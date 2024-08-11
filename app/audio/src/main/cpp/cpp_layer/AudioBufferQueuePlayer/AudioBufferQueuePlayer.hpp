@@ -8,20 +8,6 @@ public:
   AudioBufferQueuePlayer(const AudioPlayerConfig &audio_player_config,
                          std::shared_ptr<AudioEngine> audio_engine_ptr);
 
-  /**
-   * audio_data_pointer: a pointer to audio data.
-   * data_size: size of element, not bytes.
-   */
-  bool UpdateAudioData(SLint16 *audio_data_pointer, size_t data_size);
-
-  /**
-   * receive_ptr: a pointer to receive audio data
-   * start_bytes: set offset to starting copy in bytes
-   * copy_length: set total copy length in bytes
-   */
-  bool GetAudioDataCopied(void *receive_ptr, size_t start_bytes,
-                          size_t copy_length);
-
   void Start() override;
 
   void Pause() override;
@@ -31,23 +17,6 @@ public:
   void Stop() override;
 
   void Destroy() override;
-
-  bool IsEnd();
-
-  /**
-   * return: return offset elements, not BYTES;
-   */
-  size_t GetCurrentOffset();
-
-  /**
-   * offset: elements offset, not BYTES;
-   */
-  void SetCurrentOffset(size_t offset);
-
-  /**
-   * return: return data length in element size, not BYTES
-   */
-  size_t GetAudioDataTotalSize();
 
   /**
    * return: return byte size of a audio sample
@@ -77,10 +46,12 @@ private:
 
   void ReleaseDataSink();
 
-  void ReleaseAudioData();
-
   static void AudioPlayerBufferCallback(SLBufferQueueItf sl_buffer_queue_itf,
                                         void *context);
+
+  void ProduceSamples(size_t sample_size, std::vector<SLint16> &output);
+
+  std::vector<SLint16> &GetCurrentBuffer();
 
 private:
   void *data_source_locator_;
@@ -98,9 +69,9 @@ private:
   SLBufferQueueItf sl_player_source_buffer_itf_;
   SLPlayItf sl_player_itf_;
 
-  SLint16 *audio_data_buffer_;
-  size_t audio_data_buffer_size_; // element size, not bytes
-  size_t current_play_offset_;    // playing progress, not in bytes
+  // TODO: make data type configeable
+  std::vector<std::vector<SLint16>> sample_buffers_;
+  size_t current_buffer_id_;
 };
 
 } // namespace js_audio
