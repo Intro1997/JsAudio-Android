@@ -1,34 +1,34 @@
 let loadFileContentFromJSEntry = null;
-const requireFileFromProcess = require("module").createRequire(
-  process.cwd() + "/"
-);
+const Module = require("module");
 
-const requireFileFromJsEntry = (filename) => {
+const originFindPath = Module._findPath;
+Module._findPath = function (request, paths, isMain) {
+  // TODO: use array to save folder that need to be loaded by http
+  if (request.includes("js_tests")) {
+    return request;
+  } else {
+    originFindPath(request, paths, isMain);
+  }
+};
+
+Module._extensions[".js"] = function (module, filename) {
   if (!loadFileContentFromJSEntry) {
     loadFileContentFromJSEntry =
       process._linkedBinding("node_http_require").loadFileContentFromJsEntry;
   }
 
-  const file_script = loadFileContentFromJSEntry(filename);
+  if (!loadFileContentFromJSEntry) {
+    console.error("Get loadFileContentFromJSEntry function failed!");
+    return;
+  }
 
+  const file_script = loadFileContentFromJSEntry(filename);
   if (!file_script || file_script === "") {
     console.error(`Find ${filename} in http failed!`);
-    return null;
+    return;
   }
 
-  const vm = requireFileFromProcess("vm");
-  const sandbox = { module: { exports: {} }, console: console, ...globalThis };
-  vm.runInNewContext(file_script, sandbox);
-
-  return sandbox.module.exports;
+  module._compile(file_script, filename);
 };
 
-const publicRequire = function (filename) {
-  let ret = requireFileFromJsEntry(filename);
-  if (!ret) {
-    ret = requireFileFromProcess(filename);
-  }
-  return ret;
-};
-
-globalThis.require = publicRequire;
+globalThis.require = Module.createRequire(process.cwd() + "/");
