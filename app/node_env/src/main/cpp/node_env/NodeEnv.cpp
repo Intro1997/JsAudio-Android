@@ -42,7 +42,7 @@ void NodeEnv::AddInternalModule(const char *module_preload_script,
 }
 
 NodeEnv *NodeEnv::Create(const char *preload_script) {
-  return Create({"node"}, preload_script);
+  return Create({"node", "--expose-gc"}, preload_script);
 }
 
 NodeEnv *NodeEnv::Create(std::vector<std::string> vec_argv,
