@@ -117,6 +117,9 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
 
     override fun start() {
         if (jsEntryFile != "") {
+            registeredModuleHandler.forEach { handler ->
+                handler.start()
+            }
             evalCodeFromEntryFile(jsEntryFile)
             nodeEnvState = NodeEnvState.Running
         }
