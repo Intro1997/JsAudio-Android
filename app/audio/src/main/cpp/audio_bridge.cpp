@@ -66,13 +66,11 @@ Java_com_example_audio_AudioHandler_destroyNativeAudioEngine(JNIEnv *env,
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_example_audio_AudioHandler_setAudioEngineInitParam(
-    JNIEnv *env, jobject thiz, jint output_sample_rate_hz,
-    jint output_frames_per_buffer) {
+    JNIEnv *env, jobject thiz, jint output_sample_rate_hz) {
 
   auto audio_player_config = js_audio::AudioEngine::audio_player_config();
 
   audio_player_config.sample_rate_milli_hz = output_sample_rate_hz * 1e3;
-  audio_player_config.frames_per_buffer = output_frames_per_buffer;
 
   js_audio::AudioEngine::set_audio_player_config(audio_player_config);
 }

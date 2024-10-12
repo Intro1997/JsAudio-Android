@@ -12,16 +12,13 @@ class AudioHandler(context: Context) : NodeModuleHandler {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         outputSampleRate =
             audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE).toInt()
-        outputFramesPerBuffer =
-            audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER).toInt()
 
-        setAudioEngineInitParam(outputSampleRate, outputFramesPerBuffer)
+        setAudioEngineInitParam(outputSampleRate)
     }
 
     companion object {
         private const val TAG = "AudioHandler"
         var outputSampleRate = 0
-        var outputFramesPerBuffer = 0
 
         init {
             Log.d(TAG, "load audio library")
@@ -66,8 +63,7 @@ class AudioHandler(context: Context) : NodeModuleHandler {
     private external fun getPreloadScriptFromNative(): String
 
     private external fun setAudioEngineInitParam(
-        outputSampleRate: Int,
-        outputFramesPerBuffer: Int
+        outputSampleRate: Int
     )
 
     private external fun startNativeAudioEngine()
