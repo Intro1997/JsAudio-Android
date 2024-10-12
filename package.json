@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "compress": "node js_task/compress.js",
     "combine": "node js_task/combine_compile_commands.js",
+    "valid": "ROOT_DIR=$(pwd) node ./js_task/valid_task/valid.js",
     "start": "npm run compress && http-server -p 20490"
   },
   "author": "",

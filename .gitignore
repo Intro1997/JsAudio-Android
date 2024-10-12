@@ -12,3 +12,5 @@ node_modules
 package-lock.json
 **/preload_script.hpp
 .vscode/compile_commands.json
+**/valid_task/wave_producer/data
+**/valid_task/wave_producer/.vscode
