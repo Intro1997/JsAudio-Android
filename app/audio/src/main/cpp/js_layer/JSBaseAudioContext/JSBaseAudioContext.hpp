@@ -15,6 +15,7 @@ public:
   Napi::Value GetSampleRate(const Napi::CallbackInfo &info);
   Napi::Value GetCurrentTime(const Napi::CallbackInfo &info);
 
+  Napi::Value createBuffer(const Napi::CallbackInfo &info);
 private:
   Napi::ObjectReference js_destination_node_ref_;
   float sample_rate_;   // TDOO: move to cpp side

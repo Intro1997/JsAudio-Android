@@ -65,6 +65,9 @@ void JSBaseAudioContext::Init(Napi::Env env, Napi::Object exports) {
                            &JSBaseAudioContext::GetSampleRate>("sampleRate"),
           InstanceAccessor<JSBaseAudioContext,
                            &JSBaseAudioContext::GetCurrentTime>("currentTime"),
+          InstanceMethod<JSBaseAudioContext,
+          InstanceMethod<JSBaseAudioContext, &JSBaseAudioContext::createBuffer>(
+              "createBuffer"),
       },
       false);
 }
@@ -82,5 +85,22 @@ Napi::Value JSBaseAudioContext::GetSampleRate(const Napi::CallbackInfo &info) {
 Napi::Value JSBaseAudioContext::GetCurrentTime(const Napi::CallbackInfo &info) {
   Napi::Env env = info.Env();
   return Napi::Number::From(env, base_audio_context_ptr_->GetCurrentTime());
+}
+Napi::Value JSBaseAudioContext::createBuffer(const Napi::CallbackInfo &info) {
+  if (info.Length() < 3) {
+    LOGE("Create JSAudioBuffer failed! Need 3 parameters, but get %zu.\n",
+         info.Length());
+    return info.Env().Undefined();
+  }
+  if (info[0].IsNumber() && info[1].IsNumber() && info[2].IsNumber()) {
+    Napi::Object js_audio_buffer =
+        JSAudioBuffer::FindClass<JSAudioBuffer>().NewWithArgs<JSAudioBuffer>(
+            {info[0], info[1], info[2]});
+
+    return js_audio_buffer;
+  } else {
+    LOGE("Create JSAudioBuffer failed! Need 3 number parameters.\n");
+  }
+  return info.Env().Undefined();
 }
 } // namespace js_audio

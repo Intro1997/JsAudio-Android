@@ -9,12 +9,14 @@
 #include "logger.hpp"
 #include "preload_script.hpp"
 
+#include "JSAudioBuffer.hpp"
 #include "JSAudioContext.hpp"
 #include "JSAudioDestinationNode.hpp"
 #include "JSAudioNode.hpp"
 #include "JSBaseAudioContext.hpp"
 
 static Napi::Object Init(Napi::Env env, Napi::Object exports) {
+  js_audio::JSAudioBuffer::Init(env, exports);
   js_audio::JSAudioNode::Init(env, exports);
   js_audio::JSAudioDestinationNode::Init(env, exports);
   js_audio::JSBaseAudioContext::Init(env, exports);
