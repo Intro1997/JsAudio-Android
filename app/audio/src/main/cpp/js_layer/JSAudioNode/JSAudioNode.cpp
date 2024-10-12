@@ -25,6 +25,10 @@ void JSAudioNode::Init(Napi::Env env, Napi::Object exports) {
            "numberOfOutputs"),
        InstanceAccessor<JSAudioNode, &JSAudioNode::getChannelCount>(
            "channelCount"),
+       InstanceAccessor<JSAudioNode, &JSAudioNode::getChannelCountMode>(
+           "channelCountMode"),
+       InstanceAccessor<JSAudioNode, &JSAudioNode::getChannelInterpretation>(
+           "channelInterpretation"),
        InstanceMethod<JSAudioNode, &JSAudioNode::connect>("connect"),
        InstanceMethod<JSAudioNode, &JSAudioNode::disconnect>("disconnect")},
       false);
@@ -69,6 +73,16 @@ Napi::Value JSAudioNode::getChannelCountMode(const Napi::CallbackInfo &info) {
     return info.Env().Undefined();
   }
   return Napi::String::New(info.Env(), audio_node_ptr_->channel_count_mode());
+}
+
+Napi::Value
+JSAudioNode::getChannelInterpretation(const Napi::CallbackInfo &info) {
+  if (!audio_node_ptr_) {
+    LOGE("Error! Inner audio node ptr is nullptr!\n");
+    return info.Env().Undefined();
+  }
+  return Napi::String::New(info.Env(),
+                           audio_node_ptr_->channel_interpretation());
 }
 
 Napi::Value JSAudioNode::connect(const Napi::CallbackInfo &info) {

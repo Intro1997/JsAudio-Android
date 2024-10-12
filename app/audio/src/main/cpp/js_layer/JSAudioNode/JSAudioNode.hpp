@@ -17,6 +17,7 @@ private:
   Napi::Value getNumberOfOutputs(const Napi::CallbackInfo &info);
   Napi::Value getChannelCount(const Napi::CallbackInfo &info);
   Napi::Value getChannelCountMode(const Napi::CallbackInfo &info);
+  Napi::Value getChannelInterpretation(const Napi::CallbackInfo &info);
 
   Napi::Value connect(const Napi::CallbackInfo &info);
   Napi::Value disconnect(const Napi::CallbackInfo &info);
