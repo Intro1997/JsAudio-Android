@@ -33,42 +33,92 @@ std::weak_ptr<AudioEngine> AudioEngine::Get() {
 
 void AudioEngine::Start() {
   LOGD("Native AudioEngine::Start()\n");
+
+  if (state() == AudioEngineState::kRunning) {
+    return;
+  }
+
   if (audio_buffer_queue_player_) {
     audio_buffer_queue_player_->Start();
   }
+
+  set_state(AudioEngineState::kRunning);
 }
 
 void AudioEngine::Pause() {
   LOGD("Native AudioEngine::Pause()\n");
+
+  if (state() == AudioEngineState::kPause) {
+    return;
+  }
+
   if (audio_buffer_queue_player_) {
     audio_buffer_queue_player_->Pause();
   }
+
+  set_state(AudioEngineState::kPause);
 }
 
 void AudioEngine::Resume() {
   LOGD("Native AudioEngine::Resume()\n");
+
+  if (state() == AudioEngineState::kRunning) {
+    return;
+  }
+
   if (audio_buffer_queue_player_) {
     audio_buffer_queue_player_->Resume();
   }
+
+  set_state(AudioEngineState::kRunning);
 }
 
 void AudioEngine::Stop() {
+
+  if (state() == AudioEngineState::kStop) {
+    return;
+  }
+
   LOGD("Native AudioEngine::Stop()\n");
   if (audio_buffer_queue_player_) {
     audio_buffer_queue_player_->Stop();
   }
+
+  set_state(AudioEngineState::kStop);
 }
 
 void AudioEngine::Destroy() {
   LOGD("Native AudioEngine::Destroy()\n");
+
+  Stop();
+
   if (audio_buffer_queue_player_) {
     audio_buffer_queue_player_->Destroy();
   }
 }
 
+void AudioEngine::set_state(AudioEngineState state) {
+  std::lock_guard<std::mutex> guard(state_lock_);
+  state_ = state;
+}
+
 void AudioEngine::InitAudioBufferQueuePlayer() {
   audio_buffer_queue_player_ = std::make_shared<AudioBufferQueuePlayer>(
       audio_player_config_, audio_engine_ptr_);
+  switch (state_) {
+  case AudioEngineState::kRunning: {
+    audio_buffer_queue_player_->Start();
+    break;
+  }
+  case AudioEngineState::kPause: {
+    audio_buffer_queue_player_->Pause();
+    break;
+  }
+  case AudioEngineState::kStop: {
+    audio_buffer_queue_player_->Stop();
+    break;
+  }
+  }
 }
 
 std::weak_ptr<AudioPlayer>
@@ -91,6 +141,11 @@ AudioPlayerConfig AudioEngine::audio_player_config() {
 void AudioEngine::set_audio_player_config(
     const AudioPlayerConfig &audio_player_config) {
   audio_player_config_ = audio_player_config;
+}
+
+AudioEngine::AudioEngineState AudioEngine::state() const {
+  std::lock_guard<std::mutex> guard(state_lock_);
+  return state_;
 }
 
 bool AudioEngine::Init() {
@@ -120,6 +175,9 @@ bool AudioEngine::Init() {
   CHECK_WITH_RET_CALL(
       (result == SL_RESULT_SUCCESS), false,
       LOGE("Get SLEngineInterface failed! Error Code: 0x%x", result));
+
+  state_ = AudioEngineState::kStop;
+
   return true;
 }
 

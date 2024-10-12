@@ -14,11 +14,13 @@ class AudioEngine {
   friend class AudioBufferQueuePlayer;
 
 public:
+  enum class AudioEngineState { kStop = 0, kRunning, kPause };
+
   ~AudioEngine();
 
   static std::weak_ptr<AudioEngine> Get();
   static void SetPlayerSampleRate(const uint32_t &sample_rate);
-  static void SetPlayerFramesPerBuffer(const uint32_t &frames_per_buffer);
+  static void SetPlayerSamplesPerBuffer(const uint32_t &samples_per_buffer);
 
   void Start();
   void Pause();
@@ -33,6 +35,8 @@ public:
   static void
   set_audio_player_config(const AudioPlayerConfig &audio_player_config);
 
+  AudioEngineState state() const;
+
 protected:
   AudioEngine() = default;
 
@@ -41,6 +45,8 @@ private:
 
   void InitAudioBufferQueuePlayer();
 
+  void set_state(AudioEngineState state);
+
   static std::shared_ptr<AudioEngine> audio_engine_ptr_;
   static AudioPlayerConfig audio_player_config_;
 
@@ -48,5 +54,8 @@ private:
   SLEngineItf sl_engine_interface_;
 
   std::shared_ptr<AudioPlayer> audio_buffer_queue_player_;
+
+  mutable std::mutex state_lock_;
+  AudioEngineState state_;
 };
 }; // namespace js_audio
