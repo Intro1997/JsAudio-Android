@@ -3,7 +3,6 @@
 #include <napi/napi.h>
 #include <string>
 
-
 #include "AudioEngine.hpp"
 #include "audio.hpp"
 #include "logger.hpp"
@@ -16,9 +15,12 @@
 #include "JSAudioParam.hpp"
 #include "JSAudioScheduledSourceNode.hpp"
 #include "JSBaseAudioContext.hpp"
+#include "JSOfflineAudioCompletionEvent.hpp"
+#include "JSOfflineAudioContext.hpp"
 #include "JSOscillatorNode.hpp"
 
 static Napi::Object Init(Napi::Env env, Napi::Object exports) {
+  js_audio::JSOfflineAudioCompletionEvent::Init(env, exports);
   js_audio::JSAudioBuffer::Init(env, exports);
   js_audio::JSAudioParam::Init(env, exports);
   js_audio::JSAudioNode::Init(env, exports);
@@ -27,7 +29,8 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports) {
   js_audio::JSOscillatorNode::Init(env, exports);
   js_audio::JSBaseAudioContext::Init(env, exports);
   js_audio::JSAudioContext::Init(env, exports);
-  
+  js_audio::JSOfflineAudioContext::Init(env, exports);
+
   return exports;
 }
 

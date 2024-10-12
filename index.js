@@ -1,2 +1,4 @@
-const { AudioContextTest } = require("js_tests/audio_context_test.js");
-AudioContextTest();
+const {
+  OfflineAudioContextTest,
+} = require("js_tests/offline_audio_context_test.js");
+OfflineAudioContextTest();
