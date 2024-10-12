@@ -1,6 +1,7 @@
 #pragma once
 #include "BaseAudioContext.hpp"
 #include <SLES/OpenSLES.h>
+#include <mutex>
 #include <tuple>
 #include <vector>
 
@@ -18,7 +19,7 @@ struct AudioPlayerConfig {
   SLuint32 endianness;
   // sink data output mix locator params
   SLuint32 sink_locator_type;
-  uint32_t frames_per_buffer;
+  uint32_t samples_per_buffer;
 };
 
 class AudioPlayer {
@@ -37,17 +38,17 @@ public:
 
   bool Valid() const;
 
-  void AddBaseAudioContext(std::weak_ptr<BaseAudioContext> base_audio_context);
+  bool AddBaseAudioContext(std::weak_ptr<BaseAudioContext> base_audio_context);
 
 protected:
   bool is_valid_;
   AudioPlayerConfig audio_player_config_;
+  std::vector<std::weak_ptr<BaseAudioContext>> base_audio_context_vec_;
+  std::mutex base_audio_context_vec_lock_;
 
 private:
   AudioPlayerConfig
   ReplaceInvalidConfig(const AudioPlayerConfig &audio_player_config);
-
-  std::vector<std::weak_ptr<BaseAudioContext>> base_audio_context_vec_;
 
 public:
   /**
@@ -77,8 +78,6 @@ public:
    */
   using DataFormatMimeType = std::tuple<SLchar *, SLuint32>;
 
-  static const uint32_t kDefaultSampleRate;
-  static const uint32_t kDefaultFramesPerBuffer;
   static const uint32_t kMaxSampleRate;
   static const uint32_t kMinSampleRate;
   static const AudioPlayerConfig kAudioPlayerConfig;

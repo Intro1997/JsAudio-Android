@@ -12,10 +12,8 @@ inline static SLuint32 MakeBitsPerSampleValid(const SLuint32 &maybe_valid);
 inline static SLuint32 MakeContainerSizeValid(const SLuint32 &maybe_valid);
 inline static SLuint32 MakeEndiannessValid(const SLuint32 &maybe_valid);
 inline static SLuint32 MakeSinkLocatorTypeValid(const SLuint32 &maybe_valid);
-inline static uint32_t MakeFramesPerBufferValid(const uint32_t &maybe_valid);
+inline static uint32_t MakeSamplesPerBufferValid(const uint32_t &maybe_valid);
 
-const uint32_t AudioPlayer::kDefaultSampleRate = 44100;
-const uint32_t AudioPlayer::kDefaultFramesPerBuffer = 144;
 const uint32_t AudioPlayer::kMaxSampleRate = 100;
 const uint32_t AudioPlayer::kMinSampleRate = 8192;
 
@@ -30,7 +28,7 @@ const AudioPlayerConfig AudioPlayer::kAudioPlayerConfig = {
     /* container_size */        SL_PCMSAMPLEFORMAT_FIXED_16,
     /* endianness */            SL_BYTEORDER_LITTLEENDIAN,
     /* sink_locator_type */     SL_DATALOCATOR_OUTPUTMIX,
-    /* frames_per_buffer */     4
+    /* samples_per_buffer */    4096
 };
 // clang-format on
 
@@ -50,9 +48,13 @@ void AudioPlayer::Destroy() { is_valid_ = false; }
 
 bool AudioPlayer::Valid() const { return is_valid_; }
 
-void AudioPlayer::AddBaseAudioContext(
+bool AudioPlayer::AddBaseAudioContext(
     std::weak_ptr<BaseAudioContext> base_audio_context) {
-  // TODO: implementation
+  if (base_audio_context.lock()) {
+    base_audio_context_vec_.push_back(base_audio_context);
+    return true;
+  }
+  return false;
 }
 
 AudioPlayerConfig AudioPlayer::ReplaceInvalidConfig(
@@ -67,7 +69,7 @@ AudioPlayerConfig AudioPlayer::ReplaceInvalidConfig(
       MakeContainerSizeValid(audio_player_config.container_size),
       MakeEndiannessValid(audio_player_config.endianness),
       MakeSinkLocatorTypeValid(audio_player_config.sink_locator_type),
-      MakeFramesPerBufferValid(audio_player_config.frames_per_buffer),
+      MakeSamplesPerBufferValid(audio_player_config.samples_per_buffer),
   };
 }
 
@@ -139,7 +141,7 @@ inline SLuint32 MakeSinkLocatorTypeValid(const SLuint32 &maybe_valid) {
   return SL_DATALOCATOR_OUTPUTMIX;
 }
 
-inline uint32_t MakeFramesPerBufferValid(const uint32_t &maybe_valid) {
+inline uint32_t MakeSamplesPerBufferValid(const uint32_t &maybe_valid) {
   return std::clamp(maybe_valid, AudioPlayer::kMinSampleRate,
                     AudioPlayer::kMaxSampleRate);
 }

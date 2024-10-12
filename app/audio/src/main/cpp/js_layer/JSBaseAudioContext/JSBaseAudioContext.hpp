@@ -15,11 +15,13 @@ public:
   Napi::Value GetSampleRate(const Napi::CallbackInfo &info);
   Napi::Value GetCurrentTime(const Napi::CallbackInfo &info);
 
+  Napi::Value createOscillator(const Napi::CallbackInfo &info);
   Napi::Value createBuffer(const Napi::CallbackInfo &info);
+
+protected:
+  std::shared_ptr<BaseAudioContext> base_audio_context_ptr_;
+
 private:
   Napi::ObjectReference js_destination_node_ref_;
-  float sample_rate_;   // TDOO: move to cpp side
-  double current_time_; // TDOO: move to cpp side
-  std::shared_ptr<BaseAudioContext> base_audio_context_ptr_;
 };
 } // namespace js_audio
