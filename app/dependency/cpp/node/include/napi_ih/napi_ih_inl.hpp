@@ -1,8 +1,6 @@
 #ifndef NAPI_IH_INL_HPP
 #define NAPI_IH_INL_HPP
 
-#include "napi_ih.hpp"
-
 namespace Napi_IH {
 template <typename T> class ClassMetaInfoInstance {
 public:
@@ -193,6 +191,43 @@ public:
 private:
   std::unique_ptr<IHObjectWrap> wrapped_;
 };
+
+template <typename T> inline T Error::InnerNew(Napi::Env env, const char *msg) {
+  return T::New(env, msg);
+}
+
+template <typename... Args>
+inline Napi::Error Error::New(Napi::Env env, const char *format, Args... args) {
+  return InnerNew<Napi::Error>(env, string_format(format, args...).c_str());
+}
+
+template <typename... Args>
+inline Napi::TypeError TypeError::New(Napi::Env env, const char *format,
+                                      Args... args) {
+  return InnerNew<Napi::TypeError>(env, string_format(format, args...).c_str());
+}
+
+template <typename... Args>
+inline Napi::RangeError RangeError::New(Napi::Env env, const char *format,
+                                        Args... args) {
+  return InnerNew<Napi::RangeError>(env,
+                                    string_format(format, args...).c_str());
+}
+
+// refer to https://stackoverflow.com/a/26221725
+template <typename... Args>
+inline std::string Error::string_format(const char *format, Args... args) {
+  int size_s =
+      std::snprintf(nullptr, 0, format, args...) + 1; // Extra space for '\0'
+  if (size_s <= 0) {
+    return "";
+  }
+  auto size = static_cast<size_t>(size_s);
+  std::unique_ptr<char[]> buf(new char[size]);
+  std::snprintf(buf.get(), size, format, args...);
+  return std::string(buf.get(),
+                     buf.get() + size - 1); // We don't want the '\0' inside
+}
 
 inline IHObjectWrap::IHObjectWrap(const Napi_IH::IHCallbackInfo &) {}
 

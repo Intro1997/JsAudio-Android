@@ -24,6 +24,31 @@ namespace Napi_IH {
 class MethodWrapper;
 class IHObjectWrap;
 
+class Error {
+public:
+  template <typename... Args>
+  static Napi::Error New(Napi::Env env, const char *format, Args... args);
+
+protected:
+  enum class ErrorType { kError = 0, kTypeError = 1, kRangeError = 2 };
+
+  template<typename T>
+  static T InnerNew(Napi::Env env, const char *msg);
+
+  template <typename... Args>
+  static std::string string_format(const char *format, Args... args);
+};
+class TypeError : public Error {
+public:
+  template <typename... Args>
+  static Napi::TypeError New(Napi::Env env, const char *format, Args... args);
+};
+class RangeError : public Error {
+public:
+  template <typename... Args>
+  static Napi::RangeError New(Napi::Env env, const char *format, Args... args);
+};
+
 class FunctionWrapper {
 public:
   FunctionWrapper() = default;
@@ -164,8 +189,7 @@ public:
                    void *data = nullptr);
   template <typename T> static Napi_IH::FunctionWrapper FindClass();
 
-  template<typename T>
-  static T* UnWrap(Napi::Object object);
+  template <typename T> static T *UnWrap(Napi::Object object);
 
 private:
   template <typename T, typename Base = NonBase>

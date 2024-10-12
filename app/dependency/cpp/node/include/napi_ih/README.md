@@ -331,6 +331,57 @@ private:
 
 WARN: this api MUST be used in SYNC!
 
+## Napi_IH::Error
+
+Class `Napi_IH::Error` is a `Napi::Error::New` function wrapper to help developer throwing error message with format form like `printf()` function in c/cpp.
+
+### New
+
+Creates instance of an `Napi::Error` object with format message.
+
+```cpp
+template <typename... Args>
+static Napi::Error New(Napi::Env env, const char *format, Args... args);
+```
+
+- `[in] env`: The environment in which to construct the `Napi::Error` object.
+- `[in] format`: Pointer to a null-terminated byte string specifying how to interpret the data.
+- `[in] args`: Arguments specifying data to print. If any argument after default argument promotions is not the type expected by the corresponding conversion specifier, or if there are fewer arguments than required by format, the behavior is undefined. If there are more arguments than required by format, the extraneous arguments are evaluated and ignored.
+
+## Napi_IH::TypeError
+
+Class `Napi_IH::TypeError` is a `Napi::TypeError::New` function wrapper to help developer throwing error message with format form like `printf()` function in c/cpp.
+
+### New
+
+Creates instance of an `Napi::TypeError` object with format message.
+
+```cpp
+template <typename... Args>
+static Napi::TypeError New(Napi::Env env, const char *format, Args... args);
+```
+
+- `[in] env`: The environment in which to construct the `Napi::Error` object.
+- `[in] format`: Pointer to a null-terminated byte string specifying how to interpret the data.
+- `[in] args`: Arguments specifying data to print. If any argument after default argument promotions is not the type expected by the corresponding conversion specifier, or if there are fewer arguments than required by format, the behavior is undefined. If there are more arguments than required by format, the extraneous arguments are evaluated and ignored.
+
+## Napi_IH::RangeError
+
+Class `Napi_IH::RangeError` is a `Napi::RangeError::New` function wrapper to help developer throwing error message with format form like `printf()` function in c/cpp.
+
+### New
+
+Creates instance of an `Napi::RangeError` object with format message.
+
+```cpp
+template <typename... Args>
+static Napi::RangeError New(Napi::Env env, const char *format, Args... args);
+```
+
+- `[in] env`: The environment in which to construct the `Napi::Error` object.
+- `[in] format`: Pointer to a null-terminated byte string specifying how to interpret the data.
+- `[in] args`: Arguments specifying data to print. If any argument after default argument promotions is not the type expected by the corresponding conversion specifier, or if there are fewer arguments than required by format, the behavior is undefined. If there are more arguments than required by format, the extraneous arguments are evaluated and ignored.
+
 # Thanks
 
 - Based on [node-addon-api](https://github.com/nodejs/node-addon-api/tree/main).
