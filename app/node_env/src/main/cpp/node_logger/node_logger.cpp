@@ -7,27 +7,49 @@ namespace node_logger {
 
 enum class LogType { kLog = 0, kInfo, kWarn, kError };
 
+// to avoid outputed message of logcat be cut off
+const static size_t kMaxOutputSize = 1023;
+
 static void InnerLog(const std::string &message, const LogType type) {
+  android_LogPriority output_type;
+  size_t message_size = message.size();
+
   switch (type) {
   case LogType::kLog: {
-    LOGD("[JS LOG]: %s\n", message.c_str());
+    output_type = ANDROID_LOG_DEBUG;
+    LOGD("[JS LOG]: ");
     break;
   }
   case LogType::kInfo: {
-    LOGI("[JS LOG]: %s\n", message.c_str());
+    output_type = ANDROID_LOG_INFO;
+    LOGI("[JS LOG]: ");
     break;
   }
   case LogType::kWarn: {
-    LOGW("[JS LOG]: %s\n", message.c_str());
+    output_type = ANDROID_LOG_WARN;
+    LOGW("[JS LOG]: ");
     break;
   }
   case LogType::kError: {
-    LOGE("[JS LOG]: %s\n", message.c_str());
+    output_type = ANDROID_LOG_ERROR;
+    LOGE("[JS LOG]: ");
     break;
   }
   default:
     break;
   }
+  size_t current_start = 0;
+  size_t current_end = kMaxOutputSize;
+  do {
+    if (current_end > message_size) {
+      current_end = message_size;
+    }
+    __android_log_print(output_type, "", "%s",
+                        message.substr(current_start, current_end).c_str());
+    current_start = current_end;
+    current_end += kMaxOutputSize;
+  } while (current_start < message_size);
+  __android_log_print(output_type, "", "\n");
 }
 
 static void Log(const v8::FunctionCallbackInfo<v8::Value> &info) {
