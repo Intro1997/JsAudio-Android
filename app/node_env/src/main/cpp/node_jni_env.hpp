@@ -1,5 +1,5 @@
-#ifndef NODE_KT_BRIDGE_HPP
-#define NODE_KT_BRIDGE_HPP
+#ifndef NODE_KT_BRIDGE_HPP_
+#define NODE_KT_BRIDGE_HPP_
 
 #include "logger.hpp"
 #include "pthread.h"

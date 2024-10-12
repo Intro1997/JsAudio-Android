@@ -3,23 +3,23 @@
 #include <chrono>
 #include <cmath>
 
-enum class TimeUnit { SECOND = 0, MILLISECOND, MICORSECOND, NANOSECOND };
+enum class TimeUnit { kSecond = 0, kMillisecond, kMicorsecond, kNanosecond };
 
 template <typename T1, typename T2>
 inline T1 ConvertTimeToType(T2 duration, const TimeUnit &unit) {
   switch (unit) {
-  case TimeUnit::SECOND: {
+  case TimeUnit::kSecond: {
     return std::chrono::duration_cast<std::chrono::seconds>(duration).count();
   }
-  case TimeUnit::MILLISECOND: {
+  case TimeUnit::kMillisecond: {
     return std::chrono::duration_cast<std::chrono::milliseconds>(duration)
         .count();
   }
-  case TimeUnit::MICORSECOND: {
+  case TimeUnit::kMicorsecond: {
     return std::chrono::duration_cast<std::chrono::microseconds>(duration)
         .count();
   }
-  case TimeUnit::NANOSECOND: {
+  case TimeUnit::kNanosecond: {
     return std::chrono::duration_cast<std::chrono::nanoseconds>(duration)
         .count();
   }
@@ -43,7 +43,7 @@ inline double ConvertFromLeftTimeUnitToRight(const double &time_val) {
   if (right_left_diff != 0) {
     ret = time_val * std::pow(1e3, right_left_diff);
   }
-  
+
   return ret;
 }
 
