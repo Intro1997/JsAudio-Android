@@ -1,4 +1,4 @@
-const testName = "OfflineAudioContextTest1";
+const testName = "wptOfflineAudioContextTest1<current_time-block-size.js>";
 
 const {
   waitUntilTestComplete,

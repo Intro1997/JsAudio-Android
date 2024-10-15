@@ -5,11 +5,13 @@
  *    - NodeJS has RangeError
  */
 
+const testName = "wptOfflineAudioContextTest0<ctor-offlineaudiocontext.js>";
+
 const {
   waitUntilTestComplete,
 } = require("js_tests/wpt_test/helper/polyfile.js");
 
-async function wptOfflineAudioContextTest0() {
+function wptOfflineAudioContextTest0() {
   // prepare wpt envs
 
   {
@@ -208,10 +210,7 @@ async function wptOfflineAudioContextTest0() {
   );
 
   audit.run();
-  return waitUntilTestComplete(
-    globalThis,
-    "OfflineAudioContextTest0<ctor-offlineaudiocontext.js>"
-  );
+  return waitUntilTestComplete(globalThis, testName);
 }
 
 module.exports = { wptOfflineAudioContextTest0 };
