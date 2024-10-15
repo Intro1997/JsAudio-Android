@@ -5,25 +5,26 @@
  *    - NodeJS has RangeError
  */
 
-// {
-//   name:Executing "options-1"
-//   message:promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'destination' of undefined"
-// }
+const {
+  waitUntilTestComplete,
+} = require("js_tests/wpt_test/helper/polyfile.js");
 
-function wptOfflineAudioContextTest() {
-  globalThis.self = globalThis.window = {};
+async function wptOfflineAudioContextTest0() {
+  // prepare wpt envs
 
-  require("js_tests/wpt_test/helper/testharness.js");
-  require("js_tests/wpt_test/helper/testharnessreport.js");
-  require("js_tests/wpt_test/helper/audit.js");
-  require("js_tests/wpt_test/helper/audit-util.js");
-  require("js_tests/wpt_test/helper/audionodeoptions.js");
+  {
+    const { getDomException } = require("js_tests/wpt_test/helper/polyfile.js");
+    globalThis.self = globalThis.window = {};
 
-  const { retFormatter } = require("js_tests/wpt_test/helper/ret_formatter.js");
-  const { getDomException } = require("js_tests/wpt_test/helper/polyfile.js");
+    require("js_tests/wpt_test/helper/testharness.js");
+    require("js_tests/wpt_test/helper/testharnessreport.js");
+    require("js_tests/wpt_test/helper/audit.js");
+    require("js_tests/wpt_test/helper/audit-util.js");
+    require("js_tests/wpt_test/helper/audionodeoptions.js");
 
-  Object.assign(globalThis, globalThis.self);
-  globalThis.DOMException = getDomException();
+    Object.assign(globalThis, globalThis.self);
+    globalThis.DOMException = getDomException();
+  }
 
   let audit = Audit.createTaskRunner();
 
@@ -206,24 +207,11 @@ function wptOfflineAudioContextTest() {
     }
   );
 
-  globalThis.add_completion_callback((test) => {
-    console.log("complate!");
-    // console.log(globalThis.document.documentElement.outerHTML);
-    // fs.writeFileSync("./log.html", globalThis.document.documentElement.outerHTML);
-    const formatRet = retFormatter(test);
-    // console.log(formatRet);
-    for (let i = 0; i < formatRet.length; i++) {
-      if (formatRet[i]["status"] != "Pass") {
-        // console.log(
-        //   `{\n\tname:${formatRet[i]["name"]}\n\tmessage:${formatRet[i]["message"]}\n}`
-        // );
-        console.log(formatRet[i]);
-      }
-    }
-    // console.log(retFormatter(test));
-  });
-
   audit.run();
+  return waitUntilTestComplete(
+    globalThis,
+    "OfflineAudioContextTest0<ctor-offlineaudiocontext.js>"
+  );
 }
 
-module.exports = { wptOfflineAudioContextTest };
+module.exports = { wptOfflineAudioContextTest0 };

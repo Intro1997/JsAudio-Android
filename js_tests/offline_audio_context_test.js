@@ -1,6 +1,9 @@
 const {
-  wptOfflineAudioContextTest,
+  wptOfflineAudioContextTest0,
 } = require("js_tests/wpt_test/offline_audio_context/ctor-offlineaudiocontext.js");
+const {
+  wptOfflineAudioContextTest1,
+} = require("js_tests/wpt_test/offline_audio_context/current-time-block-size.js");
 
 function BasicTest() {
   let options = {
@@ -20,16 +23,11 @@ function BasicTest() {
       event.renderedBuffer.getChannelData(1)
     );
   });
-  // offlineAudioCtx = new OfflineAudioContext(2, 44100 * 40, 44100.123);
 }
-function OfflineAudioContextTest() {
-  wptOfflineAudioContextTest();
+async function OfflineAudioContextTest() {
+  await wptOfflineAudioContextTest0();
+  await wptOfflineAudioContextTest1();
   // BasicTest()
-
-  // let context2;
-  // let options = { length: 42, sampleRate: 12345 };
-  // context2 = new OfflineAudioContext(options);
-  // console.log("context2.destination.channelCount = ", context2.destination.channelCount);
 }
 
 module.exports = { OfflineAudioContextTest };
