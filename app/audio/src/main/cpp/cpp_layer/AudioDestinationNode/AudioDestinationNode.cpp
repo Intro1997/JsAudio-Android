@@ -1,5 +1,6 @@
 #include "AudioDestinationNode.hpp"
 #include "BaseAudioContext.hpp"
+#include "WaveProducer.hpp"
 #include "logger.hpp"
 
 namespace js_audio {
@@ -14,13 +15,12 @@ AudioDestinationNode::AudioDestinationNode(
                 channel_count_mode, channel_interpretation, audio_context_lock),
       max_channel_count_(channel_count) {}
 
-void AudioDestinationNode::ProduceSamples(size_t sample_size,
-                                          std::vector<SLint16> &output) {
+void AudioDestinationNode::ProduceSamples(
+    size_t sample_size, std::vector<std::vector<float>> &output) {
   if (src_audio_node_ptr_) {
     src_audio_node_ptr_->ProduceSamples(sample_size, output);
   } else {
-    // TODO: wrap it with function
-    output.resize(sample_size, 0);
+    FillWithZeros(sample_size, output);
   }
 }
 

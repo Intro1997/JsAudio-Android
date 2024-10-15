@@ -18,6 +18,8 @@
 namespace js_audio {
 class AudioMixer {
 public:
+  static void Convert2ChannelFloatToSlint16(const std::vector<std::vector<float>> &src,
+                                    std::vector<SLint16> &dst);
   static void MixSample(const std::vector<SLint16> &samples0,
                         const std::vector<SLint16> &samples1,
                         std::vector<SLint16> &output);

@@ -399,15 +399,19 @@ void AudioBufferQueuePlayer::ProduceSamples(size_t sample_size,
   output.clear();
   output.resize(sample_size, 0);
 
-
   for (size_t i = 0; i < base_audio_context_vec_.size(); i++) {
     if (auto audio_context_ref = base_audio_context_vec_[i].lock()) {
-      std::vector<SLint16> audio_context_output;
-      audio_context_ref->ProduceSamples(sample_size, audio_context_output);
+      std::vector<std::vector<float>> origin_audio_context_output;
+      audio_context_ref->ProduceSamples(sample_size,
+                                        origin_audio_context_output);
       if (i == 0) {
-        output = audio_context_output;
+        AudioMixer::Convert2ChannelFloatToSlint16(origin_audio_context_output,
+                                                  output);
       } else {
-        AudioMixer::MixSample(audio_context_output, output, output);
+        std::vector<SLint16> interleaved_audio_context_output;
+        AudioMixer::Convert2ChannelFloatToSlint16(
+            origin_audio_context_output, interleaved_audio_context_output);
+        AudioMixer::MixSample(interleaved_audio_context_output, output, output);
       }
     }
   }

@@ -1,5 +1,6 @@
 #include "AudioNode.hpp"
 #include "BaseAudioContext.hpp"
+#include "WaveProducer.hpp"
 #include "logger.hpp"
 
 namespace js_audio {
@@ -27,8 +28,17 @@ std::string AudioNode::channel_interpretation() const {
 }
 
 void AudioNode::ProduceSamples(size_t sample_size,
-                               std::vector<SLint16> &output) {
-  output.resize(sample_size, 0);
+                               std::vector<std::vector<float>> &output) {
+  FillWithZeros(sample_size, output);
+}
+
+void AudioNode::FillWithZeros(size_t sample_size,
+                              std::vector<std::vector<float>> &output) {
+  output.resize(channel_count_);
+  for (auto &channel : output) {
+    channel.clear();
+    channel.resize(sample_size, 0);
+  }
 }
 
 bool AudioNode::IsSelfPtr(std::shared_ptr<AudioNode> other) {

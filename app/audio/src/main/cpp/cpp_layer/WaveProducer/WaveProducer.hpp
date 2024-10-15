@@ -47,11 +47,9 @@ void WaveProducer::CreateSineWave(const double &step, double &current_time,
     return;
   }
 
-  uint64_t output_size = (uint64_t)sample_size * 2;
-  output.resize(output_size, 0);
-  for (uint64_t i = 0; i < sample_size; i++) {
-    output[i * 2] = output[i * 2 + 1] =
-        (T)(sign * std::sin(current_time) * scaler);
+  output.resize(sample_size, 0);
+  for (size_t i = 0; i < sample_size; i++) {
+    output[i] = (T)(sign * std::sin(current_time) * scaler);
     current_time += step;
     if (current_time > DOUBLE_M_PI) {
       current_time -= DOUBLE_M_PI;
@@ -69,11 +67,9 @@ void WaveProducer::CreateSawtoothWave(const double &step, double &current_time,
     return;
   }
 
-  uint64_t output_size = (uint64_t)sample_size * 2;
-  output.resize(output_size, 0);
-  for (uint64_t i = 0; i < sample_size; i++) {
-    output[i * 2] = output[i * 2 + 1] =
-        (T)(sign * kSawtoothWaveKParam * current_time * scaler);
+  output.resize(sample_size, 0);
+  for (size_t i = 0; i < sample_size; i++) {
+    output[i] = (T)(sign * kSawtoothWaveKParam * current_time * scaler);
     current_time += step;
     if (current_time > M_PI) {
       current_time -= DOUBLE_M_PI;
@@ -91,14 +87,12 @@ void WaveProducer::CreateSquareWave(const double &step, double &current_time,
     return;
   }
 
-  uint64_t output_size = (uint64_t)sample_size * 2;
-  output.resize(output_size, 0);
+  output.resize(sample_size, 0);
   const T left_value = sign * scaler;
   const T right_value = -sign * scaler;
 
-  for (uint64_t i = 0; i < sample_size; i++) {
-    output[i * 2] = output[i * 2 + 1] =
-        current_time <= M_PI ? left_value : right_value;
+  for (size_t i = 0; i < sample_size; i++) {
+    output[i] = current_time <= M_PI ? left_value : right_value;
 
     current_time += step;
     if (current_time > DOUBLE_M_PI) {
@@ -117,19 +111,15 @@ void WaveProducer::CreateTriangleWave(const double &step, double &current_time,
     return;
   }
 
-  uint64_t output_size = (uint64_t)sample_size * 2;
-  output.resize(output_size, 0);
-  for (uint64_t i = 0; i < sample_size; i++) {
-
+  output.resize(sample_size, 0);
+  for (size_t i = 0; i < sample_size; i++) {
     if (current_time <= M_PI_2) {
-      output[i * 2] = output[i * 2 + 1] =
-          sign * kTriangleWaveKParam * current_time * scaler;
+      output[i] = sign * kTriangleWaveKParam * current_time * scaler;
     } else if (current_time > TRIBLE_PI_2) {
-      output[i * 2] = output[i * 2 + 1] =
+      output[i] =
           sign * kTriangleWaveKParam * (current_time - DOUBLE_M_PI) * scaler;
     } else {
-      output[i * 2] = output[i * 2 + 1] =
-          sign * -kTriangleWaveKParam * (current_time - M_PI) * scaler;
+      output[i] = sign * -kTriangleWaveKParam * (current_time - M_PI) * scaler;
     }
 
     current_time += step;

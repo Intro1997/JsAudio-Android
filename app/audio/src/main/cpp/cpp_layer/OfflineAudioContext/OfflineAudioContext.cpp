@@ -4,14 +4,18 @@
 #include <chrono>
 #include <thread>
 
+// refer to
+// https://github.com/web-platform-tests/wpt/blob/master/webaudio/the-audio-api/the-offlineaudiocontext-interface/current-time-block-size.html
+static const size_t kCurrentTimeStep = 128;
 namespace js_audio {
 
 OfflineAudioContext::OfflineAudioContext(const uint32_t &number_of_channels,
                                          const uint32_t &length,
                                          const float &sample_rate)
-    : BaseAudioContext(number_of_channels, sample_rate), length_(length) {
+    : BaseAudioContext(ContextType::kOffline, number_of_channels, sample_rate),
+      current_time_(0), length_(length) {
   number_of_channels_ = number_of_channels;
-  sample_rate_ = sample_rate_;
+  sample_rate_ = sample_rate;
   set_render_state(RenderState::kFinish);
 }
 
@@ -26,7 +30,27 @@ bool OfflineAudioContext::StartRendering(
   return true;
 }
 
+double OfflineAudioContext::GetCurrentTime() {
+  std::lock_guard<std::mutex> guard(current_time_lock_);
+  return current_time_;
+}
+
 const uint32_t &OfflineAudioContext::length() const { return length_; }
+
+void OfflineAudioContext::UpdateCurrentTime() {
+  uint32_t step_cnt = length_ / kCurrentTimeStep;
+  step_cnt += (length_ % kCurrentTimeStep == 0) ? 0 : 1;
+  std::lock_guard<std::mutex> gurard(current_time_lock_);
+  current_time_ = (double)(step_cnt * kCurrentTimeStep) / (double)sample_rate_;
+}
+
+void OfflineAudioContext::InitOutputArray(
+    std::vector<std::vector<float>> &output) {
+  output.resize(number_of_channels_);
+  for (auto &channel : output) {
+    channel.resize(length_);
+  }
+}
 
 // TODO: alias a type ot cb
 void OfflineAudioContext::InnerRendering(
@@ -34,24 +58,17 @@ void OfflineAudioContext::InnerRendering(
   if (render_state() != RenderState::kFinish) {
     return;
   }
+
+  std::vector<std::vector<float>> output;
+  InitOutputArray(output);
+
   set_render_state(RenderState::kRunning);
-  {
-    using namespace std::literals::chrono_literals;
-    std::this_thread::sleep_for(2s);
-  }
+  ProduceSamples(length_, output);
+  UpdateCurrentTime();
   set_render_state(RenderState::kFinish);
+
   if (cb) {
-    auto rendered_buffer_ptr = std::make_shared<AudioBuffer>(
-        number_of_channels_, length_, sample_rate());
-    float test_arr[10];
-    for (int i = 0; i < 10; i++) {
-      test_arr[i] = i;
-    }
-    rendered_buffer_ptr->CopyToChannel(test_arr, 10, 0, 0);
-    for (int i = 0; i < 10; i++) {
-      test_arr[i] = 10 - i;
-    }
-    rendered_buffer_ptr->CopyToChannel(test_arr, 10, 1, 0);
+    auto rendered_buffer_ptr = std::make_shared<AudioBuffer>(std::move(output));
     cb(rendered_buffer_ptr);
   }
 }

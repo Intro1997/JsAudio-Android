@@ -7,6 +7,7 @@ class AudioBuffer {
 public:
   AudioBuffer(const uint32_t &number_of_channel, const uint32_t &length,
               const float &sample_rate);
+  AudioBuffer(std::vector<std::vector<float>> &&src);
 
   uint32_t number_of_channel() const;
   uint32_t length() const;

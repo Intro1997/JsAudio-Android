@@ -27,7 +27,8 @@ JSBaseAudioContext::JSBaseAudioContext(
   js_destination_node_ref_ = Napi::Persistent(js_destination_node);
 
   bool is_add_to_audio_player = false;
-  if (auto audio_engine_ptr = AudioEngine::Get().lock()) {
+  auto audio_engine_ptr = AudioEngine::Get().lock();
+  if (audio_engine_ptr && base_audio_context_ptr_->IsOnlineContext()) {
     if (auto audio_player_ptr =
             audio_engine_ptr
                 ->GetAudioPlayer(AudioPlayerType::kBufferQueuePlayer)
@@ -37,7 +38,7 @@ JSBaseAudioContext::JSBaseAudioContext(
     }
   }
 
-  if (!is_add_to_audio_player) {
+  if (!is_add_to_audio_player && base_audio_context_ptr_->IsOnlineContext()) {
     // we do not need to reserve cpp pointer
     // when add to audio player failed
     base_audio_context_ptr_.reset();

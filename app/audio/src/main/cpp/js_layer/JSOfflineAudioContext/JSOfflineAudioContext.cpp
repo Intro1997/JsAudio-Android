@@ -167,13 +167,7 @@ static void CallJs(Napi::Env env, Napi::Function js_func,
           .NewWithArgs<js_audio::JSAudioBuffer>({},
                                                 value->rendered_audio_buffer);
 
-  Napi::Object js_offline_audio_completion_event =
-      js_audio::JSOfflineAudioCompletionEvent::FindClass<
-          js_audio::JSOfflineAudioCompletionEvent>()
-          .NewWithArgs<js_audio::JSOfflineAudioCompletionEvent>(
-              {js_rendered_audio_buffer});
-
-  js_promise_ptr->Resolve(js_offline_audio_completion_event);
+  js_promise_ptr->Resolve(js_rendered_audio_buffer);
 
   delete value;
   delete js_promise_ptr;

@@ -18,6 +18,13 @@ AudioBuffer::AudioBuffer(const uint32_t &number_of_channel,
   }
 }
 
+AudioBuffer::AudioBuffer(std::vector<std::vector<float>> &&src)
+    : number_of_channel_(src.size()), audio_channel_buffers_(std::move(src)) {
+  if (audio_channel_buffers_.size()) {
+    length_ = audio_channel_buffers_[0].size();
+  }
+}
+
 uint32_t AudioBuffer::number_of_channel() const { return number_of_channel_; }
 
 uint32_t AudioBuffer::length() const { return length_; }

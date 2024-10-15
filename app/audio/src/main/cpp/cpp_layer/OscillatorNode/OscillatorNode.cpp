@@ -81,10 +81,19 @@ OscillatorNode::OscillatorNode(std::shared_ptr<std::mutex> audio_context_lock,
       current_time_(0) {}
 
 void OscillatorNode::ProduceSamples(size_t sample_size,
-                                    std::vector<SLint16> &output) {
+                                    std::vector<std::vector<float>> &output) {
   // Warn: you should not use any getter api here!
   // we have locked in AudioContext.ProduceSamples() outside!
-  CreateWaveform(type_, sample_size, output);
+  if (output.size() < 2) {
+    output.resize(2);
+  }
+  for (auto &channel : output) {
+    if (channel.size() < sample_size) {
+      channel.resize(sample_size, 0);
+    }
+  }
+  CreateWaveform(type_, sample_size, output[0]);
+  output[1].assign(output[0].begin(), output[0].end());
 }
 
 std::shared_ptr<AudioParam> OscillatorNode::frequency() const {
@@ -156,26 +165,26 @@ OscillatorNode::ConvertTypeToString(const WaveProducer::WaveType &type) const {
 
 void OscillatorNode::CreateWaveform(const WaveProducer::WaveType &type,
                                     const size_t &sample_size,
-                                    std::vector<SLint16> &output) {
+                                    std::vector<float> &output) {
   switch (type) {
   case WaveProducer::WaveType::kSine: {
-    WaveProducer::CreateSineWave<SLint16>(step_, current_time_, sign_,
-                                          sample_size, output, INT16_MAX);
+    WaveProducer::CreateSineWave<float>(step_, current_time_, sign_,
+                                        sample_size, output, 1.0);
     break;
   }
   case WaveProducer::WaveType::kSawtooth: {
-    WaveProducer::CreateSawtoothWave<SLint16>(step_, current_time_, sign_,
-                                              sample_size, output, INT16_MAX);
+    WaveProducer::CreateSawtoothWave<float>(step_, current_time_, sign_,
+                                            sample_size, output, 1.0);
     break;
   }
   case WaveProducer::WaveType::kSquare: {
-    WaveProducer::CreateSquareWave<SLint16>(step_, current_time_, sign_,
-                                            sample_size, output, INT16_MAX);
+    WaveProducer::CreateSquareWave<float>(step_, current_time_, sign_,
+                                          sample_size, output, 1.0);
     break;
   }
   case WaveProducer::WaveType::kTriangle: {
-    WaveProducer::CreateTriangleWave<SLint16>(step_, current_time_, sign_,
-                                              sample_size, output, INT16_MAX);
+    WaveProducer::CreateTriangleWave<float>(step_, current_time_, sign_,
+                                            sample_size, output, 1.0);
     break;
   }
   default: {

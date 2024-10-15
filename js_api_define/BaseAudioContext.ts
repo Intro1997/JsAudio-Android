@@ -8,6 +8,10 @@ interface BaseAudioContext {
   /**
    * inner type: double
    * precision: microsecond
+   * description: 
+   * - AudioContext currentTime use real time 
+   * - OfflineAudioContext currentTime use:
+   *    (bufferLength / 128 + (bufferLength%128 == 0) ? 0 : 1)
    */
   readonly currentTime: number
 

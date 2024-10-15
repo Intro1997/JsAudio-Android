@@ -14,7 +14,7 @@ public:
                        const std::string &channel_interpretation = "speakers");
 
   void ProduceSamples(size_t sample_size,
-                      std::vector<SLint16> &output) override;
+                      std::vector<std::vector<float>> &output) override;
 
   void ConnectTo(std::shared_ptr<AudioNode> dst_audio_node_ptr) override;
   void BeConnectedTo(std::shared_ptr<AudioNode> src_audio_node_ptr) override;

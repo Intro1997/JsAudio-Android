@@ -11,7 +11,7 @@ public:
                        const float &sample_rate);
 
   void ProduceSamples(size_t sample_size,
-                      std::vector<SLint16> &output) override;
+                      std::vector<std::vector<float>> &output) override;
 
   void set_type(const std::string &type);
 
@@ -31,7 +31,7 @@ private:
   void UpdateComputedFreq();
 
   void CreateWaveform(const WaveProducer::WaveType &type,
-                      const size_t &sample_size, std::vector<SLint16> &output);
+                      const size_t &sample_size, std::vector<float> &output);
 
   std::shared_ptr<AudioParam> frequency_;
   std::shared_ptr<AudioParam> detune_;
