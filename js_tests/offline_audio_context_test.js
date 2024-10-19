@@ -26,7 +26,7 @@ function BasicTest() {
 }
 async function OfflineAudioContextTest() {
   await wptOfflineAudioContextTest0();
-  await wptOfflineAudioContextTest1();
+  return wptOfflineAudioContextTest1();
   // BasicTest()
 }
 

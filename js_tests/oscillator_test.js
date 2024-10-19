@@ -1,3 +1,7 @@
+const {
+  wptOscillatorTest0,
+} = require("js_tests/wpt_test/oscillator/ctor-oscillator.js");
+
 function tracePrototypeChainOf(object) {
   var proto = object.constructor.prototype;
   var result = "";
@@ -22,16 +26,12 @@ function CheckAudioParam(name, audio_param, modify_value) {
   console.log("audio_param.maxValue = ", audio_param.maxValue);
 }
 
-function OscillatorTest() {
-
+function OscillatorWaveTypeTest() {
   const audioCtx = new AudioContext();
   const oscillatorNode = audioCtx.createOscillator();
   oscillatorNode.type = "sine";
   console.log("oscillatorNode.type = ", oscillatorNode.type);
   oscillatorNode.connect(audioCtx.destination);
-
-  // const DO_TONE_FREQ = 261.6;
-  // const REI_TONE_FREQ = 293.6;
 
   setTimeout(() => {
     oscillatorNode.type = "sawtooth";
@@ -42,11 +42,10 @@ function OscillatorTest() {
   setTimeout(() => {
     oscillatorNode.type = "triangle";
   }, 3000);
+}
 
-  // console.log("oscillatorNode.type = ", oscillatorNode.type);
-  // CheckAudioParam("frequency", oscillatorNode.frequency, 3123);
-  // console.log("\n");
-  // CheckAudioParam("detune", oscillatorNode.detune, -1231123);
+async function OscillatorTest() {
+  return wptOscillatorTest0();
 }
 
 module.exports = { OscillatorTest };

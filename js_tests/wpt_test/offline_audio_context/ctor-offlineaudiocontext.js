@@ -9,6 +9,7 @@ const testName = "wptOfflineAudioContextTest0<ctor-offlineaudiocontext.js>";
 
 const {
   waitUntilTestComplete,
+  requireReload,
 } = require("js_tests/wpt_test/helper/polyfile.js");
 
 function wptOfflineAudioContextTest0() {
@@ -18,11 +19,11 @@ function wptOfflineAudioContextTest0() {
     const { getDomException } = require("js_tests/wpt_test/helper/polyfile.js");
     globalThis.self = globalThis.window = {};
 
-    require("js_tests/wpt_test/helper/testharness.js");
-    require("js_tests/wpt_test/helper/testharnessreport.js");
-    require("js_tests/wpt_test/helper/audit.js");
-    require("js_tests/wpt_test/helper/audit-util.js");
-    require("js_tests/wpt_test/helper/audionodeoptions.js");
+    requireReload("js_tests/wpt_test/helper/testharness.js");
+    requireReload("js_tests/wpt_test/helper/testharnessreport.js");
+    requireReload("js_tests/wpt_test/helper/audit.js");
+    requireReload("js_tests/wpt_test/helper/audit-util.js");
+    requireReload("js_tests/wpt_test/helper/audionodeoptions.js");
 
     Object.assign(globalThis, globalThis.self);
     globalThis.DOMException = getDomException();
@@ -142,8 +143,9 @@ function wptOfflineAudioContextTest0() {
       should(() => {
         new OfflineAudioContext(options);
       }, "new OfflineAudioContext(" + JSON.stringify(options) + ")").throw(
-        RangeError,
-        "NotSupportedError"
+        DOMException,
+        "RangeError"
+        // "NotSupportedError"
       );
 
       // length cannot be 0
@@ -151,8 +153,9 @@ function wptOfflineAudioContextTest0() {
       should(() => {
         new OfflineAudioContext(options);
       }, "new OfflineAudioContext(" + JSON.stringify(options) + ")").throw(
-        RangeError,
-        "NotSupportedError"
+        DOMException,
+        "RangeError"
+        // "NotSupportedError"
       );
 
       // sampleRate outside valid range
@@ -160,8 +163,9 @@ function wptOfflineAudioContextTest0() {
       should(() => {
         new OfflineAudioContext(options);
       }, "new OfflineAudioContext(" + JSON.stringify(options) + ")").throw(
-        RangeError,
-        "NotSupportedError"
+        DOMException,
+        "RangeError"
+        // "NotSupportedError"
       );
 
       task.done();

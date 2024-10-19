@@ -1,7 +1,12 @@
+/**
+ * Adaptive Changes：
+ * 1. export all function
+ *    - after export them, nodejs can find them
+ */
+
 // Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 
 /**
  * @fileOverview  This file includes legacy utility functions for the layout
@@ -22,32 +27,32 @@ let RENDER_QUANTUM_FRAMES = 128;
 //   options.bitDepth: The expected result is assumed to come from an audio
 //     file with this number of bits of precision. The default is 16.
 function compareBuffersWithConstraints(should, actual, expected, options) {
-  if (!options)
-    options = {};
+  if (!options) options = {};
 
   // Only print out the message if the lengths are different; the
   // expectation is that they are the same, so don't clutter up the
   // output.
   if (actual.length !== expected.length) {
     should(
-        actual.length === expected.length,
-        'Length of actual and expected buffers should match')
-        .beTrue();
+      actual.length === expected.length,
+      "Length of actual and expected buffers should match"
+    ).beTrue();
   }
 
   let maxError = -1;
   let diffCount = 0;
   let errorPosition = -1;
-  let thresholdSNR = (options.thresholdSNR || 10000);
+  let thresholdSNR = options.thresholdSNR || 10000;
 
-  let thresholdDiffULP = (options.thresholdDiffULP || 0);
-  let thresholdDiffCount = (options.thresholdDiffCount || 0);
+  let thresholdDiffULP = options.thresholdDiffULP || 0;
+  let thresholdDiffCount = options.thresholdDiffCount || 0;
 
   // By default, the bit depth is 16.
-  let bitDepth = (options.bitDepth || 16);
+  let bitDepth = options.bitDepth || 16;
   let scaleFactor = Math.pow(2, bitDepth - 1);
 
-  let noisePower = 0, signalPower = 0;
+  let noisePower = 0,
+    signalPower = 0;
 
   for (let i = 0; i < actual.length; i++) {
     let diff = actual[i] - expected[i];
@@ -61,29 +66,35 @@ function compareBuffersWithConstraints(should, actual, expected, options) {
 
     // The reference file is a 16-bit WAV file, so we will almost never get
     // an exact match between it and the actual floating-point result.
-    if (Math.abs(diff) > scaleFactor)
-      diffCount++;
+    if (Math.abs(diff) > scaleFactor) diffCount++;
   }
 
   let snr = 10 * Math.log10(signalPower / noisePower);
   let maxErrorULP = maxError * scaleFactor;
 
-  should(snr, 'SNR').beGreaterThanOrEqualTo(thresholdSNR);
+  should(snr, "SNR").beGreaterThanOrEqualTo(thresholdSNR);
 
   should(
-      maxErrorULP,
-      options.prefix + ': Maximum difference (in ulp units (' + bitDepth +
-          '-bits))')
-      .beLessThanOrEqualTo(thresholdDiffULP);
+    maxErrorULP,
+    options.prefix +
+      ": Maximum difference (in ulp units (" +
+      bitDepth +
+      "-bits))"
+  ).beLessThanOrEqualTo(thresholdDiffULP);
 
-  should(diffCount, options.prefix + ': Number of differences between results')
-      .beLessThanOrEqualTo(thresholdDiffCount);
+  should(
+    diffCount,
+    options.prefix + ": Number of differences between results"
+  ).beLessThanOrEqualTo(thresholdDiffCount);
 }
 
 // Create an impulse in a buffer of length sampleFrameLength
 function createImpulseBuffer(context, sampleFrameLength) {
-  let audioBuffer =
-      context.createBuffer(1, sampleFrameLength, context.sampleRate);
+  let audioBuffer = context.createBuffer(
+    1,
+    sampleFrameLength,
+    context.sampleRate
+  );
   let n = audioBuffer.length;
   let dataL = audioBuffer.getChannelData(0);
 
@@ -98,13 +109,15 @@ function createImpulseBuffer(context, sampleFrameLength) {
 // Create a buffer of the given length with a linear ramp having values 0 <= x <
 // 1.
 function createLinearRampBuffer(context, sampleFrameLength) {
-  let audioBuffer =
-      context.createBuffer(1, sampleFrameLength, context.sampleRate);
+  let audioBuffer = context.createBuffer(
+    1,
+    sampleFrameLength,
+    context.sampleRate
+  );
   let n = audioBuffer.length;
   let dataL = audioBuffer.getChannelData(0);
 
-  for (let i = 0; i < n; ++i)
-    dataL[i] = i / n;
+  for (let i = 0; i < n; ++i) dataL[i] = i / n;
 
   return audioBuffer;
 }
@@ -118,7 +131,7 @@ function createConstantBuffer(context, sampleFrameLength, constantValue) {
   let channels;
   let values;
 
-  if (typeof constantValue === 'number') {
+  if (typeof constantValue === "number") {
     channels = 1;
     values = [constantValue];
   } else {
@@ -126,14 +139,16 @@ function createConstantBuffer(context, sampleFrameLength, constantValue) {
     values = constantValue;
   }
 
-  let audioBuffer =
-      context.createBuffer(channels, sampleFrameLength, context.sampleRate);
+  let audioBuffer = context.createBuffer(
+    channels,
+    sampleFrameLength,
+    context.sampleRate
+  );
   let n = audioBuffer.length;
 
   for (let c = 0; c < channels; ++c) {
     let data = audioBuffer.getChannelData(c);
-    for (let i = 0; i < n; ++i)
-      data[i] = values[c];
+    for (let i = 0; i < n; ++i) data[i] = values[c];
   }
 
   return audioBuffer;
@@ -141,8 +156,11 @@ function createConstantBuffer(context, sampleFrameLength, constantValue) {
 
 // Create a stereo impulse in a buffer of length sampleFrameLength
 function createStereoImpulseBuffer(context, sampleFrameLength) {
-  let audioBuffer =
-      context.createBuffer(2, sampleFrameLength, context.sampleRate);
+  let audioBuffer = context.createBuffer(
+    2,
+    sampleFrameLength,
+    context.sampleRate
+  );
   let n = audioBuffer.length;
   let dataL = audioBuffer.getChannelData(0);
   let dataR = audioBuffer.getChannelData(1);
@@ -173,7 +191,7 @@ function grainLengthInSampleFrames(grainOffset, duration, sampleRate) {
 
 // True if the number is not an infinity or NaN
 function isValidNumber(x) {
-  return !isNaN(x) && (x != Infinity) && (x != -Infinity);
+  return !isNaN(x) && x != Infinity && x != -Infinity;
 }
 
 // Compute the (linear) signal-to-noise ratio between |actual| and
@@ -193,3 +211,13 @@ function computeSNR(actual, expected) {
 
   return signalPower / noisePower;
 }
+
+module.exports = {
+  compareBuffersWithConstraints,
+  createImpulseBuffer,
+  createLinearRampBuffer,
+  createConstantBuffer,
+  createStereoImpulseBuffer,
+  timeToSampleFrame,
+  grainLengthInSampleFrames,
+};
