@@ -4,8 +4,10 @@
 
 namespace js_audio {
 
-const float OscillatorNode::kDetuneMax = 153600.0f;
-const float OscillatorNode::kDetuneMin = -153600.0f;
+const float OscillatorNode::kDetuneMax =
+    1200 * log2f(std::numeric_limits<float>::max());
+const float OscillatorNode::kDetuneMin =
+    -1200 * log2f(std::numeric_limits<float>::max());
 const uint32_t OscillatorNode::kNumberOfInputs = 0;
 const uint32_t OscillatorNode::kNumberOfOutputs = 1;
 
