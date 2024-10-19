@@ -64,7 +64,7 @@ void JSBaseAudioContext::Init(Napi::Env env, Napi::Object exports) {
           InstanceMethod<JSBaseAudioContext, &JSBaseAudioContext::createBuffer>(
               "createBuffer"),
       },
-      true, true);
+      Napi_IH::ClassVisibility::kHideConstructor);
 }
 
 Napi::Value

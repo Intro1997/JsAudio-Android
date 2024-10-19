@@ -157,8 +157,7 @@ void JSOscillatorNode::Init(Napi::Env env, Napi::Object exports) {
               "detune"),
           InstanceAccessor<JSOscillatorNode, &JSOscillatorNode::getType,
                            &JSOscillatorNode::setType>("type"),
-      },
-      true);
+      });
 }
 
 void JSOscillatorNode::setType(const Napi::CallbackInfo &info,

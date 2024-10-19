@@ -8,6 +8,7 @@ JSAudioScheduledSourceNode::JSAudioScheduledSourceNode(
 
 void JSAudioScheduledSourceNode::Init(Napi::Env env, Napi::Object exports) {
   DefineClass<JSAudioScheduledSourceNode, JSAudioNode>(
-      env, "AudioScheduledSourceNode", {}, true, true);
+      env, "AudioScheduledSourceNode", {},
+      Napi_IH::ClassVisibility::kHideConstructor);
 }
 } // namespace js_audio

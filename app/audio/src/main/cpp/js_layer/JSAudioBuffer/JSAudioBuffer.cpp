@@ -16,7 +16,7 @@ void JSAudioBuffer::Init(Napi::Env env, Napi::Object exports) {
            "getChannelData"),
        InstanceMethod<JSAudioBuffer, &JSAudioBuffer::copyFromChannel>(
            "copyFromChannel")},
-      false);
+      Napi_IH::ClassVisibility::kHideType);
 }
 
 JSAudioBuffer::JSAudioBuffer(const Napi_IH::IHCallbackInfo &info,

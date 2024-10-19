@@ -8,7 +8,7 @@ void JSOfflineAudioCompletionEvent::Init(Napi::Env env, Napi::Object exports) {
       {InstanceAccessor<JSOfflineAudioCompletionEvent,
                         &JSOfflineAudioCompletionEvent::getAudioBuffer>(
           "renderedBuffer")},
-      true, true);
+      Napi_IH::ClassVisibility::kHideConstructor);
 }
 
 JSOfflineAudioCompletionEvent::JSOfflineAudioCompletionEvent(

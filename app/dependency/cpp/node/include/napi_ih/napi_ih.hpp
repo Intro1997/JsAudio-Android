@@ -24,6 +24,12 @@ namespace Napi_IH {
 class MethodWrapper;
 class IHObjectWrap;
 
+enum class ClassVisibility {
+  kDefault = 0,
+  kHideType,
+  kHideConstructor,
+};
+
 class Error {
 public:
   template <typename... Args>
@@ -114,7 +120,7 @@ struct ClassMetaInfo {
   ClassMetaInfo *parent = nullptr;
   ConstructorFunc ctor;
   std::vector<Napi::ClassPropertyDescriptor<MethodWrapper>> descriptors;
-  bool need_export = true;
+  bool export_type = true;
   void *data = nullptr;
   std::function<std::unique_ptr<IHObjectWrap>(
       const Napi_IH::IHCallbackInfo &info)>
@@ -150,27 +156,29 @@ public:
   static void
   DefineClass(Napi::Env env, const char *utf8name,
               const std::initializer_list<PropertyDescriptor> &properties,
-              bool need_export = true, bool block_constructor = false,
+              ClassVisibility visibility = ClassVisibility::kDefault,
               void *data = nullptr);
 
   template <typename T>
-  static void DefineClass(Napi::Env env, const char *utf8name,
-                          const std::vector<PropertyDescriptor> &properties,
-                          bool need_export = true,
-                          bool block_constructor = false, void *data = nullptr);
+  static void
+  DefineClass(Napi::Env env, const char *utf8name,
+              const std::vector<PropertyDescriptor> &properties,
+              ClassVisibility visibility = ClassVisibility::kDefault,
+              void *data = nullptr);
 
   template <typename T, typename Base>
   static void
   DefineClass(Napi::Env env, const char *utf8name,
               const std::initializer_list<PropertyDescriptor> &properties,
-              bool need_export = true, bool block_constructor = false,
+              ClassVisibility visibility = ClassVisibility::kDefault,
               void *data = nullptr);
 
   template <typename T, typename Base>
-  static void DefineClass(Napi::Env env, const char *utf8name,
-                          const std::vector<PropertyDescriptor> &properties,
-                          bool need_export = true,
-                          bool block_constructor = false, void *data = nullptr);
+  static void
+  DefineClass(Napi::Env env, const char *utf8name,
+              const std::vector<PropertyDescriptor> &properties,
+              ClassVisibility visibility = ClassVisibility::kDefault,
+              void *data = nullptr);
   template <typename T>
   using InstanceVoidMethodCallback = void (T::*)(const Napi::CallbackInfo &);
   template <typename T>
@@ -198,11 +206,11 @@ public:
 
 private:
   template <typename T, typename Base = NonBase>
-  static void DefineClass(Napi::Env env, const char *utf8name,
-                          const size_t props_count,
-                          const napi_property_descriptor *descriptors,
-                          bool need_export = true,
-                          bool block_constructor = false, void *data = nullptr);
+  static void
+  DefineClass(Napi::Env env, const char *utf8name, const size_t props_count,
+              const napi_property_descriptor *descriptors,
+              ClassVisibility visibility = ClassVisibility::kDefault,
+              void *data = nullptr);
 
 protected:
   static Napi::FunctionReference js_class_constructor_;

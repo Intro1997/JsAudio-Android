@@ -246,42 +246,42 @@ template <typename T>
 void IHObjectWrap::DefineClass(
     Napi::Env env, const char *utf8name,
     const std::initializer_list<IHObjectWrap::PropertyDescriptor> &properties,
-    bool need_export, bool block_constructor, void *data) {
+    ClassVisibility visibility, void *data) {
   DefineClass<T>(
       env, utf8name, properties.size(),
       reinterpret_cast<const napi_property_descriptor *>(properties.begin()),
-      need_export, data);
+      visibility, data);
 }
 
 template <typename T>
 void IHObjectWrap::DefineClass(
     Napi::Env env, const char *utf8name,
     const std::vector<IHObjectWrap::PropertyDescriptor> &properties,
-    bool need_export, bool block_constructor, void *data) {
+    ClassVisibility visibility, void *data) {
   DefineClass<T>(
       env, utf8name, properties.size(),
       reinterpret_cast<const napi_property_descriptor *>(properties.data()),
-      need_export, block_constructor, data);
+      visibility, data);
 }
 
 template <typename T, typename Base>
 inline void IHObjectWrap::DefineClass(
     Napi::Env env, const char *utf8name,
     const std::initializer_list<IHObjectWrap::PropertyDescriptor> &properties,
-    bool need_export, bool block_constructor, void *data) {
+    ClassVisibility visibility, void *data) {
   DefineClass<T, Base>(
       env, utf8name, properties.size(),
       reinterpret_cast<const napi_property_descriptor *>(properties.begin()),
-      need_export, block_constructor, data);
+      visibility, data);
 }
 
 template <typename T, typename Base>
 inline void IHObjectWrap::DefineClass(
     Napi::Env env, const char *utf8name,
     const std::vector<IHObjectWrap::PropertyDescriptor> &properties,
-    bool need_export, bool block_constructor, void *data) {
+    ClassVisibility visibility, void *data) {
   DefineClass<T, Base>(env, utf8name, properties.size(), properties.data(),
-                       need_export, block_constructor, data);
+                       visibility, data);
 }
 
 template <typename T, IHObjectWrap::InstanceMethodCallback<T> method>
@@ -317,8 +317,7 @@ template <typename T, typename Base>
 void IHObjectWrap::DefineClass(Napi::Env env, const char *utf8name,
                                const size_t props_count,
                                const napi_property_descriptor *descriptors,
-                               bool need_export, bool block_constructor,
-                               void *data) {
+                               ClassVisibility visibility, void *data) {
   ClassMetaInfo &info_handle = ClassMetaInfoInstance<T>::GetInstance();
 
   info_handle.name = utf8name;
@@ -326,12 +325,18 @@ void IHObjectWrap::DefineClass(Napi::Env env, const char *utf8name,
     info_handle.parent = &(ClassMetaInfoInstance<Base>::GetInstance());
   }
 
-  info_handle.ctor = block_constructor ? MethodWrapper::IllegalConstructor<T>
-                                       : MethodWrapper::ConstructObject<T>;
+  info_handle.ctor = MethodWrapper::ConstructObject<T>;
   info_handle.descriptors = {descriptors, descriptors + props_count};
   info_handle.data = data;
-  info_handle.need_export = need_export;
+  info_handle.export_type = true;
   info_handle.ctor_helper = nullptr;
+
+  if (visibility == ClassVisibility::kHideType) {
+    info_handle.export_type = false;
+  } else if (visibility == ClassVisibility::kHideConstructor) {
+    info_handle.ctor = MethodWrapper::IllegalConstructor<T>;
+  }
+
   Registration::AddClassMetaInfo(utf8name, &info_handle);
 }
 
@@ -407,7 +412,7 @@ inline void Registration::ProcessClassMetaInfo(
   }
 
   ctor_table_[info] = Napi::Persistent(clazz);
-  if (info->need_export) {
+  if (info->export_type) {
     exports.Set(info->name, ctor_table_[info].Value());
   }
 }

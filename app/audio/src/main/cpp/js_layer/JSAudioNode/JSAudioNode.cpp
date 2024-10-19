@@ -31,7 +31,7 @@ void JSAudioNode::Init(Napi::Env env, Napi::Object exports) {
            "channelInterpretation"),
        InstanceMethod<JSAudioNode, &JSAudioNode::connect>("connect"),
        InstanceMethod<JSAudioNode, &JSAudioNode::disconnect>("disconnect")},
-      true, true);
+      Napi_IH::ClassVisibility::kHideConstructor);
 }
 
 Napi::Value JSAudioNode::getContext(const Napi::CallbackInfo &info) {

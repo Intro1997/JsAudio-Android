@@ -58,6 +58,22 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports) {
 NAPI_IH_API_MODULE(addon, Init);
 ```
 
+## Napi_IH::ClassVisibility <a id="class_visibility"></a>
+
+`Napi_IH::ClassVisibility` is an enum class to config visibility of js class:
+
+```cpp
+enum class ClassVisibility{
+  kDefault = 0,
+  kHideType,
+  kHideConstructor
+};
+```
+
+`kDefault`: Class type and constructor will be visible, you can log class type in js and use new to construct object.
+`kHideType`: Class type and constructor are invisible.
+`kHideConstructor`: Class constructor is invisible.
+
 ## Napi_IH::IHCallbackInfo
 
 `Napi_IH::IHCallbackInfo` is a wrapper of `Napi::CallbackInfo`.
@@ -115,6 +131,7 @@ template <typename T>
 static void
 DefineClass(Napi::Env env, const char *utf8name,
             const std::initializer_list<PropertyDescriptor> &properties,
+            ClassVisibility visibility = ClassVisibility::kDefault,
             void *data = nullptr);
 ```
 
@@ -125,6 +142,7 @@ DefineClass(Napi::Env env, const char *utf8name,
 - `[in] properties`: initializer_list of class property descriptor describing static and
   instance properties and methods of the class.
   See: `PropertyDescriptor`.
+- `[in] visibility`: class visibility enum parameter, see [ClassVisibility](#class_visibility)
 - `[in] data`: User-provided data passed to the constructor callback. You can get the `data`
   value by calling `Napi_IH::IHCallbackInfo::Data()` later in constructor.
 
@@ -132,9 +150,11 @@ DefineClass(Napi::Env env, const char *utf8name,
 
 ```cpp
 template <typename T>
-static void DefineClass(Napi::Env env, const char *utf8name,
-                        const std::vector<PropertyDescriptor> &properties,
-                        void *data = nullptr);
+static void
+DefineClass(Napi::Env env, const char *utf8name,
+            const std::vector<PropertyDescriptor> &properties,
+            ClassVisibility visibility = ClassVisibility::kDefault,
+            void *data = nullptr);
 ```
 
 - `[in] T`: Current cpp class type which needs to be defined in js.
@@ -144,6 +164,7 @@ static void DefineClass(Napi::Env env, const char *utf8name,
 - `[in] properties`: vector of class property descriptor describing static and
   instance properties and methods of the class.
   See: `PropertyDescriptor`.
+- `[in] visibility`: class visibility enum parameter, see [ClassVisibility](#class_visibility)
 - `[in] data`: User-provided data passed to the constructor callback. You can get the `data`
   value by calling `Napi_IH::IHCallbackInfo::Data()` later in constructor.
 
@@ -154,7 +175,9 @@ template <typename T, typename Base>
 static void
 DefineClass(Napi::Env env, const char *utf8name,
             const std::initializer_list<PropertyDescriptor> &properties,
+            ClassVisibility visibility = ClassVisibility::kDefault,
             void *data = nullptr);
+
 ```
 
 - `[in] T`: Current cpp class type which needs to be defined in js.
@@ -165,6 +188,7 @@ DefineClass(Napi::Env env, const char *utf8name,
 - `[in] properties`: initializer_list of class property descriptor describing static and
   instance properties and methods of the class.
   See: `PropertyDescriptor`.
+- `[in] visibility`: class visibility enum parameter, see [ClassVisibility](#class_visibility)
 - `[in] data`: User-provided data passed to the constructor callback. You can get the `data`
   value by calling `Napi_IH::IHCallbackInfo::Data()` later in constructor.
 
@@ -172,9 +196,11 @@ DefineClass(Napi::Env env, const char *utf8name,
 
 ```cpp
 template <typename T, typename Base>
-static void DefineClass(Napi::Env env, const char *utf8name,
-                        const std::vector<PropertyDescriptor> &properties,
-                        void *data = nullptr);
+static void
+DefineClass(Napi::Env env, const char *utf8name,
+            const std::vector<PropertyDescriptor> &properties,
+            ClassVisibility visibility = ClassVisibility::kDefault,
+            void *data = nullptr);
 ```
 
 - `[in] T`: Current cpp class type which needs to be defined in js.
@@ -185,6 +211,7 @@ static void DefineClass(Napi::Env env, const char *utf8name,
 - `[in] properties`: vector of class property descriptor describing static and
   instance properties and methods of the class.
   See: `PropertyDescriptor`.
+- `[in] visibility`: class visibility enum parameter, see [ClassVisibility](#class_visibility)
 - `[in] data`: User-provided data passed to the constructor callback. You can get the `data`
   value by calling `Napi_IH::IHCallbackInfo::Data()` later in constructor.
 

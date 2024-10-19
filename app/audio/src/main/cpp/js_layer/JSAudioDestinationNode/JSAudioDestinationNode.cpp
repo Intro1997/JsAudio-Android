@@ -13,8 +13,9 @@ JSAudioDestinationNode::JSAudioDestinationNode(
               JSAudioNode::audio_node_ptr_)) {}
 
 void JSAudioDestinationNode::Init(Napi::Env env, Napi::Object exports) {
-  DefineClass<JSAudioDestinationNode, JSAudioNode>(env, "AudioDestinationNode",
-                                                   {}, true, true);
+  DefineClass<JSAudioDestinationNode, JSAudioNode>(
+      env, "AudioDestinationNode", {},
+      Napi_IH::ClassVisibility::kHideConstructor);
 }
 
 }; // namespace js_audio
