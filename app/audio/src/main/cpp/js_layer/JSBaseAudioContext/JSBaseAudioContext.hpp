@@ -10,11 +10,12 @@ public:
       std::shared_ptr<BaseAudioContext> base_audio_context_ptr = nullptr);
 
   static void Init(Napi::Env env, Napi::Object exports);
+  std::shared_ptr<std::mutex> GetAudioContextLock() const;
+  float GetSampleRate() const;
 
-  Napi::Value GetDestinationNode(const Napi::CallbackInfo &info);
-  Napi::Value GetSampleRate(const Napi::CallbackInfo &info);
-  Napi::Value GetCurrentTime(const Napi::CallbackInfo &info);
-
+  Napi::Value getDestinationNode(const Napi::CallbackInfo &info);
+  Napi::Value getSampleRate(const Napi::CallbackInfo &info);
+  Napi::Value getCurrentTime(const Napi::CallbackInfo &info);
   Napi::Value createOscillator(const Napi::CallbackInfo &info);
   Napi::Value createBuffer(const Napi::CallbackInfo &info);
 

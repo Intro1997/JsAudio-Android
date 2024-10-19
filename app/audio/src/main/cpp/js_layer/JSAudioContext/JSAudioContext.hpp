@@ -9,8 +9,8 @@ public:
 public:
   JSAudioContext(const Napi_IH::IHCallbackInfo &info);
 
-  Napi::Value Resume(const Napi::CallbackInfo &info);
-  Napi::Value Suspend(const Napi::CallbackInfo &info);
-  Napi::Value Close(const Napi::CallbackInfo &info);
+  Napi::Value resume(const Napi::CallbackInfo &info);
+  Napi::Value suspend(const Napi::CallbackInfo &info);
+  Napi::Value close(const Napi::CallbackInfo &info);
 };
 } // namespace js_audio

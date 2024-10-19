@@ -16,7 +16,7 @@ void JSAudioParam::Init(Napi::Env env, Napi::Object exports) {
            "defaultValue"),
        InstanceAccessor<JSAudioParam, &JSAudioParam::getMinValue>("minValue"),
        InstanceAccessor<JSAudioParam, &JSAudioParam::getMaxValue>("maxValue")},
-      false);
+      true, true);
 }
 
 void JSAudioParam::setValue(const Napi::CallbackInfo &info,

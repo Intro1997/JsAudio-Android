@@ -11,11 +11,11 @@ public:
       std::shared_ptr<OscillatorNode> oscillator_node_ptr = nullptr);
 
 private:
-  void SetType(const Napi::CallbackInfo &info, const Napi::Value& value);
+  void setType(const Napi::CallbackInfo &info, const Napi::Value& value);
 
-  Napi::Value GetFrequency(const Napi::CallbackInfo &info);
-  Napi::Value GetDetune(const Napi::CallbackInfo &info);
-  Napi::Value GetType(const Napi::CallbackInfo &info);
+  Napi::Value getFrequency(const Napi::CallbackInfo &info);
+  Napi::Value getDetune(const Napi::CallbackInfo &info);
+  Napi::Value getType(const Napi::CallbackInfo &info);
 
   std::weak_ptr<OscillatorNode> oscillator_node_ptr_;
 };

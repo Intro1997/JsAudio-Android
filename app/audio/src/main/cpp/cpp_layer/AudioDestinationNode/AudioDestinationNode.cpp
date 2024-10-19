@@ -9,8 +9,8 @@ AudioDestinationNode::AudioDestinationNode(
     const uint32_t &channel_count,
     std::shared_ptr<std::mutex> audio_context_lock,
     const uint32_t &number_of_inputs, const uint32_t &number_of_outputs,
-    const std::string &channel_count_mode,
-    const std::string &channel_interpretation)
+    const ChannelCountMode &channel_count_mode,
+    const ChannelInterpretation &channel_interpretation)
     : AudioNode(number_of_inputs, number_of_outputs, channel_count,
                 channel_count_mode, channel_interpretation, audio_context_lock),
       max_channel_count_(channel_count) {}

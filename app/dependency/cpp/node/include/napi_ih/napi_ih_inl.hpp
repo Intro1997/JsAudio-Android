@@ -60,6 +60,10 @@ FunctionWrapper::New(size_t argc, const napi_value *args) const {
   return function_.New(argc, args);
 }
 
+inline Napi::Function FunctionWrapper::InnerFunction() const {
+  return function_;
+}
+
 inline IHCallbackInfo::IHCallbackInfo(const Napi::CallbackInfo &info,
                                       void *user_data)
     : info_(info), user_data_(user_data) {}
@@ -119,6 +123,13 @@ public:
       return nullptr;
     }
     return std::move(std::make_unique<T>(info));
+  }
+
+  template <typename T>
+  static std::unique_ptr<IHObjectWrap>
+  IllegalConstructor(const Napi_IH::IHCallbackInfo &info) {
+    throw Napi::TypeError::New(info.Env(), "Illegal constructor\n");
+    return nullptr;
   }
 
   static Napi::Function
@@ -235,7 +246,7 @@ template <typename T>
 void IHObjectWrap::DefineClass(
     Napi::Env env, const char *utf8name,
     const std::initializer_list<IHObjectWrap::PropertyDescriptor> &properties,
-    bool need_export, void *data) {
+    bool need_export, bool block_constructor, void *data) {
   DefineClass<T>(
       env, utf8name, properties.size(),
       reinterpret_cast<const napi_property_descriptor *>(properties.begin()),
@@ -246,31 +257,31 @@ template <typename T>
 void IHObjectWrap::DefineClass(
     Napi::Env env, const char *utf8name,
     const std::vector<IHObjectWrap::PropertyDescriptor> &properties,
-    bool need_export, void *data) {
+    bool need_export, bool block_constructor, void *data) {
   DefineClass<T>(
       env, utf8name, properties.size(),
       reinterpret_cast<const napi_property_descriptor *>(properties.data()),
-      need_export, data);
+      need_export, block_constructor, data);
 }
 
 template <typename T, typename Base>
 inline void IHObjectWrap::DefineClass(
     Napi::Env env, const char *utf8name,
     const std::initializer_list<IHObjectWrap::PropertyDescriptor> &properties,
-    bool need_export, void *data) {
+    bool need_export, bool block_constructor, void *data) {
   DefineClass<T, Base>(
       env, utf8name, properties.size(),
       reinterpret_cast<const napi_property_descriptor *>(properties.begin()),
-      need_export, data);
+      need_export, block_constructor, data);
 }
 
 template <typename T, typename Base>
 inline void IHObjectWrap::DefineClass(
     Napi::Env env, const char *utf8name,
     const std::vector<IHObjectWrap::PropertyDescriptor> &properties,
-    bool need_export, void *data) {
+    bool need_export, bool block_constructor, void *data) {
   DefineClass<T, Base>(env, utf8name, properties.size(), properties.data(),
-                       need_export, data);
+                       need_export, block_constructor, data);
 }
 
 template <typename T, IHObjectWrap::InstanceMethodCallback<T> method>
@@ -306,14 +317,17 @@ template <typename T, typename Base>
 void IHObjectWrap::DefineClass(Napi::Env env, const char *utf8name,
                                const size_t props_count,
                                const napi_property_descriptor *descriptors,
-                               bool need_export, void *data) {
+                               bool need_export, bool block_constructor,
+                               void *data) {
   ClassMetaInfo &info_handle = ClassMetaInfoInstance<T>::GetInstance();
 
   info_handle.name = utf8name;
   if (!std::is_same<Base, NonBase>::value) {
     info_handle.parent = &(ClassMetaInfoInstance<Base>::GetInstance());
   }
-  info_handle.ctor = MethodWrapper::ConstructObject<T>;
+
+  info_handle.ctor = block_constructor ? MethodWrapper::IllegalConstructor<T>
+                                       : MethodWrapper::ConstructObject<T>;
   info_handle.descriptors = {descriptors, descriptors + props_count};
   info_handle.data = data;
   info_handle.need_export = need_export;

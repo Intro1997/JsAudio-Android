@@ -8,8 +8,7 @@ namespace js_audio {
 class WaveProducer {
 public:
   enum class WaveType {
-    kUnknown = 0,
-    kSine,
+    kSine = 0,
     kSawtooth,
     kSquare,
     kTriangle,

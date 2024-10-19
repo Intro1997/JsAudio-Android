@@ -11,9 +11,9 @@ public:
 
   // Napi::Value Resume(const Napi::CallbackInfo &info);
   // Napi::Value Suspend(const Napi::CallbackInfo &info);
-  Napi::Value StartRendering(const Napi::CallbackInfo &info);
+  Napi::Value startRendering(const Napi::CallbackInfo &info);
   
-  Napi::Value GetLength(const Napi::CallbackInfo &info);
+  Napi::Value getLength(const Napi::CallbackInfo &info);
 
 private:
   Napi::Promise::Deferred oncomplete_promise_;

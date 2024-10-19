@@ -4,7 +4,7 @@ namespace js_audio {
 class JSOfflineAudioCompletionEvent : public Napi_IH::IHObjectWrap {
 public:
   static void Init(Napi::Env env, Napi::Object exports);
-  Napi::Value GetAudioBuffer(const Napi::CallbackInfo &info);
+  Napi::Value getAudioBuffer(const Napi::CallbackInfo &info);
 
   JSOfflineAudioCompletionEvent(const Napi_IH::IHCallbackInfo &info);
 

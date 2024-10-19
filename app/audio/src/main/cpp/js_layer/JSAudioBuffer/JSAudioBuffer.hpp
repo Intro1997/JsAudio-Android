@@ -10,10 +10,10 @@ public:
   JSAudioBuffer(const Napi_IH::IHCallbackInfo &info,
                 std::shared_ptr<AudioBuffer> audio_buffer_ptr = nullptr);
 
-  Napi::Value GetSampleRate(const Napi::CallbackInfo &info);
-  Napi::Value GetLength(const Napi::CallbackInfo &info);
-  Napi::Value GetDuration(const Napi::CallbackInfo &info);
-  Napi::Value GetNumberOfChannels(const Napi::CallbackInfo &info);
+  Napi::Value getSampleRate(const Napi::CallbackInfo &info);
+  Napi::Value getLength(const Napi::CallbackInfo &info);
+  Napi::Value getDuration(const Napi::CallbackInfo &info);
+  Napi::Value getNumberOfChannels(const Napi::CallbackInfo &info);
 
   Napi::Value copyToChannel(const Napi::CallbackInfo &info);
   Napi::Value getChannelData(const Napi::CallbackInfo &info);

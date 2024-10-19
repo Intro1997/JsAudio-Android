@@ -8,9 +8,17 @@ const float OscillatorNode::kDetuneMax = 153600.0f;
 const float OscillatorNode::kDetuneMin = -153600.0f;
 const uint32_t OscillatorNode::kNumberOfInputs = 0;
 const uint32_t OscillatorNode::kNumberOfOutputs = 1;
-const uint32_t OscillatorNode::kChannelCount = 2;
-const std::string OscillatorNode::kChannelCountMode = "max";
-const std::string OscillatorNode::kChannelInterpretation = "speakers";
+
+const OscillatorNode::OscillatorType OscillatorNode::kDefaultType =
+    OscillatorType::kSine;
+const float OscillatorNode::kDefaultDetune = 0.0f;
+const float OscillatorNode::kDefaultFrequency = 440.0f;
+const uint32_t OscillatorNode::kDefaultChannelCount = 2;
+const OscillatorNode::ChannelCountMode
+    OscillatorNode::kDefaultChannelCountMode = ChannelCountMode::kMax;
+const OscillatorNode::ChannelInterpretation
+    OscillatorNode::kDefaultChannelInterpretation =
+        ChannelInterpretation::kSpeakers;
 
 #define PCM_SAMPLE_LENGTH 9
 #define PCM_SAMPLE_CHANNEL 2
@@ -41,15 +49,26 @@ static void CreateTestPcmData(size_t sample_size,
 class OscillatorNodeConstructHelper : public OscillatorNode {
 public:
   OscillatorNodeConstructHelper(std::shared_ptr<std::mutex> audio_context_lock,
+                                const OscillatorOptions &options,
                                 const float &sample_rate)
-      : OscillatorNode(audio_context_lock, sample_rate) {}
+      : OscillatorNode(audio_context_lock, options, sample_rate) {}
 };
 
+OscillatorNode::OscillatorNode(std::shared_ptr<std::mutex> audio_context_lock,
+                               const OscillatorOptions &options,
+                               const float &sample_rate)
+    : AudioScheduledSourceNode(
+          kNumberOfInputs, kNumberOfOutputs, options.channel_count,
+          options.channel_count_mode, options.channel_interpretation,
+          audio_context_lock),
+      type_(options.type), sample_rate_(sample_rate), current_time_(0) {}
+
 std::shared_ptr<OscillatorNode> OscillatorNode::CreateOscillatorNode(
-    std::shared_ptr<std::mutex> audio_context_lock, const float &sample_rate) {
+    std::shared_ptr<std::mutex> audio_context_lock,
+    const OscillatorOptions &options, const float &sample_rate) {
   std::shared_ptr<OscillatorNode> oscillator_node_ref =
       std::make_shared<OscillatorNodeConstructHelper>(audio_context_lock,
-                                                      sample_rate);
+                                                      options, sample_rate);
 
   std::weak_ptr<OscillatorNode> oscillator_node_weak_ref = oscillator_node_ref;
 
@@ -59,26 +78,22 @@ std::shared_ptr<OscillatorNode> OscillatorNode::CreateOscillatorNode(
     }
   };
 
-  oscillator_node_ref->frequency_ = std::make_shared<AudioParam>(
-      AudioParam::K_RATE, 440, -sample_rate / 2, sample_rate / 2,
-      audio_context_lock, setter_cb);
+  const float min_frequency = -sample_rate / 2;
+  const float max_frequency = sample_rate / 2;
 
-  oscillator_node_ref->detune_ =
-      std::make_shared<AudioParam>(AudioParam::K_RATE, 0, kDetuneMin,
-                                   kDetuneMax, audio_context_lock, setter_cb);
+  oscillator_node_ref->frequency_ = std::make_shared<AudioParam>(
+      AudioParam::K_RATE,
+      std::clamp(options.frequency, min_frequency, max_frequency),
+      min_frequency, max_frequency, audio_context_lock, setter_cb);
+
+  oscillator_node_ref->detune_ = std::make_shared<AudioParam>(
+      AudioParam::K_RATE, options.detune, kDetuneMin, kDetuneMax,
+      audio_context_lock, setter_cb);
 
   oscillator_node_ref->UpdateComputedFreq();
 
   return oscillator_node_ref;
 }
-
-OscillatorNode::OscillatorNode(std::shared_ptr<std::mutex> audio_context_lock,
-                               const float &sample_rate)
-    : AudioScheduledSourceNode(kNumberOfInputs, kNumberOfOutputs, kChannelCount,
-                               kChannelCountMode, kChannelInterpretation,
-                               audio_context_lock),
-      type_(WaveProducer::WaveType::kSine), sample_rate_(sample_rate),
-      current_time_(0) {}
 
 void OscillatorNode::ProduceSamples(size_t sample_size,
                                     std::vector<std::vector<float>> &output) {
@@ -94,6 +109,39 @@ void OscillatorNode::ProduceSamples(size_t sample_size,
   }
   CreateWaveform(type_, sample_size, output[0]);
   output[1].assign(output[0].begin(), output[0].end());
+}
+
+OscillatorNode::OscillatorOptions OscillatorNode::GetDefaultOptions() {
+  OscillatorOptions options;
+  options.detune = kDefaultDetune;
+  options.frequency = kDefaultFrequency;
+  options.type = kDefaultType;
+  options.channel_count = kDefaultChannelCount;
+  options.channel_count_mode = kDefaultChannelCountMode;
+  options.channel_interpretation = kDefaultChannelInterpretation;
+  return options;
+}
+
+bool OscillatorNode::ConvertToOscillatorType(const std::string &str_type,
+                                             OscillatorType &type) {
+  if (str_type == "sine") {
+    type = OscillatorType::kSine;
+    return true;
+  } else if (str_type == "sawtooth") {
+    type = OscillatorType::kSawtooth;
+    return true;
+  } else if (str_type == "square") {
+    type = OscillatorType::kSquare;
+    return true;
+  } else if (str_type == "triangle") {
+    type = OscillatorType::kTriangle;
+    return true;
+  }
+  return false;
+}
+
+float OscillatorNode::ClampToValidDetune(const float &detune) {
+  return std::clamp(detune, kDetuneMin, kDetuneMax);
 }
 
 std::shared_ptr<AudioParam> OscillatorNode::frequency() const {
@@ -116,30 +164,10 @@ const WaveProducer::WaveType &OscillatorNode::inner_type() const {
 }
 
 void OscillatorNode::set_type(const std::string &type) {
-  const WaveProducer::WaveType oscillator_node_type = ConvertStringToType(type);
-  if (oscillator_node_type != WaveProducer::WaveType::kUnknown) {
-    std::lock_guard<std::mutex> guard(*audio_context_lock_);
-    type_ = oscillator_node_type;
-  } else {
-    LOGE("Error! Unsupported oscillator type: %s\n", type.c_str());
+  std::lock_guard<std::mutex> guard(*audio_context_lock_);
+  if (!ConvertToOscillatorType(type, type_)) {
+    LOGE("Set oscillator node type error: Use unknown type %s\n", type.c_str());
   }
-}
-
-WaveProducer::WaveType
-OscillatorNode::ConvertStringToType(const std::string &type) const {
-  if (type == "sawtooth") {
-    return WaveProducer::WaveType::kSawtooth;
-  }
-  if (type == "sine") {
-    return WaveProducer::WaveType::kSine;
-  }
-  if (type == "square") {
-    return WaveProducer::WaveType::kSquare;
-  }
-  if (type == "triangle") {
-    return WaveProducer::WaveType::kTriangle;
-  }
-  return WaveProducer::WaveType::kUnknown;
 }
 
 const char *

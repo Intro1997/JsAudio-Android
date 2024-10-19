@@ -32,8 +32,7 @@ public:
 protected:
   enum class ErrorType { kError = 0, kTypeError = 1, kRangeError = 2 };
 
-  template<typename T>
-  static T InnerNew(Napi::Env env, const char *msg);
+  template <typename T> static T InnerNew(Napi::Env env, const char *msg);
 
   template <typename... Args>
   static std::string string_format(const char *format, Args... args);
@@ -80,6 +79,8 @@ public:
   New(const std::vector<napi_value> &args) const;
   Napi::MaybeOrValue<Napi::Object> New(size_t argc,
                                        const napi_value *args) const;
+
+  inline Napi::Function InnerFunction() const;
 
 private:
   Napi::Function function_;
@@ -149,23 +150,27 @@ public:
   static void
   DefineClass(Napi::Env env, const char *utf8name,
               const std::initializer_list<PropertyDescriptor> &properties,
-              bool need_export = true, void *data = nullptr);
+              bool need_export = true, bool block_constructor = false,
+              void *data = nullptr);
 
   template <typename T>
   static void DefineClass(Napi::Env env, const char *utf8name,
                           const std::vector<PropertyDescriptor> &properties,
-                          bool need_export = true, void *data = nullptr);
+                          bool need_export = true,
+                          bool block_constructor = false, void *data = nullptr);
 
   template <typename T, typename Base>
   static void
   DefineClass(Napi::Env env, const char *utf8name,
               const std::initializer_list<PropertyDescriptor> &properties,
-              bool need_export = true, void *data = nullptr);
+              bool need_export = true, bool block_constructor = false,
+              void *data = nullptr);
 
   template <typename T, typename Base>
   static void DefineClass(Napi::Env env, const char *utf8name,
                           const std::vector<PropertyDescriptor> &properties,
-                          bool need_export = true, void *data = nullptr);
+                          bool need_export = true,
+                          bool block_constructor = false, void *data = nullptr);
   template <typename T>
   using InstanceVoidMethodCallback = void (T::*)(const Napi::CallbackInfo &);
   template <typename T>
@@ -196,7 +201,8 @@ private:
   static void DefineClass(Napi::Env env, const char *utf8name,
                           const size_t props_count,
                           const napi_property_descriptor *descriptors,
-                          bool need_export = true, void *data = nullptr);
+                          bool need_export = true,
+                          bool block_constructor = false, void *data = nullptr);
 
 protected:
   static Napi::FunctionReference js_class_constructor_;

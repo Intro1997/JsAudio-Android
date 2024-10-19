@@ -52,34 +52,42 @@ void JSBaseAudioContext::Init(Napi::Env env, Napi::Object exports) {
       env, "BaseAudioContext",
       {
           InstanceAccessor<JSBaseAudioContext,
-                           &JSBaseAudioContext::GetDestinationNode>(
+                           &JSBaseAudioContext::getDestinationNode>(
               "destination"),
           InstanceAccessor<JSBaseAudioContext,
-                           &JSBaseAudioContext::GetSampleRate>("sampleRate"),
+                           &JSBaseAudioContext::getSampleRate>("sampleRate"),
           InstanceAccessor<JSBaseAudioContext,
-                           &JSBaseAudioContext::GetCurrentTime>("currentTime"),
+                           &JSBaseAudioContext::getCurrentTime>("currentTime"),
           InstanceMethod<JSBaseAudioContext,
                          &JSBaseAudioContext::createOscillator>(
               "createOscillator"),
           InstanceMethod<JSBaseAudioContext, &JSBaseAudioContext::createBuffer>(
               "createBuffer"),
       },
-      false);
+      true, true);
 }
 
 Napi::Value
-JSBaseAudioContext::GetDestinationNode(const Napi::CallbackInfo &info) {
+JSBaseAudioContext::getDestinationNode(const Napi::CallbackInfo &info) {
   return js_destination_node_ref_.Value();
 }
 
-Napi::Value JSBaseAudioContext::GetSampleRate(const Napi::CallbackInfo &info) {
+Napi::Value JSBaseAudioContext::getSampleRate(const Napi::CallbackInfo &info) {
   Napi::Env env = info.Env();
   return Napi::Number::From(env, base_audio_context_ptr_->sample_rate());
 }
 
-Napi::Value JSBaseAudioContext::GetCurrentTime(const Napi::CallbackInfo &info) {
+Napi::Value JSBaseAudioContext::getCurrentTime(const Napi::CallbackInfo &info) {
   Napi::Env env = info.Env();
   return Napi::Number::From(env, base_audio_context_ptr_->GetCurrentTime());
+}
+
+std::shared_ptr<std::mutex> JSBaseAudioContext::GetAudioContextLock() const {
+  return base_audio_context_ptr_->GetLock();
+}
+
+float JSBaseAudioContext::GetSampleRate() const {
+  return base_audio_context_ptr_->sample_rate();
 }
 
 Napi::Value
@@ -87,6 +95,7 @@ JSBaseAudioContext::createOscillator(const Napi::CallbackInfo &info) {
   std::shared_ptr<OscillatorNode> oscillator_node_ptr =
       OscillatorNode::CreateOscillatorNode(
           base_audio_context_ptr_->GetLock(),
+          OscillatorNode::GetDefaultOptions(),
           base_audio_context_ptr_->sample_rate());
   Napi::Object js_oscillator_node =
       JSOscillatorNode::FindClass<JSOscillatorNode>()

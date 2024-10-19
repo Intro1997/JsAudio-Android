@@ -4,11 +4,11 @@ namespace js_audio {
 void JSAudioBuffer::Init(Napi::Env env, Napi::Object exports) {
   DefineClass<JSAudioBuffer>(
       env, "AudioBuffer",
-      {InstanceAccessor<JSAudioBuffer, &JSAudioBuffer::GetSampleRate>(
+      {InstanceAccessor<JSAudioBuffer, &JSAudioBuffer::getSampleRate>(
            "sampleRate"),
-       InstanceAccessor<JSAudioBuffer, &JSAudioBuffer::GetLength>("length"),
-       InstanceAccessor<JSAudioBuffer, &JSAudioBuffer::GetDuration>("duration"),
-       InstanceAccessor<JSAudioBuffer, &JSAudioBuffer::GetNumberOfChannels>(
+       InstanceAccessor<JSAudioBuffer, &JSAudioBuffer::getLength>("length"),
+       InstanceAccessor<JSAudioBuffer, &JSAudioBuffer::getDuration>("duration"),
+       InstanceAccessor<JSAudioBuffer, &JSAudioBuffer::getNumberOfChannels>(
            "numberOfChannels"),
        InstanceMethod<JSAudioBuffer, &JSAudioBuffer::copyToChannel>(
            "copyToChannel"),
@@ -40,26 +40,26 @@ JSAudioBuffer::JSAudioBuffer(const Napi_IH::IHCallbackInfo &info,
   }
 }
 
-Napi::Value JSAudioBuffer::GetSampleRate(const Napi::CallbackInfo &info) {
+Napi::Value JSAudioBuffer::getSampleRate(const Napi::CallbackInfo &info) {
   if (audio_buffer_ptr_) {
     return Napi::Number::From(info.Env(),
                               audio_buffer_ptr_->number_of_channel());
   }
   return info.Env().Undefined();
 }
-Napi::Value JSAudioBuffer::GetLength(const Napi::CallbackInfo &info) {
+Napi::Value JSAudioBuffer::getLength(const Napi::CallbackInfo &info) {
   if (audio_buffer_ptr_) {
     return Napi::Number::From(info.Env(), audio_buffer_ptr_->length());
   }
   return info.Env().Undefined();
 }
-Napi::Value JSAudioBuffer::GetDuration(const Napi::CallbackInfo &info) {
+Napi::Value JSAudioBuffer::getDuration(const Napi::CallbackInfo &info) {
   if (audio_buffer_ptr_) {
     return Napi::Number::From(info.Env(), audio_buffer_ptr_->sample_rate());
   }
   return info.Env().Undefined();
 }
-Napi::Value JSAudioBuffer::GetNumberOfChannels(const Napi::CallbackInfo &info) {
+Napi::Value JSAudioBuffer::getNumberOfChannels(const Napi::CallbackInfo &info) {
   if (audio_buffer_ptr_) {
     return Napi::Number::From(info.Env(), audio_buffer_ptr_->duration());
   }
@@ -72,12 +72,12 @@ Napi::Value JSAudioBuffer::copyToChannel(const Napi::CallbackInfo &info) {
   } else if (info.Length() > 2 &&
              (!info[0].IsTypedArray() || !info[1].IsNumber() ||
               !info[2].IsNumber())) {
-                // TODO: maybe throw here
+    // TODO: maybe throw here
     LOGE("The first parameter type must be Float32Array and the last 2 "
          "parameters type must be number!\n");
   } else if (info.Length() == 2 &&
              (!info[0].IsTypedArray() || !info[1].IsNumber())) {
-              // TODO: maybe throw here
+    // TODO: maybe throw here
     LOGE("The first parameter type must be Float32Array and the second "
          "parameter type must be number!\n");
   } else {

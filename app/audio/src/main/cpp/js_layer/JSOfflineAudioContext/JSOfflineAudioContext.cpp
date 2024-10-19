@@ -26,9 +26,9 @@ void JSOfflineAudioContext::Init(Napi::Env env, Napi::Object exports) {
   DefineClass<JSOfflineAudioContext, JSBaseAudioContext>(
       env, "OfflineAudioContext",
       {InstanceMethod<JSOfflineAudioContext,
-                      &JSOfflineAudioContext::StartRendering>("startRendering"),
+                      &JSOfflineAudioContext::startRendering>("startRendering"),
        InstanceAccessor<JSOfflineAudioContext,
-                        &JSOfflineAudioContext::GetLength>("length")});
+                        &JSOfflineAudioContext::getLength>("length")});
 }
 
 JSOfflineAudioContext::JSOfflineAudioContext(
@@ -37,7 +37,7 @@ JSOfflineAudioContext::JSOfflineAudioContext(
       oncomplete_promise_(Napi::Promise::Deferred::New(info.Env())) {}
 
 Napi::Value
-JSOfflineAudioContext::StartRendering(const Napi::CallbackInfo &info) {
+JSOfflineAudioContext::startRendering(const Napi::CallbackInfo &info) {
 
   ContextType *js_promise_ptr = new Napi::Promise::Deferred(info.Env());
   TSFN tsfn;
@@ -64,7 +64,7 @@ JSOfflineAudioContext::StartRendering(const Napi::CallbackInfo &info) {
   return js_promise_ptr->Promise();
 }
 
-Napi::Value JSOfflineAudioContext::GetLength(const Napi::CallbackInfo &info) {
+Napi::Value JSOfflineAudioContext::getLength(const Napi::CallbackInfo &info) {
   uint32_t length =
       std::static_pointer_cast<OfflineAudioContext>(base_audio_context_ptr_)
           ->length();

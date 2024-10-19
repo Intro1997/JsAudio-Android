@@ -6,9 +6,9 @@ void JSOfflineAudioCompletionEvent::Init(Napi::Env env, Napi::Object exports) {
   DefineClass<JSOfflineAudioCompletionEvent>(
       env, "OfflineAudioCompletionEvent",
       {InstanceAccessor<JSOfflineAudioCompletionEvent,
-                        &JSOfflineAudioCompletionEvent::GetAudioBuffer>(
+                        &JSOfflineAudioCompletionEvent::getAudioBuffer>(
           "renderedBuffer")},
-      false);
+      true, true);
 }
 
 JSOfflineAudioCompletionEvent::JSOfflineAudioCompletionEvent(
@@ -23,7 +23,7 @@ JSOfflineAudioCompletionEvent::JSOfflineAudioCompletionEvent(
 }
 
 Napi::Value
-JSOfflineAudioCompletionEvent::GetAudioBuffer(const Napi::CallbackInfo &info) {
+JSOfflineAudioCompletionEvent::getAudioBuffer(const Napi::CallbackInfo &info) {
   return js_ret_audio_buffer_ref_.Value();
 }
 } // namespace js_audio
