@@ -20,8 +20,8 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
         }
 
         private const val TAG = "NodeEnvHandle"
+        private var serverAddress = ""
         private var jsEntry = ""
-        private var jsEntryFile = ""
         private var nodeEnvState = NodeEnvState.Stop
 
         /**
@@ -38,8 +38,8 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
             registeredModuleHandler.add(handler)
         }
 
-        fun create(jsEntry: String): NodeEnvHandler? {
-            this.jsEntry = jsEntry
+        fun create(serverAddress: String): NodeEnvHandler? {
+            this.serverAddress = serverAddress
             if (innerNodeEnvHandler == null) {
                 innerNodeEnvHandler = NodeEnvHandler()
                 innerNodeEnvHandler?.let { nodeEnvHandle ->
@@ -64,8 +64,8 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
         }
 
         @JvmStatic
-        fun loadFileFromJsEntry(entryFile: String): String {
-            val url = jsEntry + entryFile
+        fun loadFileFromServerAddress(entryFile: String): String {
+            val url = serverAddress + entryFile
             var ret = ""
             try {
                 val urlObj = URL(url)
@@ -84,15 +84,15 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
         }
     }
 
-    fun setJsEntryFile(filePath: String) {
-        jsEntryFile = filePath
+    fun setJsEntry(filePath: String) {
+        jsEntry = filePath
     }
 
     fun getNodeEnvState(): NodeEnvState {
         return nodeEnvState
     }
 
-    private fun evalCodeFromEntryFile(jsEntryFile: String) {
+    private fun evalCodeFromEntryFile(jsEntry: String) {
         if (isEvaluatingCode.getValue()) {
             Log.w(TAG, "Cannot run code, node env is busy!")
         } else {
@@ -100,7 +100,7 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
             innerNodeEnvHandler?.let { nodeEnvHandle ->
                 val jsThread = Thread {
                     run {
-                        val fileContent = loadFileFromJsEntry(jsEntryFile)
+                        val fileContent = loadFileFromServerAddress(jsEntry)
                         if (fileContent.isNotEmpty()) {
 //                            Log.d(TAG, "load file success, file content: $fileContent")
                             isEvaluatingCode.setValue(true)
@@ -116,11 +116,11 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
     }
 
     override fun start() {
-        if (jsEntryFile != "") {
+        if (jsEntry != "") {
             registeredModuleHandler.forEach { handler ->
                 handler.start()
             }
-            evalCodeFromEntryFile(jsEntryFile)
+            evalCodeFromEntryFile(jsEntry)
             nodeEnvState = NodeEnvState.Running
         }
     }

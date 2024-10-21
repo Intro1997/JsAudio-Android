@@ -1,5 +1,7 @@
 package com.example.jsaudio
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -9,9 +11,11 @@ import com.example.audio.AudioHandler
 import com.example.jsaudio.databinding.ActivityMainBinding
 import com.example.node_env.NodeEnvHandler
 
+
 class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "MainActivity"
+        private const val JS_ENTRY = "index.js"
     }
 
     enum class JsThreadState(val state: Int) {
@@ -75,7 +79,7 @@ class MainActivity : AppCompatActivity() {
 
 
         NodeEnvHandler.registerNodeModuleHandler(AudioHandler(this))
-        nodeEnvHandler = NodeEnvHandler.create(getJsEntry())
+        nodeEnvHandler = NodeEnvHandler.create(getServerAddress())
 
         val ret = "create node env " + if (nodeEnvHandler == null) "failed" else "success"
 
@@ -83,7 +87,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         binding.sampleText.text = ret
 
-        nodeEnvHandler?.setJsEntryFile("index.js")
+        nodeEnvHandler?.setJsEntry("index.js")
 
         getJsLifetimeControlButton()
         updateJsLifetimeControlButtonState(
@@ -155,7 +159,7 @@ class MainActivity : AppCompatActivity() {
         nodeEnvHandler?.destroy()
     }
 
-    private fun getJsEntry(): String {
-        return BuildConfig.JS_ENTRY
+    private fun getServerAddress(): String {
+        return BuildConfig.SERVER_ADDRESS
     }
 }

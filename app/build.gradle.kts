@@ -1,6 +1,6 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 
-val js_entry: String = gradleLocalProperties(rootDir).getProperty("js_entry")
+val server_address: String = gradleLocalProperties(rootDir).getProperty("server_address")
 
 plugins {
     id("com.android.application")
@@ -48,14 +48,14 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            buildConfigField("String", "JS_ENTRY", js_entry)
+            buildConfigField("String", "SERVER_ADDRESS", server_address)
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
         debug {
-            buildConfigField("String", "JS_ENTRY", js_entry)
+            buildConfigField("String", "SERVER_ADDRESS", server_address)
         }
     }
     compileOptions {
