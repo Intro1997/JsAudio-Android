@@ -31,10 +31,10 @@ static std::string loadFileContentFromJsEntry(const char *url) {
     return ret;
   }
   jmethodID method_id = jni_env->GetStaticMethodID(
-      clazz, "loadFileFromJsEntry", "(Ljava/lang/String;)Ljava/lang/String;");
+      clazz, "loadFileFromServerAddress", "(Ljava/lang/String;)Ljava/lang/String;");
 
   if (!method_id) {
-    LOGE("GetStaticMethodID loadFileFromJsEntry failed!\n");
+    LOGE("GetStaticMethodID loadFileFromServerAddress failed!\n");
     return ret;
   }
 
