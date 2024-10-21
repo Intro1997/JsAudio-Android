@@ -42,15 +42,17 @@ JSOfflineAudioContext::startRendering(const Napi::CallbackInfo &info) {
   ContextType *js_promise_ptr = new Napi::Promise::Deferred(info.Env());
   TSFN tsfn;
 
-  tsfn =
-      TSFN::New(info.Env(), "StartRendering TSFN", 0, 1, js_promise_ptr,
-                [=](Napi::Env, void *, ContextType *ctx) { tsfn.Release(); });
+  tsfn = TSFN::New(info.Env(), "StartRendering TSFN", 0, 1, js_promise_ptr);
 
   std::function<void(std::shared_ptr<AudioBuffer>)> cb =
       [=](std::shared_ptr<AudioBuffer> rendered_audio_buffer) {
         RenderedAudioBufferWrapper *wrapper = new RenderedAudioBufferWrapper();
         wrapper->rendered_audio_buffer = rendered_audio_buffer;
-        tsfn.NonBlockingCall(wrapper);
+        napi_status status = tsfn.NonBlockingCall(wrapper);
+        if (status != napi_ok) {
+          LOGE("NonBlockingCall failed: error code is %d\n", status);
+        }
+        tsfn.Release();
       };
 
   bool is_start =
