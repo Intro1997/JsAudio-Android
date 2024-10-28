@@ -1,7 +1,6 @@
 package com.example.jsaudio
 
-import android.app.Activity
-import android.content.Intent
+import com.jakewharton.processphoenix.ProcessPhoenix
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -64,12 +63,20 @@ class MainActivity : AppCompatActivity() {
                 resumeButton?.isEnabled = false
             }
 
-            NodeEnvHandler.NodeEnvState.Stop -> { //
+            NodeEnvHandler.NodeEnvState.Stop -> {
+                stopButton?.isEnabled = false
+                startButton?.isEnabled = false
+                pauseButton?.isEnabled = false
+                resumeButton?.isEnabled = false
+            }
+
+            NodeEnvHandler.NodeEnvState.Init -> {
                 stopButton?.isEnabled = false
                 startButton?.isEnabled = true
                 pauseButton?.isEnabled = false
                 resumeButton?.isEnabled = false
             }
+
         }
     }
 
@@ -87,7 +94,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         binding.sampleText.text = ret
 
-        nodeEnvHandler?.setJsEntry("index.js")
+        nodeEnvHandler?.setJsEntry(JS_ENTRY)
 
         getJsLifetimeControlButton()
         updateJsLifetimeControlButtonState(
@@ -102,6 +109,10 @@ class MainActivity : AppCompatActivity() {
         updateJsLifetimeControlButtonState(
             nodeEnvHandler?.getNodeEnvState()
         )
+    }
+
+    fun onRestartClick(view: View) {
+        ProcessPhoenix.triggerRebirth(view.context)
     }
 
     fun onStopClick(view: View) {

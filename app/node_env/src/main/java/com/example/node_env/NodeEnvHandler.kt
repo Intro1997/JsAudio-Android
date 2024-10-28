@@ -9,6 +9,7 @@ import java.io.BufferedReader
 
 class NodeEnvHandler private constructor() : NodeModuleHandler {
     enum class NodeEnvState(val state: Int) {
+        Init(0x0),
         Running(0x1),
         Stop(0x2),
         Pause(0x3)
@@ -22,7 +23,7 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
         private const val TAG = "NodeEnvHandle"
         private var serverAddress = ""
         private var jsEntry = ""
-        private var nodeEnvState = NodeEnvState.Stop
+        private var nodeEnvState = NodeEnvState.Init
 
         /**
          * innerNodeEnvHandle is relative to isNativeNodeEnvCreated
@@ -116,17 +117,23 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
     }
 
     override fun start() {
-        if (jsEntry != "") {
+        if (jsEntry != "" && nodeEnvState == NodeEnvState.Init) {
             registeredModuleHandler.forEach { handler ->
                 handler.start()
             }
             evalCodeFromEntryFile(jsEntry)
             nodeEnvState = NodeEnvState.Running
+        } else if (nodeEnvState == NodeEnvState.Stop) {
+            resume()
         }
     }
 
     override fun stop() {
+        // NOTE: NODE CANNOT BE STOP!
+        // 1. if node start, it can only be pause or destroy
+        // 2. if destroy, you cannot create new node in current process!
         innerNodeEnvHandler?.pauseNativeNode()
+
         registeredModuleHandler.forEach { handler ->
             handler.stop()
         }
