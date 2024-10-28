@@ -58,7 +58,6 @@ Java_com_example_node_1env_NodeEnvHandler_destroyNativeNode(JNIEnv *env,
                                                             jobject thiz) {
   if (global_node) {
     global_node->Destroy();
-    delete global_node;
   }
 }
 extern "C" JNIEXPORT void JNICALL

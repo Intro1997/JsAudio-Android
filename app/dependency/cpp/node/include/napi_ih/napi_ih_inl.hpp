@@ -129,7 +129,6 @@ public:
   static std::unique_ptr<IHObjectWrap>
   IllegalConstructor(const Napi_IH::IHCallbackInfo &info) {
     throw Napi::TypeError::New(info.Env(), "Illegal constructor\n");
-    return nullptr;
   }
 
   static Napi::Function
