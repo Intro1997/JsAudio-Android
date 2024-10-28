@@ -99,6 +99,10 @@ std::shared_ptr<OscillatorNode> OscillatorNode::CreateOscillatorNode(
 
 void OscillatorNode::ProduceSamples(size_t sample_size,
                                     std::vector<std::vector<float>> &output) {
+  if (state() != State::Start) {
+    FillWithZeros(sample_size, output);
+    return;
+  }
   // Warn: you should not use any getter api here!
   // we have locked in AudioContext.ProduceSamples() outside!
   if (output.size() < 2) {

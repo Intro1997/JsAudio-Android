@@ -14,7 +14,7 @@ public:
   float sample_rate() const;
   uint32_t number_of_channels() const;
 
-  virtual double GetCurrentTime() ;
+  virtual double GetCurrentTime();
   std::shared_ptr<std::mutex> GetLock() const;
 
   void ProduceSamples(size_t sample_size,

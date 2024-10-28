@@ -86,6 +86,10 @@ std::shared_ptr<std::mutex> JSBaseAudioContext::GetAudioContextLock() const {
   return base_audio_context_ptr_->GetLock();
 }
 
+std::shared_ptr<BaseAudioContext> JSBaseAudioContext::GetAudioContext() const {
+  return base_audio_context_ptr_;
+}
+
 float JSBaseAudioContext::GetSampleRate() const {
   return base_audio_context_ptr_->sample_rate();
 }

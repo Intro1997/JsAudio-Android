@@ -22,8 +22,7 @@ private:
   Napi::Value connect(const Napi::CallbackInfo &info);
   Napi::Value disconnect(const Napi::CallbackInfo &info);
 
-  bool IsSameAudioContext(const JSAudioNode * other_audio_node);
-
+  bool IsSameAudioContext(const JSAudioNode *other_audio_node);
   // weak ref
   Napi::ObjectReference napi_audio_context_ref_;
 };

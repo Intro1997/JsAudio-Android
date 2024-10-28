@@ -5,8 +5,10 @@
 #include <vector>
 
 namespace js_audio {
-
+class BaseAudioContext;
 class AudioNode {
+  friend class JSAudioNode;
+
 public:
   enum class ChannelCountMode { kClampedMax = 0, kExplicit, kMax };
   enum class ChannelInterpretation { kDiscrete = 0, kSpeakers };
@@ -63,6 +65,7 @@ protected:
   const ChannelCountMode channel_count_mode_;
   const ChannelInterpretation channel_interpretation_;
   std::shared_ptr<std::mutex> audio_context_lock_;
+  std::weak_ptr<BaseAudioContext> base_audio_context_ptr_;
 
 public:
   static const uint32_t kMinChannelCount;

@@ -9,5 +9,8 @@ public:
                                  audio_scheduled_source_node_ptr = nullptr);
 
   static void Init(Napi::Env env, Napi::Object exports);
+
+  Napi::Value Start(const Napi::CallbackInfo &info);
+  Napi::Value Stop(const Napi::CallbackInfo &info);
 };
 } // namespace js_audio

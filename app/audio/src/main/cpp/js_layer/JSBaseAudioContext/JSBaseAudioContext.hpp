@@ -11,6 +11,7 @@ public:
 
   static void Init(Napi::Env env, Napi::Object exports);
   std::shared_ptr<std::mutex> GetAudioContextLock() const;
+  std::shared_ptr<BaseAudioContext> GetAudioContext() const;
   float GetSampleRate() const;
 
   Napi::Value getDestinationNode(const Napi::CallbackInfo &info);
