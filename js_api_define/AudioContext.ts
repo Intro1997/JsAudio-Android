@@ -1,5 +1,5 @@
 interface AudioContext extends BaseAudioContext {
-  constructor()
+  new(): AudioContext
   resume(): Promise<undefined>
   suspend(): Promise<undefined>
   close(): Promise<undefined>

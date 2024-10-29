@@ -18,12 +18,12 @@ interface OfflineAudioContextOptions {
 }
 
 interface OfflineAudioContext extends BaseAudioContext {
-  constructor(contextOptions: OfflineAudioContextOptions);
-  constructor(
+  new(contextOptions: OfflineAudioContextOptions): OfflineAudioContext
+  new(
     numberOfChannels: number /* unsigned long */,
     length: number /* unsigned long */,
     sampleRate: number /* number */
-  );
+  ): OfflineAudioContext
 
   // @ts-ignore
   oncomplete(ev: OfflineAudioCompletionEvent)
