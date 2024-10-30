@@ -1,19 +1,19 @@
 interface AudioBuffer {
-  // constructor: (options: AudioBufferOptions)
+  new(options: AudioBufferOptions): AudioBuffer;
   readonly sampleRate: number; // float
-  readonly length: number; // unsigned long
+  readonly length: number; // uint32_t
   readonly duration: number; // double
-  readonly numberOfChannels: number; // unsigned long
+  readonly numberOfChannels: number; // uint32_t
 
-  getChannelData: (channel: number /* unsigned long */) => Float32Array;
+  getChannelData: (channel: number /* uint32_t */) => Float32Array;
   copyFromChannel(
     destination: Float32Array,
-    channelNumber: number /* unsigned long  */,
-    bufferOffset?: number /* optional unsigned long  */
+    channelNumber: number /* uint32_t  */,
+    bufferOffset?: number /* optional uint32_t  */
   ): void;
   copyToChannel(
     source: Float32Array,
-    channelNumber: number /* unsigned long  */,
-    bufferOffset?: number /* optional unsigned long  */
+    channelNumber: number /* uint32_t  */,
+    bufferOffset?: number /* optional uint32_t  */
   ): void;
 }

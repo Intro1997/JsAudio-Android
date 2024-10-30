@@ -2,6 +2,20 @@
 #define NAPI_IH_INL_HPP
 
 namespace Napi_IH {
+inline bool GetObjectConstrcutorName(const Napi::Object &object,
+                                     std::string &receive) {
+  receive = "";
+  if (!object.Has("constructor") || !object.Get("constructor").IsFunction()) {
+    return false;
+  }
+  Napi::Function constructor = object.Get("constructor").As<Napi::Function>();
+  if (!constructor.Has("name") || !constructor.Get("name").IsString()) {
+    return false;
+  }
+  receive = constructor.Get("name").As<Napi::String>();
+  return true;
+}
+
 template <typename T> class ClassMetaInfoInstance {
 public:
   static ClassMetaInfo &GetInstance() { return meta_info_; }

@@ -1,4 +1,17 @@
-function AudioBufferTest() {
+const {
+  wptAudioBufferTest0,
+} = require("js_tests/wpt_test/audiobuffer/audiobuffer.js");
+const {
+  wptAudioBufferTest1,
+} = require("js_tests/wpt_test/audiobuffer/ctor-audiobuffer.js");
+const {
+  wptAudioBufferTest2,
+} = require("js_tests/wpt_test/audiobuffer/audiobuffer-getChannelData.js");
+const {
+  wptAudioBufferTest3,
+} = require("js_tests/wpt_test/audiobuffer/audiobuffer-copy-channel.js");
+
+function LocalTest() {
   const audioCtx = new AudioContext();
 
   const numberOfChannel = 2;
@@ -46,6 +59,13 @@ function AudioBufferTest() {
   console.log(`copy from channel 0: channelDestArray = ${channelDestArray}`);
   audioBuffer.copyFromChannel(channelDestArray, 1, startIdx);
   console.log(`copy from channel 1: channelDestArray = ${channelDestArray}`);
+}
+
+async function AudioBufferTest() {
+  await wptAudioBufferTest0();
+  await wptAudioBufferTest1();
+  await wptAudioBufferTest2();
+  return wptAudioBufferTest3();
 }
 
 module.exports = { AudioBufferTest };

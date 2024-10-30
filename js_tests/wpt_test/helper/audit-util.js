@@ -220,4 +220,7 @@ module.exports = {
   createStereoImpulseBuffer,
   timeToSampleFrame,
   grainLengthInSampleFrames,
+  isValidNumber,
+  computeSNR,
+  RENDER_QUANTUM_FRAMES,
 };

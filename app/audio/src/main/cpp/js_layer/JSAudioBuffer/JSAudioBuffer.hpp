@@ -1,6 +1,8 @@
 #pragma once
 #include "AudioBuffer.hpp"
+
 #include <napi_ih/napi_ih.hpp>
+#include <vector>
 
 namespace js_audio {
 class JSAudioBuffer : public Napi_IH::IHObjectWrap {
@@ -20,6 +22,7 @@ public:
   Napi::Value copyFromChannel(const Napi::CallbackInfo &info);
 
 private:
+  std::vector<Napi::ObjectReference> js_channels_ref_;
   std::shared_ptr<AudioBuffer> audio_buffer_ptr_;
 };
 } // namespace js_audio

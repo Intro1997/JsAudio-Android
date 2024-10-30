@@ -114,10 +114,15 @@ Napi::Value JSBaseAudioContext::createBuffer(const Napi::CallbackInfo &info) {
          info.Length());
     return info.Env().Undefined();
   }
+  // TODO: maybe create shared pointer of AudioBuffer is better?
   if (info[0].IsNumber() && info[1].IsNumber() && info[2].IsNumber()) {
+    Napi::Object options = Napi::Object::New(info.Env());
+    options.Set("numberOfChannels", info[0]);
+    options.Set("length", info[1]);
+    options.Set("sampleRate", info[2]);
     Napi::Object js_audio_buffer =
         JSAudioBuffer::FindClass<JSAudioBuffer>().NewWithArgs<JSAudioBuffer>(
-            {info[0], info[1], info[2]});
+            {options});
 
     return js_audio_buffer;
   } else {
