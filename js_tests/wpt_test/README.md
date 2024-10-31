@@ -12,3 +12,7 @@ We do not append following test, because these tests need broswer env that we wo
 
 1. [offlineaudiocontext-detached-execution-context.html](https://github.com/web-platform-tests/wpt/blob/master/webaudio/the-audio-api/the-offlineaudiocontext-interface/offlineaudiocontext-detached-execution-context.html)
 2. [startrendering-after-discard.html](https://github.com/web-platform-tests/wpt/blob/master/webaudio/the-audio-api/the-offlineaudiocontext-interface/startrendering-after-discard.html)
+
+## AudioParam
+
+We do not support any wpt test onf AudioParam, we only implementation data member of AudioParam.
