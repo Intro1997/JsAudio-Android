@@ -171,7 +171,7 @@ public:
 
   template <typename T, Napi::Value (T::*method)(const Napi::CallbackInfo &)>
   Napi::Value CallInstanceGetterCallback(const Napi::CallbackInfo &info) {
-    if (wrapped_ && std::is_base_of<IHObjectWrap, T>::value) {
+    if (method && wrapped_ && std::is_base_of<IHObjectWrap, T>::value) {
       T *origin_ptr = reinterpret_cast<T *>(wrapped_.get());
       return (origin_ptr->*method)(info);
     }
@@ -182,7 +182,7 @@ public:
             void (T::*method)(const Napi::CallbackInfo &, const Napi::Value &)>
   void CallInstanceSetterCallback(const Napi::CallbackInfo &info,
                                   const Napi::Value &value) {
-    if (wrapped_ && std::is_base_of<IHObjectWrap, T>::value) {
+    if (method && wrapped_ && std::is_base_of<IHObjectWrap, T>::value) {
       T *origin_ptr = reinterpret_cast<T *>(wrapped_.get());
       (origin_ptr->*method)(info, value);
     }

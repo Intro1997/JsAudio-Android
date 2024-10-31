@@ -12,7 +12,9 @@ public:
 
   static void Init(Napi::Env env, Napi::Object exports);
 
+  Napi::Value getMaxChannelCount(const Napi::CallbackInfo &info);
+
 private:
-  std::weak_ptr<AudioDestinationNode> audio_destination_node_ref_;
+  std::weak_ptr<AudioDestinationNode> audio_destination_node_ptr_;
 };
 } // namespace js_audio
