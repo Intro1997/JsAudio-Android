@@ -14,3 +14,4 @@ package-lock.json
 .vscode/compile_commands.json
 **/valid_task/wave_producer/data
 **/valid_task/wave_producer/.vscode
+**/dependency/**/.vscode/

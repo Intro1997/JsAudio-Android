@@ -81,7 +81,9 @@
     "type_traits": "cpp",
     "utility": "cpp",
     "filesystem": "cpp",
-    "compare": "cpp"
+    "compare": "cpp",
+    "thread": "cpp",
+    "shared_mutex": "cpp"
   },
   "C_Cpp.default.compilerPath": "/Users/intro/Library/Android/sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++",
   "C_Cpp.intelliSenseEngineFallback": "disabled"
