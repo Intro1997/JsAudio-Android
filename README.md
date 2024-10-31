@@ -16,21 +16,20 @@
 
 # Plan
 
-| Features                    | Complete State                        | Test State                                       |
-| --------------------------- | ------------------------------------- | ------------------------------------------------ |
-| AudioBuffer                 | <font color="green">Complete</font>   | <font color="yellow">Not Pass All Wpt Yet</font> |
-| AudioContext                | <font color="green">Complete</font>   | <font color="yellow">Not Pass All Wpt Yet</font> |
-| AudioDestinationNode        | <font color="green">Complete</font>   | <font color="red">Not Test Yet</font>            |
-| AudioNode                   | <font color="green">Complete</font>   | <font color="red">Not Test Yet</font>            |
-| AudioParam                  | <font color="green">Complete</font>   | <font color="red">Not Test Yet</font>            |
-| AudioScheduledSourceNode    | <font color="green">Complete</font>   | <font color="grey">No Wpt Test</font>            |
-| BaseAudioContext            | <font color="green">Complete</font>   | <font color="grey">No Wpt Test</font>            |
-| OfflineAudioCompletionEvent | <font color="green">Complete</font>   | <font color="grey">No Wpt Test</font>            |
-| OfflineAudioContext         | <font color="green">Complete</font>   | <font color="grey">No Wpt Test</font>            |
-| OscillatorNode              | <font color="green">Complete</font>   | <font color="yellow">Not Pass All Wpt Yet</font> |
-| DestinationNode             | <font color="green">Complete</font>   | <font color="red">Not Test Yet</font>            |
-| GainNode                    | <font color="red">Not Complete</font> | <font color="red">Not Test Yet</font>            |
-| DelayNode                   | <font color="red">Not Complete</font> | <font color="red">Not Test Yet</font>            |
-| AudioBufferSourceNode       | <font color="red">Not Complete</font> | <font color="red">Not Test Yet</font>            |
-| MediaRecorderNode           | <font color="red">Not Complete</font> | <font color="red">Not Test Yet</font>            |
-| MicrophoneStreamNode        | <font color="red">Not Complete</font> | <font color="red">Not Test Yet</font>            |
+| Features                    | Complete State                                             | Test State                                       |
+| --------------------------- | ---------------------------------------------------------- | ------------------------------------------------ |
+| AudioBuffer                 | <font color="green">Complete</font>                        | <font color="yellow">Not Pass All Wpt Yet</font> |
+| AudioContext                | <font color="green">Complete</font>                        | <font color="yellow">Not Pass All Wpt Yet</font> |
+| AudioDestinationNode        | <font color="yellow">1. All data member is readonly</font> | <font color="green">Complete</font>              |
+| AudioNode                   | <font color="green">Complete</font>                        | <font color="red">Not Test Yet</font>            |
+| AudioParam                  | <font color="green">Complete</font>                        | <font color="red">Not Test Yet</font>            |
+| AudioScheduledSourceNode    | <font color="green">Complete</font>                        | <font color="grey">No Wpt Test</font>            |
+| BaseAudioContext            | <font color="green">Complete</font>                        | <font color="grey">No Wpt Test</font>            |
+| OfflineAudioCompletionEvent | <font color="green">Complete</font>                        | <font color="grey">No Wpt Test</font>            |
+| OfflineAudioContext         | <font color="green">Complete</font>                        | <font color="grey">No Wpt Test</font>            |
+| OscillatorNode              | <font color="green">Complete</font>                        | <font color="yellow">Not Pass All Wpt Yet</font> |
+| GainNode                    | <font color="red">Not Complete</font>                      | <font color="red">Not Test Yet</font>            |
+| DelayNode                   | <font color="red">Not Complete</font>                      | <font color="red">Not Test Yet</font>            |
+| AudioBufferSourceNode       | <font color="red">Not Complete</font>                      | <font color="red">Not Test Yet</font>            |
+| MediaRecorderNode           | <font color="red">Not Complete</font>                      | <font color="red">Not Test Yet</font>            |
+| MicrophoneStreamNode        | <font color="red">Not Complete</font>                      | <font color="red">Not Test Yet</font>            |

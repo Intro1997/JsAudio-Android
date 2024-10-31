@@ -16,3 +16,7 @@ We do not append following test, because these tests need broswer env that we wo
 ## AudioParam
 
 We do not support any wpt test onf AudioParam, we only implementation data member of AudioParam.
+
+## DestinationNode
+
+We do not support modify data member of AudioDestinationNode.
