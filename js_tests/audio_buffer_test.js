@@ -10,6 +10,12 @@ const {
 const {
   wptAudioBufferTest3,
 } = require("js_tests/wpt_test/audiobuffer/audiobuffer-copy-channel.js");
+const {
+  wptAudioBufferTest4,
+} = require("js_tests/wpt_test/audiobuffer/crashtests/copyFromChannel-bufferOffset-1.js");
+const {
+  wptAudioBufferTest5,
+} = require("js_tests/wpt_test/audiobuffer/crashtests/copyToChannel-bufferOffset-1.js");
 
 function LocalTest() {
   const audioCtx = new AudioContext();
@@ -62,6 +68,8 @@ function LocalTest() {
 }
 
 async function AudioBufferTest() {
+  wptAudioBufferTest4();
+  wptAudioBufferTest5();
   await wptAudioBufferTest0();
   await wptAudioBufferTest1();
   await wptAudioBufferTest2();

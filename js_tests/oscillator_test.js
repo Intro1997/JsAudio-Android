@@ -1,6 +1,12 @@
 const {
   wptOscillatorTest0,
 } = require("js_tests/wpt_test/oscillator/ctor-oscillator.js");
+const {
+  wptOscillatorTest1,
+} = require("js_tests/wpt_test/oscillator/osc-basic-waveform.js");
+const {
+  wptOscillatorTest2,
+} = require("js_tests/wpt_test/oscillator/detune-overflow.js");
 
 function tracePrototypeChainOf(object) {
   var proto = object.constructor.prototype;
@@ -45,7 +51,9 @@ function OscillatorWaveTypeTest() {
 }
 
 async function OscillatorTest() {
-  return wptOscillatorTest0();
+  await wptOscillatorTest0();
+  await wptOscillatorTest1();
+  return wptOscillatorTest2();
 }
 
 module.exports = { OscillatorTest };
