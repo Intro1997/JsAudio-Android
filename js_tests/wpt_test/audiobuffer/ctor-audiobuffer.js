@@ -8,7 +8,7 @@
  *    - TODO: finish AudioBufferSourceNode!
  */
 
-const testName = "wptOscillatorTest<ctor-audiobuffer.js>";
+const testName = "wptAudioBufferTest1<ctor-audiobuffer.js>";
 const {
   waitUntilTestComplete,
   requireReload,

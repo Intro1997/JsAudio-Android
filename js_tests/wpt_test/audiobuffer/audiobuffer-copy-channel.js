@@ -7,7 +7,7 @@
  *    - refer to: https://github.com/nodejs/node/issues/23276
  */
 
-const testName = "wptAudioBufferTest<audiobuffer-copy-channel.js>";
+const testName = "wptAudioBufferTest3<audiobuffer-copy-channel.js>";
 const {
   waitUntilTestComplete,
   requireReload,

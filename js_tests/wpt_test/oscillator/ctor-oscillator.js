@@ -4,7 +4,7 @@
  *    - we do not support PeriodicWave and custom wave
  */
 
-const testName = "wptOscillatorTest<ctor-oscillator.js>";
+const testName = "wptOscillatorTest0<ctor-oscillator.js>";
 
 const {
   waitUntilTestComplete,

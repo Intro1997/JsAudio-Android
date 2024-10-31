@@ -4,7 +4,7 @@
  *    - nodejs has not IndexSizeError
  */
 
-const testName = "wptAudioBufferTest<detune-overflow.js>";
+const testName = "wptOscillatorTest2<detune-overflow.js>";
 const {
   waitUntilTestComplete,
   requireReload,

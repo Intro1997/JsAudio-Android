@@ -4,7 +4,7 @@
  *    - we do not support PeriodicWave now
  */
 
-const testName = "wptOscillatorTest<osc-basic-waveform.js>";
+const testName = "wptOscillatorTest1<osc-basic-waveform.js>";
 const {
   waitUntilTestComplete,
   requireReload,

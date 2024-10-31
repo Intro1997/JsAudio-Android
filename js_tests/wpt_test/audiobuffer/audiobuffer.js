@@ -4,7 +4,7 @@
  *    - nodejs has not IndexSizeError
  */
 
-const testName = "wptAudioBufferTest<audiobuffer.js>";
+const testName = "wptAudioBufferTest0<audiobuffer.js>";
 const {
   waitUntilTestComplete,
   requireReload,

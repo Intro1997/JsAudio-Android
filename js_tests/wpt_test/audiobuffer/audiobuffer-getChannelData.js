@@ -1,4 +1,4 @@
-const testName = "wptOscillatorTest<audiobuffer-getChannelData.js>";
+const testName = "wptAudioBufferTest2<audiobuffer-getChannelData.js>";
 
 const {
   waitUntilTestComplete,

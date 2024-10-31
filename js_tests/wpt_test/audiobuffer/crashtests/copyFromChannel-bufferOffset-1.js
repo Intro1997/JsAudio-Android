@@ -1,5 +1,5 @@
 const testName =
-  "wptAudioBufferTest<crashtests/copyFromChannel-bufferOffset-1.js>";
+  "wptAudioBufferTest4<crashtests/copyFromChannel-bufferOffset-1.js>";
 
 function wptAudioBufferTest4() {
   const a = new AudioBuffer({ length: 0x51986, sampleRate: 44100 });
