@@ -1,7 +1,9 @@
 #include "JSBaseAudioContext.hpp"
 #include "AudioEngine.hpp"
+#include "GainNode.hpp"
 #include "JSAudioBuffer.hpp"
 #include "JSAudioDestinationNode.hpp"
+#include "JSGainNode.hpp"
 #include "JSOscillatorNode.hpp"
 #include "OscillatorNode.hpp"
 
@@ -63,6 +65,8 @@ void JSBaseAudioContext::Init(Napi::Env env, Napi::Object exports) {
               "createOscillator"),
           InstanceMethod<JSBaseAudioContext, &JSBaseAudioContext::createBuffer>(
               "createBuffer"),
+          InstanceMethod<JSBaseAudioContext, &JSBaseAudioContext::createGain>(
+              "createGain"),
       },
       Napi_IH::ClassVisibility::kHideConstructor);
 }
@@ -129,5 +133,13 @@ Napi::Value JSBaseAudioContext::createBuffer(const Napi::CallbackInfo &info) {
     LOGE("Create JSAudioBuffer failed! Need 3 number parameters.\n");
   }
   return info.Env().Undefined();
+}
+
+Napi::Value JSBaseAudioContext::createGain(const Napi::CallbackInfo &info) {
+  auto options = GainNode::GetDefaultOptions();
+  std::shared_ptr<GainNode> gain_node_ref =
+      GainNode::CreateGain(options, base_audio_context_ptr_->GetLock());
+  return FindClass<JSGainNode>().NewWithArgs<JSGainNode>({info.This()},
+                                                         gain_node_ref);
 }
 } // namespace js_audio

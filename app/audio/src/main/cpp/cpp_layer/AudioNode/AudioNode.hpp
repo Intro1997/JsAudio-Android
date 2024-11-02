@@ -25,6 +25,10 @@ public:
             const ChannelInterpretation &channel_interpretation,
             std::shared_ptr<std::mutex> audio_context_lock);
 
+  AudioNode(const uint32_t &number_of_inputs, const uint32_t &number_of_outputs,
+            const AudioNodeOptions &options,
+            std::shared_ptr<std::mutex> audio_context_lock);
+
   static bool IsValidChannelCount(const uint32_t &channel_count);
 
   static bool

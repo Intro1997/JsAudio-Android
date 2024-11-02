@@ -20,6 +20,14 @@ AudioNode::AudioNode(const uint32_t &number_of_inputs,
       channel_interpretation_(channel_interpretation),
       audio_context_lock_(audio_context_lock) {}
 
+AudioNode::AudioNode(const uint32_t &number_of_inputs,
+                     const uint32_t &number_of_outputs,
+                     const AudioNodeOptions &options,
+                     std::shared_ptr<std::mutex> audio_context_lock)
+    : AudioNode(number_of_inputs, number_of_outputs, options.channel_count,
+                options.channel_count_mode, options.channel_interpretation,
+                audio_context_lock) {}
+
 bool AudioNode::IsValidChannelCount(const uint32_t &channel_count) {
   if (channel_count < kMinChannelCount || channel_count > kMaxChannelCount) {
     return false;

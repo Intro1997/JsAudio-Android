@@ -4,3 +4,4 @@ globalThis.OfflineAudioContext =
 globalThis.OscillatorNode = process._linkedBinding("audio").OscillatorNode;
 globalThis.AudioParam = process._linkedBinding("audio").AudioParam;
 globalThis.AudioBuffer = process._linkedBinding("audio").AudioBuffer;
+globalThis.GainNode = process._linkedBinding("audio").GainNode;
