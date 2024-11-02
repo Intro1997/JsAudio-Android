@@ -230,10 +230,10 @@ node::IsolateData *NodeEnv::CreateNodeIsoateData() {
   uv_loop_t &loop = instance_->loop_;
   node::MultiIsolatePlatform *platform = instance_->platform_.get();
 
-  std::shared_ptr<node::ArrayBufferAllocator> allocator_ptr =
+  std::shared_ptr<node::ArrayBufferAllocator> allocator_ref =
       node::ArrayBufferAllocator::Create();
 
-  instance_->isolate_ = node::NewIsolate(allocator_ptr, &loop, platform);
+  instance_->isolate_ = node::NewIsolate(allocator_ref, &loop, platform);
 
   if (!instance_->isolate_) {
     LOGE("Create isolate failed\n");
@@ -241,7 +241,7 @@ node::IsolateData *NodeEnv::CreateNodeIsoateData() {
   }
 
   instance_->isolate_data_ = node::CreateIsolateData(
-      instance_->isolate_, &loop, platform, allocator_ptr.get());
+      instance_->isolate_, &loop, platform, allocator_ref.get());
   if (!instance_->isolate_data_) {
     LOGE("Create isolate data failed\n");
     return nullptr;

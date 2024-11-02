@@ -4,8 +4,8 @@
 namespace js_audio {
 JSAudioScheduledSourceNode::JSAudioScheduledSourceNode(
     const Napi_IH::IHCallbackInfo &info,
-    std::shared_ptr<AudioScheduledSourceNode> audio_scheduled_source_node_ptr)
-    : JSAudioNode(info, audio_scheduled_source_node_ptr) {}
+    std::shared_ptr<AudioScheduledSourceNode> audio_scheduled_source_node_ref)
+    : JSAudioNode(info, audio_scheduled_source_node_ref) {}
 
 void JSAudioScheduledSourceNode::Init(Napi::Env env, Napi::Object exports) {
   DefineClass<JSAudioScheduledSourceNode, JSAudioNode>(
@@ -38,7 +38,7 @@ Napi::Value JSAudioScheduledSourceNode::Start(const Napi::CallbackInfo &info) {
     return info.Env().Undefined();
   }
 
-  std::static_pointer_cast<AudioScheduledSourceNode>(audio_node_ptr_)
+  std::static_pointer_cast<AudioScheduledSourceNode>(audio_node_ref_)
       ->Start(when);
 
   return info.Env().Undefined();
@@ -66,7 +66,7 @@ Napi::Value JSAudioScheduledSourceNode::Stop(const Napi::CallbackInfo &info) {
     return info.Env().Undefined();
   }
 
-  std::static_pointer_cast<AudioScheduledSourceNode>(audio_node_ptr_)
+  std::static_pointer_cast<AudioScheduledSourceNode>(audio_node_ref_)
       ->Stop(when);
 
   return info.Env().Undefined();

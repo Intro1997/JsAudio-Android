@@ -5,8 +5,8 @@
 namespace js_audio {
 
 JSAudioNode::JSAudioNode(const Napi_IH::IHCallbackInfo &info,
-                         std::shared_ptr<AudioNode> audio_node_ptr)
-    : Napi_IH::IHObjectWrap(info), audio_node_ptr_(audio_node_ptr) {
+                         std::shared_ptr<AudioNode> audio_node_ref)
+    : Napi_IH::IHObjectWrap(info), audio_node_ref_(audio_node_ref) {
   if (info.Length() < 1 || !info[0].IsObject()) {
     LOGE("Error: Cannot create AudioNode without AudioContext!\n");
     return;
@@ -16,7 +16,7 @@ JSAudioNode::JSAudioNode(const Napi_IH::IHCallbackInfo &info,
   JSBaseAudioContext *js_base_audio_context_ptr =
       UnWrap<JSBaseAudioContext>(napi_audio_context_ref_.Value());
   if (js_base_audio_context_ptr) {
-    audio_node_ptr_->base_audio_context_ptr_ =
+    audio_node_ref_->base_audio_context_ptr_ =
         js_base_audio_context_ptr->GetAudioContext();
   }
 }
@@ -50,53 +50,53 @@ Napi::Value JSAudioNode::getContext(const Napi::CallbackInfo &info) {
 }
 
 Napi::Value JSAudioNode::getNumberOfInputs(const Napi::CallbackInfo &info) {
-  if (!audio_node_ptr_) {
+  if (!audio_node_ref_) {
     LOGE("Error! Inner audio node ptr is nullptr!\n");
     return info.Env().Undefined();
   }
-  return Napi::Value::From(info.Env(), audio_node_ptr_->number_of_inputs());
+  return Napi::Value::From(info.Env(), audio_node_ref_->number_of_inputs());
 }
 
 Napi::Value JSAudioNode::getNumberOfOutputs(const Napi::CallbackInfo &info) {
-  if (!audio_node_ptr_) {
+  if (!audio_node_ref_) {
     LOGE("Error! Inner audio node ptr is nullptr!\n");
     return info.Env().Undefined();
   }
-  return Napi::Value::From(info.Env(), audio_node_ptr_->number_of_outputs());
+  return Napi::Value::From(info.Env(), audio_node_ref_->number_of_outputs());
 }
 
 Napi::Value JSAudioNode::getChannelCount(const Napi::CallbackInfo &info) {
-  if (!audio_node_ptr_) {
+  if (!audio_node_ref_) {
     LOGE("Error! Inner audio node ptr is nullptr!\n");
     return info.Env().Undefined();
   }
-  return Napi::Value::From(info.Env(), audio_node_ptr_->channel_count());
+  return Napi::Value::From(info.Env(), audio_node_ref_->channel_count());
 }
 
 Napi::Value JSAudioNode::getChannelCountMode(const Napi::CallbackInfo &info) {
-  if (!audio_node_ptr_) {
+  if (!audio_node_ref_) {
     LOGE("Error! Inner audio node ptr is nullptr!\n");
     return info.Env().Undefined();
   }
 
   return Napi::String::New(info.Env(),
                            AudioNode::ConvertChannelCountModeToString(
-                               audio_node_ptr_->channel_count_mode()));
+                               audio_node_ref_->channel_count_mode()));
 }
 
 Napi::Value
 JSAudioNode::getChannelInterpretation(const Napi::CallbackInfo &info) {
-  if (!audio_node_ptr_) {
+  if (!audio_node_ref_) {
     LOGE("Error! Inner audio node ptr is nullptr!\n");
     return info.Env().Undefined();
   }
   return Napi::String::New(info.Env(),
                            AudioNode::ConvertChannelInterpretationToString(
-                               audio_node_ptr_->channel_interpretation()));
+                               audio_node_ref_->channel_interpretation()));
 }
 
 Napi::Value JSAudioNode::connect(const Napi::CallbackInfo &info) {
-  if (!audio_node_ptr_) {
+  if (!audio_node_ref_) {
     LOGE("Error! Inner audio node ptr is nullptr!\n");
     return info.Env().Undefined();
   }
@@ -110,7 +110,7 @@ Napi::Value JSAudioNode::connect(const Napi::CallbackInfo &info) {
   JSAudioNode *js_dest_audio_node_ptr =
       UnWrap<JSAudioNode>(napi_dest_audio_node_obj);
 
-  if (!js_dest_audio_node_ptr || !js_dest_audio_node_ptr->audio_node_ptr_) {
+  if (!js_dest_audio_node_ptr || !js_dest_audio_node_ptr->audio_node_ref_) {
     LOGE("Error! Try to connect an invalid AudioNode\n");
     return info.Env().Undefined();
   }
@@ -135,17 +135,17 @@ Napi::Value JSAudioNode::connect(const Napi::CallbackInfo &info) {
     return info.Env().Undefined();
   }
 
-  audio_node_ptr_->ConnectTo(js_dest_audio_node_ptr->audio_node_ptr_);
-  js_dest_audio_node_ptr->audio_node_ptr_->BeConnectedTo(audio_node_ptr_);
+  audio_node_ref_->ConnectTo(js_dest_audio_node_ptr->audio_node_ref_);
+  js_dest_audio_node_ptr->audio_node_ref_->BeConnectedTo(audio_node_ref_);
 
   return napi_dest_audio_node_obj;
 }
 
 Napi::Value JSAudioNode::disconnect(const Napi::CallbackInfo &info) {
-  if (!audio_node_ptr_) {
+  if (!audio_node_ref_) {
     LOGE("Error! Inner audio node ptr is nullptr!\n");
   } else {
-    audio_node_ptr_->Disconnect();
+    audio_node_ref_->Disconnect();
   }
   return info.Env().Undefined();
 }

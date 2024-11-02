@@ -6,7 +6,7 @@ class JSAudioScheduledSourceNode : public JSAudioNode {
 public:
   JSAudioScheduledSourceNode(const Napi_IH::IHCallbackInfo &info,
                              std::shared_ptr<AudioScheduledSourceNode>
-                                 audio_scheduled_source_node_ptr = nullptr);
+                                 audio_scheduled_source_node_ref = nullptr);
 
   static void Init(Napi::Env env, Napi::Object exports);
 

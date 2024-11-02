@@ -17,7 +17,7 @@ public:
   };
 
   static std::shared_ptr<OscillatorNode>
-  CreateOscillatorNode(std::shared_ptr<std::mutex> audio_context_lock,
+  CreateOscillatorNode(std::shared_ptr<std::mutex> audio_context_lock_ref,
                        const OscillatorOptions &options,
                        const float &sample_rate);
 
@@ -34,12 +34,12 @@ public:
 
   void set_type(const std::string &type);
 
-  std::shared_ptr<AudioParam> frequency() const;
-  std::shared_ptr<AudioParam> detune() const;
+  std::shared_ptr<AudioParam> frequency_ref() const;
+  std::shared_ptr<AudioParam> detune_ref() const;
   const char *type() const;
 
 protected:
-  OscillatorNode(std::shared_ptr<std::mutex> audio_context_lock,
+  OscillatorNode(std::shared_ptr<std::mutex> audio_context_lock_ref,
                  const OscillatorOptions &options, const float &sample_rate);
 
 private:
@@ -51,8 +51,8 @@ private:
   void CreateWaveform(const WaveProducer::WaveType &type,
                       const size_t &sample_size, std::vector<float> &output);
 
-  std::shared_ptr<AudioParam> frequency_;
-  std::shared_ptr<AudioParam> detune_;
+  std::shared_ptr<AudioParam> frequency_ref_;
+  std::shared_ptr<AudioParam> detune_ref_;
   WaveProducer::WaveType type_;
 
   const float sample_rate_;

@@ -47,13 +47,13 @@ private:
 
   void set_state(AudioEngineState state);
 
-  static std::shared_ptr<AudioEngine> audio_engine_ptr_;
+  static std::shared_ptr<AudioEngine> audio_engine_ref_;
   static AudioPlayerConfig audio_player_config_;
 
   SLObjectItf sl_engine_object_;
   SLEngineItf sl_engine_interface_;
 
-  std::shared_ptr<AudioPlayer> audio_buffer_queue_player_;
+  std::shared_ptr<AudioPlayer> audio_buffer_queue_player_ref_;
 
   mutable std::mutex state_lock_;
   AudioEngineState state_;

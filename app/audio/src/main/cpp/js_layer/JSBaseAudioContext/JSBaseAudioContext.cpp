@@ -11,39 +11,39 @@ namespace js_audio {
 
 JSBaseAudioContext::JSBaseAudioContext(
     const Napi_IH::IHCallbackInfo &info,
-    std::shared_ptr<BaseAudioContext> base_audio_context_ptr)
+    std::shared_ptr<BaseAudioContext> base_audio_context_ref)
     : Napi_IH::IHObjectWrap(info) {
-  if (base_audio_context_ptr) {
-    base_audio_context_ptr_ = base_audio_context_ptr;
+  if (base_audio_context_ref) {
+    base_audio_context_ref_ = base_audio_context_ref;
   } else {
     // Shouldn't get in here when use inheritance
-    base_audio_context_ptr_ = std::make_shared<BaseAudioContext>();
+    base_audio_context_ref_ = std::make_shared<BaseAudioContext>();
   }
 
   Napi::Object js_destination_node =
       JSAudioDestinationNode::FindClass<JSAudioDestinationNode>()
           .NewWithArgs<JSAudioDestinationNode>(
               {info.This()},
-              base_audio_context_ptr_->audio_destination_node_ptr());
+              base_audio_context_ref_->audio_destination_node_ref());
 
   js_destination_node_ref_ = Napi::Persistent(js_destination_node);
 
   bool is_add_to_audio_player = false;
   auto audio_engine_ptr = AudioEngine::Get().lock();
-  if (audio_engine_ptr && base_audio_context_ptr_->IsOnlineContext()) {
+  if (audio_engine_ptr && base_audio_context_ref_->IsOnlineContext()) {
     if (auto audio_player_ptr =
             audio_engine_ptr
                 ->GetAudioPlayer(AudioPlayerType::kBufferQueuePlayer)
                 .lock()) {
       is_add_to_audio_player =
-          audio_player_ptr->AddBaseAudioContext(base_audio_context_ptr_);
+          audio_player_ptr->AddBaseAudioContext(base_audio_context_ref_);
     }
   }
 
-  if (!is_add_to_audio_player && base_audio_context_ptr_->IsOnlineContext()) {
+  if (!is_add_to_audio_player && base_audio_context_ref_->IsOnlineContext()) {
     // we do not need to reserve cpp pointer
     // when add to audio player failed
-    base_audio_context_ptr_.reset();
+    base_audio_context_ref_.reset();
     js_destination_node_ref_.Reset();
     LOGE("Add Base Audio Context to Audio Player failed!\n");
   }
@@ -78,36 +78,36 @@ JSBaseAudioContext::getDestinationNode(const Napi::CallbackInfo &info) {
 
 Napi::Value JSBaseAudioContext::getSampleRate(const Napi::CallbackInfo &info) {
   Napi::Env env = info.Env();
-  return Napi::Number::From(env, base_audio_context_ptr_->sample_rate());
+  return Napi::Number::From(env, base_audio_context_ref_->sample_rate());
 }
 
 Napi::Value JSBaseAudioContext::getCurrentTime(const Napi::CallbackInfo &info) {
   Napi::Env env = info.Env();
-  return Napi::Number::From(env, base_audio_context_ptr_->GetCurrentTime());
+  return Napi::Number::From(env, base_audio_context_ref_->GetCurrentTime());
 }
 
 std::shared_ptr<std::mutex> JSBaseAudioContext::GetAudioContextLock() const {
-  return base_audio_context_ptr_->GetLock();
+  return base_audio_context_ref_->GetLock();
 }
 
 std::shared_ptr<BaseAudioContext> JSBaseAudioContext::GetAudioContext() const {
-  return base_audio_context_ptr_;
+  return base_audio_context_ref_;
 }
 
 float JSBaseAudioContext::GetSampleRate() const {
-  return base_audio_context_ptr_->sample_rate();
+  return base_audio_context_ref_->sample_rate();
 }
 
 Napi::Value
 JSBaseAudioContext::createOscillator(const Napi::CallbackInfo &info) {
-  std::shared_ptr<OscillatorNode> oscillator_node_ptr =
+  std::shared_ptr<OscillatorNode> oscillator_node_ref =
       OscillatorNode::CreateOscillatorNode(
-          base_audio_context_ptr_->GetLock(),
+          base_audio_context_ref_->GetLock(),
           OscillatorNode::GetDefaultOptions(),
-          base_audio_context_ptr_->sample_rate());
+          base_audio_context_ref_->sample_rate());
   Napi::Object js_oscillator_node =
       JSOscillatorNode::FindClass<JSOscillatorNode>()
-          .NewWithArgs<JSOscillatorNode>({info.This()}, oscillator_node_ptr);
+          .NewWithArgs<JSOscillatorNode>({info.This()}, oscillator_node_ref);
 
   return js_oscillator_node;
 }
@@ -138,7 +138,7 @@ Napi::Value JSBaseAudioContext::createBuffer(const Napi::CallbackInfo &info) {
 Napi::Value JSBaseAudioContext::createGain(const Napi::CallbackInfo &info) {
   auto options = GainNode::GetDefaultOptions();
   std::shared_ptr<GainNode> gain_node_ref =
-      GainNode::CreateGain(options, base_audio_context_ptr_->GetLock());
+      GainNode::CreateGain(options, base_audio_context_ref_->GetLock());
   return FindClass<JSGainNode>().NewWithArgs<JSGainNode>({info.This()},
                                                          gain_node_ref);
 }

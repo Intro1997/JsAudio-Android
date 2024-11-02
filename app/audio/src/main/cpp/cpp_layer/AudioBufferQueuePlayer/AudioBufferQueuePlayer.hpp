@@ -6,7 +6,7 @@ namespace js_audio {
 class AudioBufferQueuePlayer : public AudioPlayer {
 public:
   AudioBufferQueuePlayer(const AudioPlayerConfig &audio_player_config,
-                         std::shared_ptr<AudioEngine> audio_engine_ptr);
+                         std::shared_ptr<AudioEngine> audio_engine_ref);
 
   void Start() override;
 

@@ -8,7 +8,7 @@ class JSAudioDestinationNode : public JSAudioNode {
 public:
   JSAudioDestinationNode(const Napi_IH::IHCallbackInfo &info,
                          std::shared_ptr<AudioDestinationNode>
-                             audio_destination_node_ptr = nullptr);
+                             audio_destination_node_ref = nullptr);
 
   static void Init(Napi::Env env, Napi::Object exports);
 

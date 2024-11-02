@@ -41,7 +41,7 @@ namespace js_audio {
 JSGainNode::JSGainNode(const Napi_IH::IHCallbackInfo &info,
                        std::shared_ptr<GainNode> gain_node_ref)
     : JSAudioNode(info, GetGainNodeRef(info, gain_node_ref)) {
-  gain_node_ptr_ = std::static_pointer_cast<GainNode>(audio_node_ptr_);
+  gain_node_ptr_ = std::static_pointer_cast<GainNode>(audio_node_ref_);
 }
 
 void JSGainNode::Init(Napi::Env env, Napi::Object exports) {
@@ -53,7 +53,7 @@ void JSGainNode::Init(Napi::Env env, Napi::Object exports) {
 Napi::Value JSGainNode::getGain(const Napi::CallbackInfo &info) {
   if (auto gain_node_ref = gain_node_ptr_.lock()) {
     return FindClass<JSAudioParam>().NewWithArgs<JSAudioParam>(
-        {}, gain_node_ref->gain());
+        {}, gain_node_ref->gain_ref());
   }
   return info.Env().Undefined();
 }
@@ -207,7 +207,7 @@ GetGainNodeRef(const Napi_IH::IHCallbackInfo &info,
 
   JSBaseAudioContext *js_base_audio_context_ptr =
       Napi_IH::IHObjectWrap::UnWrap<JSBaseAudioContext>(js_base_audio_context);
-  std::shared_ptr<std::mutex> audio_context_lock =
+  std::shared_ptr<std::mutex> audio_context_lock_ref =
       js_base_audio_context_ptr->GetAudioContextLock();
 
   GainNodeOptions options = GainNode::GetDefaultOptions();
@@ -216,5 +216,5 @@ GetGainNodeRef(const Napi_IH::IHCallbackInfo &info,
     throw napi_error;
   }
 
-  return GainNode::CreateGain(options, audio_context_lock);
+  return GainNode::CreateGain(options, audio_context_lock_ref);
 }

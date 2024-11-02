@@ -82,22 +82,22 @@ void JSAudioBuffer::Init(Napi::Env env, Napi::Object exports) {
 }
 
 JSAudioBuffer::JSAudioBuffer(const Napi_IH::IHCallbackInfo &info,
-                             std::shared_ptr<AudioBuffer> audio_buffer_ptr)
+                             std::shared_ptr<AudioBuffer> audio_buffer_ref)
     : Napi_IH::IHObjectWrap(info) {
-  if (audio_buffer_ptr) {
-    audio_buffer_ptr_ = audio_buffer_ptr;
+  if (audio_buffer_ref) {
+    audio_buffer_ref_ = audio_buffer_ref;
   } else {
-    audio_buffer_ptr_ = GetAudioBufferRef(info);
+    audio_buffer_ref_ = GetAudioBufferRef(info);
   }
 
-  if (!audio_buffer_ptr_) {
+  if (!audio_buffer_ref_) {
     LOGE("Error! Innner auido buffer pointer reference is invalid!\n");
     throw Napi::Error::New(info.Env(), "Inner error!\n");
   }
 
-  for (int i = 0; i < audio_buffer_ptr_->number_of_channel(); i++) {
-    float *data_pointer = audio_buffer_ptr_->audio_channel_buffers_[i].data();
-    size_t data_size = audio_buffer_ptr_->audio_channel_buffers_[i].size();
+  for (int i = 0; i < audio_buffer_ref_->number_of_channel(); i++) {
+    float *data_pointer = audio_buffer_ref_->audio_channel_buffers_[i].data();
+    size_t data_size = audio_buffer_ref_->audio_channel_buffers_[i].size();
 
     Napi::ArrayBuffer channel_array_buffer = Napi::ArrayBuffer::New(
         info.Env(), data_pointer, sizeof(float) * data_size);
@@ -109,27 +109,27 @@ JSAudioBuffer::JSAudioBuffer(const Napi_IH::IHCallbackInfo &info,
 }
 
 Napi::Value JSAudioBuffer::getSampleRate(const Napi::CallbackInfo &info) {
-  if (audio_buffer_ptr_) {
-    return Napi::Number::From(info.Env(), audio_buffer_ptr_->sample_rate());
+  if (audio_buffer_ref_) {
+    return Napi::Number::From(info.Env(), audio_buffer_ref_->sample_rate());
   }
   return info.Env().Undefined();
 }
 Napi::Value JSAudioBuffer::getLength(const Napi::CallbackInfo &info) {
-  if (audio_buffer_ptr_) {
-    return Napi::Number::From(info.Env(), audio_buffer_ptr_->length());
+  if (audio_buffer_ref_) {
+    return Napi::Number::From(info.Env(), audio_buffer_ref_->length());
   }
   return info.Env().Undefined();
 }
 Napi::Value JSAudioBuffer::getDuration(const Napi::CallbackInfo &info) {
-  if (audio_buffer_ptr_) {
-    return Napi::Number::From(info.Env(), audio_buffer_ptr_->duration());
+  if (audio_buffer_ref_) {
+    return Napi::Number::From(info.Env(), audio_buffer_ref_->duration());
   }
   return info.Env().Undefined();
 }
 Napi::Value JSAudioBuffer::getNumberOfChannels(const Napi::CallbackInfo &info) {
-  if (audio_buffer_ptr_) {
+  if (audio_buffer_ref_) {
     return Napi::Number::From(info.Env(),
-                              audio_buffer_ptr_->number_of_channel());
+                              audio_buffer_ref_->number_of_channel());
   }
   return info.Env().Undefined();
 }
@@ -165,20 +165,20 @@ Napi::Value JSAudioBuffer::copyToChannel(const Napi::CallbackInfo &info) {
   if (info.Length() > 2) {
     start_in_dst_channel = info[2].As<Napi::Number>();
   }
-  if (channel_number >= audio_buffer_ptr_->number_of_channel()) {
+  if (channel_number >= audio_buffer_ref_->number_of_channel()) {
     throw Napi_IH::RangeError::New(
         info.Env(),
         "Failed to execute 'copyFromChannel' on 'AudioBuffer': The "
         "channelNumber provided (%ld) is outside the range [0, %u].\n",
-        channel_number, audio_buffer_ptr_->number_of_channel());
+        channel_number, audio_buffer_ref_->number_of_channel());
   }
-  if (start_in_dst_channel >= audio_buffer_ptr_->length()) {
+  if (start_in_dst_channel >= audio_buffer_ref_->length()) {
     return info.Env().Undefined();
   }
 
   float *source_array_ptr = js_source_array.Data();
   size_t source_array_size = js_source_array.ElementLength();
-  audio_buffer_ptr_->CopyToChannel(source_array_ptr, source_array_size,
+  audio_buffer_ref_->CopyToChannel(source_array_ptr, source_array_size,
                                    channel_number, start_in_dst_channel);
 
   return info.Env().Undefined();
@@ -193,7 +193,7 @@ Napi::Value JSAudioBuffer::getChannelData(const Napi::CallbackInfo &info) {
   }
   const uint32_t channel = info[0].ToNumber();
 
-  uint32_t number_of_channel = audio_buffer_ptr_->number_of_channel();
+  uint32_t number_of_channel = audio_buffer_ref_->number_of_channel();
   if (channel > number_of_channel - 1) {
     throw Napi_IH::RangeError::New(
         info.Env(),
@@ -242,18 +242,18 @@ Napi::Value JSAudioBuffer::copyFromChannel(const Napi::CallbackInfo &info) {
   }
 
   if (number_of_channel < 0 ||
-      number_of_channel >= audio_buffer_ptr_->number_of_channel()) {
+      number_of_channel >= audio_buffer_ref_->number_of_channel()) {
     throw Napi_IH::RangeError::New(
         info.Env(),
         "Failed to execute 'copyFromChannel' on 'AudioBuffer': The "
         "channelNumber provided (%ld) is outside the range [0, %u].\n",
-        number_of_channel, audio_buffer_ptr_->number_of_channel());
+        number_of_channel, audio_buffer_ref_->number_of_channel());
   }
-  if (start_idx >= audio_buffer_ptr_->length()) {
+  if (start_idx >= audio_buffer_ref_->length()) {
     return info.Env().Undefined();
   }
 
-  audio_buffer_ptr_->CopyFromChannel(dest_array, js_dest_array_size,
+  audio_buffer_ref_->CopyFromChannel(dest_array, js_dest_array_size,
                                      number_of_channel, start_idx);
 
   return info.Env().Undefined();

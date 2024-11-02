@@ -89,11 +89,11 @@ static bool GetOptionsParams(const Napi_IH::IHCallbackInfo &info,
   return true;
 }
 
-static std::shared_ptr<OscillatorNode> GetOscillatorNodePtr(
+static std::shared_ptr<OscillatorNode> GetOscillatorNodeRef(
     const Napi_IH::IHCallbackInfo &info,
-    std::shared_ptr<OscillatorNode> oscillator_node_ptr = nullptr) {
-  if (oscillator_node_ptr) {
-    return oscillator_node_ptr;
+    std::shared_ptr<OscillatorNode> oscillator_node_ref = nullptr) {
+  if (oscillator_node_ref) {
+    return oscillator_node_ref;
   }
   if (info.Length() < 1) {
     throw Napi::TypeError::New(info.Env(),
@@ -118,7 +118,7 @@ static std::shared_ptr<OscillatorNode> GetOscillatorNodePtr(
 
   JSBaseAudioContext *js_base_audio_context_ptr =
       Napi_IH::IHObjectWrap::UnWrap<JSBaseAudioContext>(js_base_audio_context);
-  std::shared_ptr<std::mutex> audio_context_lock =
+  std::shared_ptr<std::mutex> audio_context_lock_ref =
       js_base_audio_context_ptr->GetAudioContextLock();
   float sample_rate = js_base_audio_context_ptr->GetSampleRate();
 
@@ -133,18 +133,18 @@ static std::shared_ptr<OscillatorNode> GetOscillatorNodePtr(
     }
   }
 
-  return OscillatorNode::CreateOscillatorNode(audio_context_lock, osc_options,
-                                              sample_rate);
+  return OscillatorNode::CreateOscillatorNode(audio_context_lock_ref,
+                                              osc_options, sample_rate);
 }
 
 namespace js_audio {
 JSOscillatorNode::JSOscillatorNode(
     const Napi_IH::IHCallbackInfo &info,
-    std::shared_ptr<OscillatorNode> oscillator_node_ptr)
+    std::shared_ptr<OscillatorNode> oscillator_node_ref)
     : JSAudioScheduledSourceNode(
-          info, GetOscillatorNodePtr(info, oscillator_node_ptr)) {
+          info, GetOscillatorNodeRef(info, oscillator_node_ref)) {
   oscillator_node_ptr_ =
-      std::static_pointer_cast<OscillatorNode>(audio_node_ptr_);
+      std::static_pointer_cast<OscillatorNode>(audio_node_ref_);
 }
 
 void JSOscillatorNode::Init(Napi::Env env, Napi::Object exports) {
@@ -177,7 +177,7 @@ Napi::Value JSOscillatorNode::getFrequency(const Napi::CallbackInfo &info) {
 
     Napi::Object js_frequency =
         FindClass<JSAudioParam>().NewWithArgs<JSAudioParam>(
-            {info.This()}, oscillator_node_ref->frequency());
+            {info.This()}, oscillator_node_ref->frequency_ref());
     return js_frequency;
   }
   return info.Env().Undefined();
@@ -187,7 +187,7 @@ Napi::Value JSOscillatorNode::getDetune(const Napi::CallbackInfo &info) {
   if (auto oscillator_node_ref = oscillator_node_ptr_.lock()) {
     Napi::Object js_detune =
         FindClass<JSAudioParam>().NewWithArgs<JSAudioParam>(
-            {info.This()}, oscillator_node_ref->detune());
+            {info.This()}, oscillator_node_ref->detune_ref());
     return js_detune;
   }
   return info.Env().Undefined();

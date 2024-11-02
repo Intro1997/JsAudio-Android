@@ -23,11 +23,11 @@ public:
             const uint32_t &channel_count,
             const ChannelCountMode &channel_count_mode,
             const ChannelInterpretation &channel_interpretation,
-            std::shared_ptr<std::mutex> audio_context_lock);
+            std::shared_ptr<std::mutex> audio_context_lock_ref);
 
   AudioNode(const uint32_t &number_of_inputs, const uint32_t &number_of_outputs,
             const AudioNodeOptions &options,
-            std::shared_ptr<std::mutex> audio_context_lock);
+            std::shared_ptr<std::mutex> audio_context_lock_ref);
 
   static bool IsValidChannelCount(const uint32_t &channel_count);
 
@@ -53,13 +53,13 @@ public:
 
   virtual void ProduceSamples(size_t sample_size,
                               std::vector<std::vector<float>> &output);
-  virtual void ConnectTo(std::shared_ptr<AudioNode> dst_audio_node_ptr) = 0;
-  virtual void BeConnectedTo(std::shared_ptr<AudioNode> src_audio_node_ptr) = 0;
+  virtual void ConnectTo(std::shared_ptr<AudioNode> dst_audio_node_ref) = 0;
+  virtual void BeConnectedTo(std::shared_ptr<AudioNode> src_audio_node_ref) = 0;
   virtual void Disconnect() = 0;
   virtual void BeDisconnected(const AudioNode &audio_node) = 0;
 
 protected:
-  bool IsSelfPtr(std::shared_ptr<AudioNode> other);
+  bool IsSelfPtr(std::shared_ptr<AudioNode> other_ref);
   void FillWithZeros(size_t sample_size,
                      std::vector<std::vector<float>> &output);
 
@@ -68,7 +68,7 @@ protected:
   const uint32_t channel_count_;
   const ChannelCountMode channel_count_mode_;
   const ChannelInterpretation channel_interpretation_;
-  std::shared_ptr<std::mutex> audio_context_lock_;
+  std::shared_ptr<std::mutex> audio_context_lock_ref_;
   std::weak_ptr<BaseAudioContext> base_audio_context_ptr_;
 
 public:

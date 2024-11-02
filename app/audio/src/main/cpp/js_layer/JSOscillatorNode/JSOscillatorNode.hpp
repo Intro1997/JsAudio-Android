@@ -8,10 +8,10 @@ public:
 
   JSOscillatorNode(
       const Napi_IH::IHCallbackInfo &info,
-      std::shared_ptr<OscillatorNode> oscillator_node_ptr = nullptr);
+      std::shared_ptr<OscillatorNode> oscillator_node_ref = nullptr);
 
 private:
-  void setType(const Napi::CallbackInfo &info, const Napi::Value& value);
+  void setType(const Napi::CallbackInfo &info, const Napi::Value &value);
 
   Napi::Value getFrequency(const Napi::CallbackInfo &info);
   Napi::Value getDetune(const Napi::CallbackInfo &info);

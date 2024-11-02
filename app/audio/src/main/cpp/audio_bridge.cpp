@@ -12,9 +12,9 @@ Java_com_example_audio_AudioHandler_getPreloadScriptFromNative(JNIEnv *env,
 extern "C" JNIEXPORT void JNICALL
 Java_com_example_audio_AudioHandler_startNativeAudioEngine(JNIEnv *env,
                                                            jobject thiz) {
-  auto weak_audio_engine = js_audio::AudioEngine::Get();
-  if (!weak_audio_engine.expired()) {
-    weak_audio_engine.lock()->Start();
+  auto audio_engine_ptr = js_audio::AudioEngine::Get();
+  if (!audio_engine_ptr.expired()) {
+    audio_engine_ptr.lock()->Start();
   } else {
     LOGE("Start audio engine failed! Audio engine is invalid!\n");
   }
@@ -23,9 +23,9 @@ Java_com_example_audio_AudioHandler_startNativeAudioEngine(JNIEnv *env,
 extern "C" JNIEXPORT void JNICALL
 Java_com_example_audio_AudioHandler_pauseNativeAudioEngine(JNIEnv *env,
                                                            jobject thiz) {
-  auto weak_audio_engine = js_audio::AudioEngine::Get();
-  if (!weak_audio_engine.expired()) {
-    weak_audio_engine.lock()->Pause();
+  auto audio_engine_ptr = js_audio::AudioEngine::Get();
+  if (!audio_engine_ptr.expired()) {
+    audio_engine_ptr.lock()->Pause();
   } else {
     LOGE("Pause audio engine failed! Audio engine is invalid!\n");
   }
@@ -34,9 +34,9 @@ Java_com_example_audio_AudioHandler_pauseNativeAudioEngine(JNIEnv *env,
 extern "C" JNIEXPORT void JNICALL
 Java_com_example_audio_AudioHandler_resumeNativeAudioEngine(JNIEnv *env,
                                                             jobject thiz) {
-  auto weak_audio_engine = js_audio::AudioEngine::Get();
-  if (!weak_audio_engine.expired()) {
-    weak_audio_engine.lock()->Resume();
+  auto audio_engine_ptr = js_audio::AudioEngine::Get();
+  if (!audio_engine_ptr.expired()) {
+    audio_engine_ptr.lock()->Resume();
   } else {
     LOGE("Resume audio engine failed! Audio engine is invalid!\n");
   }
@@ -45,9 +45,9 @@ Java_com_example_audio_AudioHandler_resumeNativeAudioEngine(JNIEnv *env,
 extern "C" JNIEXPORT void JNICALL
 Java_com_example_audio_AudioHandler_stopNativeAudioEngine(JNIEnv *env,
                                                           jobject thiz) {
-  auto weak_audio_engine = js_audio::AudioEngine::Get();
-  if (!weak_audio_engine.expired()) {
-    weak_audio_engine.lock()->Stop();
+  auto audio_engine_ptr = js_audio::AudioEngine::Get();
+  if (!audio_engine_ptr.expired()) {
+    audio_engine_ptr.lock()->Stop();
   } else {
     LOGE("Stop audio engine failed! Audio engine is invalid!\n");
   }
@@ -56,9 +56,9 @@ Java_com_example_audio_AudioHandler_stopNativeAudioEngine(JNIEnv *env,
 extern "C" JNIEXPORT void JNICALL
 Java_com_example_audio_AudioHandler_destroyNativeAudioEngine(JNIEnv *env,
                                                              jobject thiz) {
-  auto weak_audio_engine = js_audio::AudioEngine::Get();
-  if (!weak_audio_engine.expired()) {
-    weak_audio_engine.lock()->Destroy();
+  auto audio_engine_ptr = js_audio::AudioEngine::Get();
+  if (!audio_engine_ptr.expired()) {
+    audio_engine_ptr.lock()->Destroy();
   } else {
     LOGE("Destroy audio engine failed! Audio engine is invalid!\n");
   }

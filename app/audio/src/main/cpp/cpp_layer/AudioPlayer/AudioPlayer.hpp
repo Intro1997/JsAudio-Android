@@ -38,12 +38,13 @@ public:
 
   bool Valid() const;
 
-  bool AddBaseAudioContext(std::weak_ptr<BaseAudioContext> base_audio_context);
+  bool
+  AddBaseAudioContext(std::weak_ptr<BaseAudioContext> base_audio_context_ptr);
 
 protected:
   bool is_valid_;
   AudioPlayerConfig audio_player_config_;
-  std::vector<std::weak_ptr<BaseAudioContext>> base_audio_context_vec_;
+  std::vector<std::weak_ptr<BaseAudioContext>> base_audio_context_ptr_vec_;
   std::mutex base_audio_context_vec_lock_;
 
 private:

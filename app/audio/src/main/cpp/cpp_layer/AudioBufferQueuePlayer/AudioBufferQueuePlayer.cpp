@@ -63,7 +63,7 @@ static SLint16 *InitPcmData() {
 namespace js_audio {
 AudioBufferQueuePlayer::AudioBufferQueuePlayer(
     const AudioPlayerConfig &audio_player_config,
-    std::shared_ptr<AudioEngine> audio_engine_ptr)
+    std::shared_ptr<AudioEngine> audio_engine_ref)
     : AudioPlayer(audio_player_config),
       // TODO: move these to base class
       /* data source */
@@ -76,7 +76,7 @@ AudioBufferQueuePlayer::AudioBufferQueuePlayer(
       sl_player_object_(nullptr), sl_player_source_buffer_itf_(nullptr),
       sl_player_itf_(nullptr) {
 
-  SLEngineItf sl_engine_itf = audio_engine_ptr->sl_engine_interface_;
+  SLEngineItf sl_engine_itf = audio_engine_ref->sl_engine_interface_;
   if (!sl_engine_itf) {
     LOGE("Invalid engine interface!\n");
     return;
@@ -399,8 +399,8 @@ void AudioBufferQueuePlayer::ProduceSamples(size_t sample_size,
   output.clear();
   output.resize(sample_size, 0);
 
-  for (size_t i = 0; i < base_audio_context_vec_.size(); i++) {
-    if (auto audio_context_ref = base_audio_context_vec_[i].lock()) {
+  for (size_t i = 0; i < base_audio_context_ptr_vec_.size(); i++) {
+    if (auto audio_context_ref = base_audio_context_ptr_vec_[i].lock()) {
       std::vector<std::vector<float>> origin_audio_context_output;
       audio_context_ref->ProduceSamples(sample_size,
                                         origin_audio_context_output);

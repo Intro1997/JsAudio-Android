@@ -12,15 +12,16 @@ const uint32_t GainNode::kNumberOfOutputs = 1;
 class GainNodeConstructHelper : public GainNode {
 public:
   GainNodeConstructHelper(const GainNodeOptions &options,
-                          std::shared_ptr<std::mutex> audio_context_lock)
-      : GainNode(options, audio_context_lock) {}
+                          std::shared_ptr<std::mutex> audio_context_lock_ref)
+      : GainNode(options, audio_context_lock_ref) {}
 };
 
 std::shared_ptr<GainNode>
 GainNode::CreateGain(const GainNodeOptions &options,
-                     std::shared_ptr<std::mutex> audio_context_lock) {
+                     std::shared_ptr<std::mutex> audio_context_lock_ref) {
   std::shared_ptr<GainNode> gain_node_ref =
-      std::make_shared<GainNodeConstructHelper>(options, audio_context_lock);
+      std::make_shared<GainNodeConstructHelper>(options,
+                                                audio_context_lock_ref);
 
   std::weak_ptr<GainNode> gain_node_ptr = gain_node_ref;
   std::function<AudioParam::SetterCallbackFunc> setter_cb =
@@ -30,19 +31,20 @@ GainNode::CreateGain(const GainNodeOptions &options,
         }
       };
 
-  gain_node_ref->gain_ =
+  gain_node_ref->gain_ref_ =
       std::make_shared<AudioParam>(AudioParam::A_RATE, options.gain, FLT_MIN,
-                                   FLT_MAX, audio_context_lock, setter_cb);
+                                   FLT_MAX, audio_context_lock_ref, setter_cb);
   return gain_node_ref;
 }
 
 GainNode::GainNode(const GainNodeOptions &options,
-                   std::shared_ptr<std::mutex> audio_context_lock)
-    : AudioNode(kNumberOfInputs, kNumberOfOutputs, options, audio_context_lock),
+                   std::shared_ptr<std::mutex> audio_context_lock_ref)
+    : AudioNode(kNumberOfInputs, kNumberOfOutputs, options,
+                audio_context_lock_ref),
       gain_value_(options.gain) {}
 
 void GainNode::set_gain_value(const float &gain_value) {
-  std::lock_guard<std::mutex> guard(*audio_context_lock_);
+  std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
   gain_value_ = gain_value;
 }
 
@@ -55,14 +57,14 @@ GainNodeOptions GainNode::GetDefaultOptions() {
   return options;
 }
 
-std::shared_ptr<AudioParam> GainNode::gain() const { return gain_; }
+std::shared_ptr<AudioParam> GainNode::gain_ref() const { return gain_ref_; }
 
 void GainNode::ConnectTo(std::shared_ptr<AudioNode> dst_audio_node_ptr) {
   if (IsSelfPtr(dst_audio_node_ptr)) {
     LOGE("Error! Cannot connect to self!\n");
     return;
   }
-  std::lock_guard<std::mutex> guard(*audio_context_lock_);
+  std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
   dst_audio_node_ptr_ = dst_audio_node_ptr;
 }
 
@@ -71,7 +73,7 @@ void GainNode::BeConnectedTo(std::shared_ptr<AudioNode> src_audio_node_ptr) {
     LOGE("Error! Cannot be connected by self!\n");
     return;
   }
-  std::lock_guard<std::mutex> guard(*audio_context_lock_);
+  std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
   src_audio_node_ref_ = src_audio_node_ptr;
 }
 
@@ -79,7 +81,7 @@ void GainNode::Disconnect() {
   if (auto dst_audio_node_ref = dst_audio_node_ptr_.lock()) {
     dst_audio_node_ref->BeDisconnected(*this);
   }
-  std::lock_guard<std::mutex> guard(*audio_context_lock_);
+  std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
   dst_audio_node_ptr_.reset();
 }
 
@@ -90,7 +92,7 @@ void GainNode::BeDisconnected(const AudioNode &audio_node) {
     return;
   }
 
-  std::lock_guard<std::mutex> guard(*audio_context_lock_);
+  std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
   src_audio_node_ref_.reset();
 }
 void GainNode::ProduceSamples(size_t sample_size,

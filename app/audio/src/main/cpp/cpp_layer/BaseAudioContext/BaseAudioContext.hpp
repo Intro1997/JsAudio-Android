@@ -22,10 +22,10 @@ public:
 
   bool IsOnlineContext() const;
 
-  std::shared_ptr<AudioDestinationNode> audio_destination_node_ptr();
+  std::shared_ptr<AudioDestinationNode> audio_destination_node_ref();
 
 private:
-  std::shared_ptr<std::mutex> audio_context_lock_;
+  std::shared_ptr<std::mutex> audio_context_lock_ref_;
 
 protected:
   // be assigned in derived class
@@ -33,6 +33,6 @@ protected:
   uint32_t number_of_channels_;
   ContextType context_type_;
 
-  std::shared_ptr<AudioDestinationNode> audio_destination_node_ptr_;
+  std::shared_ptr<AudioDestinationNode> audio_destination_node_ref_;
 };
 } // namespace js_audio

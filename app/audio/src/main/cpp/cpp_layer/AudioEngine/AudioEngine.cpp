@@ -14,21 +14,21 @@ struct AudioEngineConstructHelper : public AudioEngine {};
 
 AudioPlayerConfig AudioEngine::audio_player_config_ =
     AudioPlayer::kAudioPlayerConfig;
-std::shared_ptr<AudioEngine> AudioEngine::audio_engine_ptr_ = nullptr;
+std::shared_ptr<AudioEngine> AudioEngine::audio_engine_ref_ = nullptr;
 
 std::weak_ptr<AudioEngine> AudioEngine::Get() {
-  if (audio_engine_ptr_) {
-    return audio_engine_ptr_;
+  if (audio_engine_ref_) {
+    return audio_engine_ref_;
   }
 
-  audio_engine_ptr_ = std::make_shared<AudioEngineConstructHelper>();
+  audio_engine_ref_ = std::make_shared<AudioEngineConstructHelper>();
 
-  if (!audio_engine_ptr_->Init()) {
+  if (!audio_engine_ref_->Init()) {
     LOGE("Init Audio Engine failed!\n");
-    audio_engine_ptr_.reset();
+    audio_engine_ref_.reset();
   }
 
-  return audio_engine_ptr_;
+  return audio_engine_ref_;
 }
 
 void AudioEngine::Start() {
@@ -38,8 +38,8 @@ void AudioEngine::Start() {
     return;
   }
 
-  if (audio_buffer_queue_player_) {
-    audio_buffer_queue_player_->Start();
+  if (audio_buffer_queue_player_ref_) {
+    audio_buffer_queue_player_ref_->Start();
   }
 
   set_state(AudioEngineState::kRunning);
@@ -52,8 +52,8 @@ void AudioEngine::Pause() {
     return;
   }
 
-  if (audio_buffer_queue_player_) {
-    audio_buffer_queue_player_->Pause();
+  if (audio_buffer_queue_player_ref_) {
+    audio_buffer_queue_player_ref_->Pause();
   }
 
   set_state(AudioEngineState::kPause);
@@ -66,8 +66,8 @@ void AudioEngine::Resume() {
     return;
   }
 
-  if (audio_buffer_queue_player_) {
-    audio_buffer_queue_player_->Resume();
+  if (audio_buffer_queue_player_ref_) {
+    audio_buffer_queue_player_ref_->Resume();
   }
 
   set_state(AudioEngineState::kRunning);
@@ -80,8 +80,8 @@ void AudioEngine::Stop() {
   }
 
   LOGD("Native AudioEngine::Stop()\n");
-  if (audio_buffer_queue_player_) {
-    audio_buffer_queue_player_->Stop();
+  if (audio_buffer_queue_player_ref_) {
+    audio_buffer_queue_player_ref_->Stop();
   }
 
   set_state(AudioEngineState::kStop);
@@ -92,8 +92,8 @@ void AudioEngine::Destroy() {
 
   Stop();
 
-  if (audio_buffer_queue_player_) {
-    audio_buffer_queue_player_->Destroy();
+  if (audio_buffer_queue_player_ref_) {
+    audio_buffer_queue_player_ref_->Destroy();
   }
 }
 
@@ -103,19 +103,19 @@ void AudioEngine::set_state(AudioEngineState state) {
 }
 
 void AudioEngine::InitAudioBufferQueuePlayer() {
-  audio_buffer_queue_player_ = std::make_shared<AudioBufferQueuePlayer>(
-      audio_player_config_, audio_engine_ptr_);
+  audio_buffer_queue_player_ref_ = std::make_shared<AudioBufferQueuePlayer>(
+      audio_player_config_, audio_engine_ref_);
   switch (state_) {
   case AudioEngineState::kRunning: {
-    audio_buffer_queue_player_->Start();
+    audio_buffer_queue_player_ref_->Start();
     break;
   }
   case AudioEngineState::kPause: {
-    audio_buffer_queue_player_->Pause();
+    audio_buffer_queue_player_ref_->Pause();
     break;
   }
   case AudioEngineState::kStop: {
-    audio_buffer_queue_player_->Stop();
+    audio_buffer_queue_player_ref_->Stop();
     break;
   }
   }
@@ -125,10 +125,10 @@ std::weak_ptr<AudioPlayer>
 AudioEngine::GetAudioPlayer(const AudioPlayerType &audio_player_type) {
   switch (audio_player_type) {
   case AudioPlayerType::kBufferQueuePlayer: {
-    if (!audio_buffer_queue_player_) {
+    if (!audio_buffer_queue_player_ref_) {
       InitAudioBufferQueuePlayer();
     }
-    return audio_buffer_queue_player_;
+    return audio_buffer_queue_player_ref_;
   }
   }
   return {};

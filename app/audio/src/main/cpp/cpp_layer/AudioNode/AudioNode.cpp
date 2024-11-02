@@ -13,20 +13,20 @@ AudioNode::AudioNode(const uint32_t &number_of_inputs,
                      const uint32_t &channel_count,
                      const ChannelCountMode &channel_count_mode,
                      const ChannelInterpretation &channel_interpretation,
-                     std::shared_ptr<std::mutex> audio_context_lock)
+                     std::shared_ptr<std::mutex> audio_context_lock_ref)
     : number_of_inputs_(number_of_inputs),
       number_of_outputs_(number_of_outputs), channel_count_(channel_count),
       channel_count_mode_(channel_count_mode),
       channel_interpretation_(channel_interpretation),
-      audio_context_lock_(audio_context_lock) {}
+      audio_context_lock_ref_(audio_context_lock_ref) {}
 
 AudioNode::AudioNode(const uint32_t &number_of_inputs,
                      const uint32_t &number_of_outputs,
                      const AudioNodeOptions &options,
-                     std::shared_ptr<std::mutex> audio_context_lock)
+                     std::shared_ptr<std::mutex> audio_context_lock_ref)
     : AudioNode(number_of_inputs, number_of_outputs, options.channel_count,
                 options.channel_count_mode, options.channel_interpretation,
-                audio_context_lock) {}
+                audio_context_lock_ref) {}
 
 bool AudioNode::IsValidChannelCount(const uint32_t &channel_count) {
   if (channel_count < kMinChannelCount || channel_count > kMaxChannelCount) {
@@ -114,8 +114,8 @@ void AudioNode::FillWithZeros(size_t sample_size,
   }
 }
 
-bool AudioNode::IsSelfPtr(std::shared_ptr<AudioNode> other) {
-  return other.get() == this;
+bool AudioNode::IsSelfPtr(std::shared_ptr<AudioNode> other_ref) {
+  return other_ref.get() == this;
 }
 
 } // namespace js_audio

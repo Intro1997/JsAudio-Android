@@ -10,7 +10,7 @@ public:
 
   AudioParam(const std::string &automation_rate, const float &default_value,
              const float &min_value, const float &max_value,
-             std::shared_ptr<std::mutex> audio_context_lock,
+             std::shared_ptr<std::mutex> audio_context_lock_ref,
              std::function<SetterCallbackFunc> setter_cb = nullptr,
              std::function<GetterCallbackFunc> getter_cb = nullptr);
 
@@ -31,7 +31,7 @@ private:
   const float default_value_;
   const float min_value_;
   const float max_value_;
-  std::shared_ptr<std::mutex> audio_context_lock_;
+  std::shared_ptr<std::mutex> audio_context_lock_ref_;
 
   std::function<SetterCallbackFunc> setter_cb_;
   std::function<GetterCallbackFunc> getter_cb_;

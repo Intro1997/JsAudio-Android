@@ -6,17 +6,17 @@ namespace js_audio {
 
 JSAudioDestinationNode::JSAudioDestinationNode(
     const Napi_IH::IHCallbackInfo &info,
-    std::shared_ptr<AudioDestinationNode> audio_destination_node_ptr)
-    : JSAudioNode(info, audio_destination_node_ptr),
+    std::shared_ptr<AudioDestinationNode> audio_destination_node_ref)
+    : JSAudioNode(info, audio_destination_node_ref),
       audio_destination_node_ptr_(
           std::static_pointer_cast<AudioDestinationNode>(
-              JSAudioNode::audio_node_ptr_)) {}
+              JSAudioNode::audio_node_ref_)) {}
 
 void JSAudioDestinationNode::Init(Napi::Env env, Napi::Object exports) {
   DefineClass<JSAudioDestinationNode, JSAudioNode>(
       env, "AudioDestinationNode",
       {InstanceAccessor<JSAudioDestinationNode,
-                      &JSAudioDestinationNode::getMaxChannelCount>(
+                        &JSAudioDestinationNode::getMaxChannelCount>(
           "maxChannelCount")},
       Napi_IH::ClassVisibility::kHideConstructor);
 }

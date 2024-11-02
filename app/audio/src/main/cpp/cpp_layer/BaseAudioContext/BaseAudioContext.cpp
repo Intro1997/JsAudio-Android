@@ -15,19 +15,19 @@ BaseAudioContext::BaseAudioContext(
 BaseAudioContext::BaseAudioContext(const ContextType &type,
                                    const uint32_t &number_of_channels,
                                    const float &sample_rate)
-    : audio_context_lock_(std::make_shared<std::mutex>()),
+    : audio_context_lock_ref_(std::make_shared<std::mutex>()),
       sample_rate_(sample_rate), number_of_channels_(number_of_channels),
       context_type_(type),
-      audio_destination_node_ptr_(std::make_shared<AudioDestinationNode>(
-          number_of_channels, audio_context_lock_)) {}
+      audio_destination_node_ref_(std::make_shared<AudioDestinationNode>(
+          number_of_channels, audio_context_lock_ref_)) {}
 
 bool BaseAudioContext::IsOnlineContext() const {
   return context_type_ == ContextType::kOnline;
 }
 
 std::shared_ptr<AudioDestinationNode>
-BaseAudioContext::audio_destination_node_ptr() {
-  return audio_destination_node_ptr_;
+BaseAudioContext::audio_destination_node_ref() {
+  return audio_destination_node_ref_;
 }
 
 float BaseAudioContext::sample_rate() const { return sample_rate_; }
@@ -39,13 +39,13 @@ uint32_t BaseAudioContext::number_of_channels() const {
 double BaseAudioContext::GetCurrentTime() { return 0; }
 
 std::shared_ptr<std::mutex> BaseAudioContext::GetLock() const {
-  return audio_context_lock_;
+  return audio_context_lock_ref_;
 }
 
 void BaseAudioContext::ProduceSamples(size_t sample_size,
                                       std::vector<std::vector<float>> &output) {
-  std::lock_guard<std::mutex> guard(*audio_context_lock_);
-  audio_destination_node_ptr_->ProduceSamples(sample_size, output);
+  std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
+  audio_destination_node_ref_->ProduceSamples(sample_size, output);
 }
 
 } // namespace js_audio

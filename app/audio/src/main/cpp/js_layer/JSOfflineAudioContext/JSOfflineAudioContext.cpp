@@ -7,7 +7,7 @@
 #include <napi/napi.h>
 
 struct RenderedAudioBufferWrapper {
-  std::shared_ptr<js_audio::AudioBuffer> rendered_audio_buffer;
+  std::shared_ptr<js_audio::AudioBuffer> rendered_audio_buffer_ref;
 };
 using OfflineAudioContext = js_audio::OfflineAudioContext;
 using ContextType = Napi::Promise::Deferred;
@@ -19,7 +19,7 @@ static void CallJs(Napi::Env env, Napi::Function js_func,
 using TSFN = Napi::TypedThreadSafeFunction<ContextType, DataType, CallJs>;
 
 static std::shared_ptr<OfflineAudioContext>
-GetOfflineAudioContextPtr(const Napi_IH::IHCallbackInfo &info);
+GetOfflineAudioContextRef(const Napi_IH::IHCallbackInfo &info);
 
 namespace js_audio {
 void JSOfflineAudioContext::Init(Napi::Env env, Napi::Object exports) {
@@ -33,7 +33,7 @@ void JSOfflineAudioContext::Init(Napi::Env env, Napi::Object exports) {
 
 JSOfflineAudioContext::JSOfflineAudioContext(
     const Napi_IH::IHCallbackInfo &info)
-    : JSBaseAudioContext(info, GetOfflineAudioContextPtr(info)),
+    : JSBaseAudioContext(info, GetOfflineAudioContextRef(info)),
       oncomplete_promise_(Napi::Promise::Deferred::New(info.Env())) {}
 
 Napi::Value
@@ -44,10 +44,10 @@ JSOfflineAudioContext::startRendering(const Napi::CallbackInfo &info) {
 
   tsfn = TSFN::New(info.Env(), "StartRendering TSFN", 0, 1, js_promise_ptr);
 
-  std::function<void(std::shared_ptr<AudioBuffer>)> cb =
-      [=](std::shared_ptr<AudioBuffer> rendered_audio_buffer) {
+  std::function<void(std::shared_ptr<AudioBuffer>)> cb_ref =
+      [=](std::shared_ptr<AudioBuffer> rendered_audio_buffer_ref) {
         RenderedAudioBufferWrapper *wrapper = new RenderedAudioBufferWrapper();
-        wrapper->rendered_audio_buffer = rendered_audio_buffer;
+        wrapper->rendered_audio_buffer_ref = rendered_audio_buffer_ref;
         napi_status status = tsfn.NonBlockingCall(wrapper);
         if (status != napi_ok) {
           LOGE("NonBlockingCall failed: error code is %d\n", status);
@@ -56,8 +56,8 @@ JSOfflineAudioContext::startRendering(const Napi::CallbackInfo &info) {
       };
 
   bool is_start =
-      std::static_pointer_cast<OfflineAudioContext>(base_audio_context_ptr_)
-          ->StartRendering(cb);
+      std::static_pointer_cast<OfflineAudioContext>(base_audio_context_ref_)
+          ->StartRendering(cb_ref);
   if (!is_start) {
     LOGE("InvalidStateError: Failed to execute 'startRendering' on "
          "'OfflineAudioContext': cannot startRendering when an "
@@ -68,7 +68,7 @@ JSOfflineAudioContext::startRendering(const Napi::CallbackInfo &info) {
 
 Napi::Value JSOfflineAudioContext::getLength(const Napi::CallbackInfo &info) {
   uint32_t length =
-      std::static_pointer_cast<OfflineAudioContext>(base_audio_context_ptr_)
+      std::static_pointer_cast<OfflineAudioContext>(base_audio_context_ref_)
           ->length();
   return Napi::Number::From(info.Env(), length);
 }
@@ -76,7 +76,7 @@ Napi::Value JSOfflineAudioContext::getLength(const Napi::CallbackInfo &info) {
 } // namespace js_audio
 
 static std::shared_ptr<OfflineAudioContext>
-GetOfflineAudioContextPtr(const Napi_IH::IHCallbackInfo &info) {
+GetOfflineAudioContextRef(const Napi_IH::IHCallbackInfo &info) {
   uint32_t number_of_channels = 1;
   uint32_t length = 0;
   float sample_rate = 0.0f;
@@ -166,8 +166,8 @@ static void CallJs(Napi::Env env, Napi::Function js_func,
                    ContextType *js_promise_ptr, DataType *value) {
   Napi::Object js_rendered_audio_buffer =
       js_audio::JSAudioBuffer::FindClass<js_audio::JSAudioBuffer>()
-          .NewWithArgs<js_audio::JSAudioBuffer>({},
-                                                value->rendered_audio_buffer);
+          .NewWithArgs<js_audio::JSAudioBuffer>(
+              {}, value->rendered_audio_buffer_ref);
 
   js_promise_ptr->Resolve(js_rendered_audio_buffer);
 

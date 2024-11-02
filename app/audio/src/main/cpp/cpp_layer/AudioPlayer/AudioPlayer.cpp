@@ -49,9 +49,9 @@ void AudioPlayer::Destroy() { is_valid_ = false; }
 bool AudioPlayer::Valid() const { return is_valid_; }
 
 bool AudioPlayer::AddBaseAudioContext(
-    std::weak_ptr<BaseAudioContext> base_audio_context) {
-  if (base_audio_context.lock()) {
-    base_audio_context_vec_.push_back(base_audio_context);
+    std::weak_ptr<BaseAudioContext> base_audio_context_ptr) {
+  if (base_audio_context_ptr.lock()) {
+    base_audio_context_ptr_vec_.push_back(base_audio_context_ptr);
     return true;
   }
   return false;

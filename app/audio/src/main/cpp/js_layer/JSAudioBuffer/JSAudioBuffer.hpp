@@ -10,7 +10,7 @@ public:
   static void Init(Napi::Env env, Napi::Object exports);
 
   JSAudioBuffer(const Napi_IH::IHCallbackInfo &info,
-                std::shared_ptr<AudioBuffer> audio_buffer_ptr = nullptr);
+                std::shared_ptr<AudioBuffer> audio_buffer_ref = nullptr);
 
   Napi::Value getSampleRate(const Napi::CallbackInfo &info);
   Napi::Value getLength(const Napi::CallbackInfo &info);
@@ -23,6 +23,6 @@ public:
 
 private:
   std::vector<Napi::ObjectReference> js_channels_ref_;
-  std::shared_ptr<AudioBuffer> audio_buffer_ptr_;
+  std::shared_ptr<AudioBuffer> audio_buffer_ref_;
 };
 } // namespace js_audio

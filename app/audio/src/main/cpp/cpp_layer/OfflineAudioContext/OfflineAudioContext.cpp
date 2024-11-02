@@ -21,11 +21,11 @@ OfflineAudioContext::OfflineAudioContext(const uint32_t &number_of_channels,
 
 // TODO: alias a type ot cb
 bool OfflineAudioContext::StartRendering(
-    const std::function<void(std::shared_ptr<AudioBuffer>)> &cb) {
+    const std::function<void(std::shared_ptr<AudioBuffer>)> &cb_ref) {
   if (render_state() != RenderState::kFinish) {
     return false;
   }
-  std::thread offline_rendering_thread([=]() { this->InnerRendering(cb); });
+  std::thread offline_rendering_thread([=]() { this->InnerRendering(cb_ref); });
   offline_rendering_thread.detach();
   return true;
 }
@@ -54,7 +54,7 @@ void OfflineAudioContext::InitOutputArray(
 
 // TODO: alias a type ot cb
 void OfflineAudioContext::InnerRendering(
-    const std::function<void(std::shared_ptr<AudioBuffer>)> &cb) {
+    const std::function<void(std::shared_ptr<AudioBuffer>)> &cb_ref) {
   if (render_state() != RenderState::kFinish) {
     return;
   }
@@ -67,9 +67,9 @@ void OfflineAudioContext::InnerRendering(
   UpdateCurrentTime();
   set_render_state(RenderState::kFinish);
 
-  if (cb) {
+  if (cb_ref) {
     auto rendered_buffer_ptr = std::make_shared<AudioBuffer>(std::move(output));
-    cb(rendered_buffer_ptr);
+    cb_ref(rendered_buffer_ptr);
   }
 }
 

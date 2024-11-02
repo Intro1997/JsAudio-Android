@@ -50,26 +50,26 @@ static void CreateTestPcmData(size_t sample_size,
 
 class OscillatorNodeConstructHelper : public OscillatorNode {
 public:
-  OscillatorNodeConstructHelper(std::shared_ptr<std::mutex> audio_context_lock,
-                                const OscillatorOptions &options,
-                                const float &sample_rate)
-      : OscillatorNode(audio_context_lock, options, sample_rate) {}
+  OscillatorNodeConstructHelper(
+      std::shared_ptr<std::mutex> audio_context_lock_ref,
+      const OscillatorOptions &options, const float &sample_rate)
+      : OscillatorNode(audio_context_lock_ref, options, sample_rate) {}
 };
 
-OscillatorNode::OscillatorNode(std::shared_ptr<std::mutex> audio_context_lock,
-                               const OscillatorOptions &options,
-                               const float &sample_rate)
+OscillatorNode::OscillatorNode(
+    std::shared_ptr<std::mutex> audio_context_lock_ref,
+    const OscillatorOptions &options, const float &sample_rate)
     : AudioScheduledSourceNode(
           kNumberOfInputs, kNumberOfOutputs, options.channel_count,
           options.channel_count_mode, options.channel_interpretation,
-          audio_context_lock),
+          audio_context_lock_ref),
       type_(options.type), sample_rate_(sample_rate), current_time_(0) {}
 
 std::shared_ptr<OscillatorNode> OscillatorNode::CreateOscillatorNode(
-    std::shared_ptr<std::mutex> audio_context_lock,
+    std::shared_ptr<std::mutex> audio_context_lock_ref,
     const OscillatorOptions &options, const float &sample_rate) {
   std::shared_ptr<OscillatorNode> oscillator_node_ref =
-      std::make_shared<OscillatorNodeConstructHelper>(audio_context_lock,
+      std::make_shared<OscillatorNodeConstructHelper>(audio_context_lock_ref,
                                                       options, sample_rate);
 
   std::weak_ptr<OscillatorNode> oscillator_node_weak_ref = oscillator_node_ref;
@@ -83,14 +83,14 @@ std::shared_ptr<OscillatorNode> OscillatorNode::CreateOscillatorNode(
   const float min_frequency = -sample_rate / 2;
   const float max_frequency = sample_rate / 2;
 
-  oscillator_node_ref->frequency_ = std::make_shared<AudioParam>(
+  oscillator_node_ref->frequency_ref_ = std::make_shared<AudioParam>(
       AudioParam::K_RATE,
       std::clamp(options.frequency, min_frequency, max_frequency),
-      min_frequency, max_frequency, audio_context_lock, setter_cb);
+      min_frequency, max_frequency, audio_context_lock_ref, setter_cb);
 
-  oscillator_node_ref->detune_ = std::make_shared<AudioParam>(
+  oscillator_node_ref->detune_ref_ = std::make_shared<AudioParam>(
       AudioParam::K_RATE, options.detune, kDetuneMin, kDetuneMax,
-      audio_context_lock, setter_cb);
+      audio_context_lock_ref, setter_cb);
 
   oscillator_node_ref->UpdateComputedFreq();
 
@@ -150,14 +150,14 @@ float OscillatorNode::ClampToValidDetune(const float &detune) {
   return std::clamp(detune, kDetuneMin, kDetuneMax);
 }
 
-std::shared_ptr<AudioParam> OscillatorNode::frequency() const {
-  std::lock_guard<std::mutex> guard(*audio_context_lock_);
-  return frequency_;
+std::shared_ptr<AudioParam> OscillatorNode::frequency_ref() const {
+  std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
+  return frequency_ref_;
 }
 
-std::shared_ptr<AudioParam> OscillatorNode::detune() const {
-  std::lock_guard<std::mutex> guard(*audio_context_lock_);
-  return detune_;
+std::shared_ptr<AudioParam> OscillatorNode::detune_ref() const {
+  std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
+  return detune_ref_;
 }
 
 const char *OscillatorNode::type() const {
@@ -165,12 +165,12 @@ const char *OscillatorNode::type() const {
 }
 
 const WaveProducer::WaveType &OscillatorNode::inner_type() const {
-  std::lock_guard<std::mutex> guard(*audio_context_lock_);
+  std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
   return type_;
 }
 
 void OscillatorNode::set_type(const std::string &type) {
-  std::lock_guard<std::mutex> guard(*audio_context_lock_);
+  std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
   if (!ConvertToOscillatorType(type, type_)) {
     LOGE("Set oscillator node type error: Use unknown type %s\n", type.c_str());
   }
@@ -228,10 +228,10 @@ void OscillatorNode::CreateWaveform(const WaveProducer::WaveType &type,
 }
 
 void OscillatorNode::UpdateComputedFreq() {
-  const float freq_value = frequency()->value();
-  const float detune_value = detune()->value();
+  const float freq_value = frequency_ref()->value();
+  const float detune_value = detune_ref()->value();
 
-  std::lock_guard<std::mutex> guard(*audio_context_lock_);
+  std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
   computed_freq_ = freq_value * std::exp2(detune_value / 1200);
 
   const float abs_freq = std::abs(computed_freq_);

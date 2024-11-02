@@ -7,7 +7,7 @@ class JSBaseAudioContext : public Napi_IH::IHObjectWrap {
 public:
   JSBaseAudioContext(
       const Napi_IH::IHCallbackInfo &info,
-      std::shared_ptr<BaseAudioContext> base_audio_context_ptr = nullptr);
+      std::shared_ptr<BaseAudioContext> base_audio_context_ref = nullptr);
 
   static void Init(Napi::Env env, Napi::Object exports);
   std::shared_ptr<std::mutex> GetAudioContextLock() const;
@@ -22,7 +22,7 @@ public:
   Napi::Value createGain(const Napi::CallbackInfo &info);
 
 protected:
-  std::shared_ptr<BaseAudioContext> base_audio_context_ptr_;
+  std::shared_ptr<BaseAudioContext> base_audio_context_ref_;
 
 private:
   Napi::ObjectReference js_destination_node_ref_;

@@ -5,11 +5,11 @@ namespace js_audio {
 class JSAudioNode : public Napi_IH::IHObjectWrap {
 public:
   JSAudioNode(const Napi_IH::IHCallbackInfo &info,
-              std::shared_ptr<AudioNode> audio_destination_node_ptr = nullptr);
+              std::shared_ptr<AudioNode> audio_destination_node_ref = nullptr);
   static void Init(Napi::Env env, Napi::Object exports);
 
 protected:
-  std::shared_ptr<AudioNode> audio_node_ptr_;
+  std::shared_ptr<AudioNode> audio_node_ref_;
 
 private:
   Napi::Value getContext(const Napi::CallbackInfo &info);

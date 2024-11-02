@@ -13,9 +13,9 @@ public:
       const uint32_t &channel_count,
       const AudioNode::ChannelCountMode &channel_count_mode,
       const AudioNode::ChannelInterpretation &channel_interpretation,
-      std::shared_ptr<std::mutex> audio_context_lock);
-  void ConnectTo(std::shared_ptr<AudioNode> dst_audio_node_ptr) override;
-  void BeConnectedTo(std::shared_ptr<AudioNode> src_audio_node_ptr) override;
+      std::shared_ptr<std::mutex> audio_context_lock_ref);
+  void ConnectTo(std::shared_ptr<AudioNode> dst_audio_node_ref) override;
+  void BeConnectedTo(std::shared_ptr<AudioNode> src_audio_node_ref) override;
   void Disconnect() override;
   void BeDisconnected(const AudioNode &audio_node) override;
   void Start(const float &when);
