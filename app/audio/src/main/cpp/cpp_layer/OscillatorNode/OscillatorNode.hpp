@@ -21,7 +21,7 @@ public:
                        const OscillatorOptions &options,
                        const float &sample_rate);
 
-  void ProduceSamples(size_t sample_size,
+  void ProduceSamples(const size_t &sample_size,
                       std::vector<std::vector<float>> &output) override;
 
   static OscillatorOptions GetDefaultOptions();

@@ -42,7 +42,7 @@ std::shared_ptr<std::mutex> BaseAudioContext::GetLock() const {
   return audio_context_lock_ref_;
 }
 
-void BaseAudioContext::ProduceSamples(size_t sample_size,
+void BaseAudioContext::ProduceSamples(const size_t &sample_size,
                                       std::vector<std::vector<float>> &output) {
   std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
   audio_destination_node_ref_->ProduceSamples(sample_size, output);

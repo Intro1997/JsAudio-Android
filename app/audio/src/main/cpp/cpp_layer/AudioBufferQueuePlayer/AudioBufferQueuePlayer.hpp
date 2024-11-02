@@ -49,7 +49,7 @@ private:
   static void AudioPlayerBufferCallback(SLBufferQueueItf sl_buffer_queue_itf,
                                         void *context);
 
-  void ProduceSamples(size_t sample_size, std::vector<SLint16> &output);
+  void ProduceSamples(const size_t &sample_size, std::vector<SLint16> &output);
 
   std::vector<SLint16> &GetCurrentBuffer();
 

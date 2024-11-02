@@ -17,7 +17,7 @@ public:
   virtual double GetCurrentTime();
   std::shared_ptr<std::mutex> GetLock() const;
 
-  void ProduceSamples(size_t sample_size,
+  void ProduceSamples(const size_t &sample_size,
                       std::vector<std::vector<float>> &output);
 
   bool IsOnlineContext() const;

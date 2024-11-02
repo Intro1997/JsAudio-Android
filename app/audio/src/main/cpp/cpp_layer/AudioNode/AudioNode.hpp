@@ -51,7 +51,7 @@ public:
   ChannelCountMode channel_count_mode() const;
   ChannelInterpretation channel_interpretation() const;
 
-  virtual void ProduceSamples(size_t sample_size,
+  virtual void ProduceSamples(const size_t &sample_size,
                               std::vector<std::vector<float>> &output);
   virtual void ConnectTo(std::shared_ptr<AudioNode> dst_audio_node_ref) = 0;
   virtual void BeConnectedTo(std::shared_ptr<AudioNode> src_audio_node_ref) = 0;
@@ -60,7 +60,7 @@ public:
 
 protected:
   bool IsSelfPtr(std::shared_ptr<AudioNode> other_ref);
-  void FillWithZeros(size_t sample_size,
+  void FillWithZeros(const size_t &sample_size,
                      std::vector<std::vector<float>> &output);
 
   const uint32_t number_of_inputs_;

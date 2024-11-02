@@ -97,7 +97,7 @@ std::shared_ptr<OscillatorNode> OscillatorNode::CreateOscillatorNode(
   return oscillator_node_ref;
 }
 
-void OscillatorNode::ProduceSamples(size_t sample_size,
+void OscillatorNode::ProduceSamples(const size_t &sample_size,
                                     std::vector<std::vector<float>> &output) {
   if (state() != State::Start) {
     FillWithZeros(sample_size, output);

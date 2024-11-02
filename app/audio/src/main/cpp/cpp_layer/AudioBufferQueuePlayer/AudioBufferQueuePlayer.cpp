@@ -392,7 +392,7 @@ void AudioBufferQueuePlayer::AudioPlayerBufferCallback(
   }
 }
 
-void AudioBufferQueuePlayer::ProduceSamples(size_t sample_size,
+void AudioBufferQueuePlayer::ProduceSamples(const size_t &sample_size,
                                             std::vector<SLint16> &output) {
   std::lock_guard<std::mutex> guard(base_audio_context_vec_lock_);
 

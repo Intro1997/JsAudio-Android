@@ -17,7 +17,7 @@ AudioDestinationNode::AudioDestinationNode(
       max_channel_count_(channel_count) {}
 
 void AudioDestinationNode::ProduceSamples(
-    size_t sample_size, std::vector<std::vector<float>> &output) {
+    const size_t &sample_size, std::vector<std::vector<float>> &output) {
   if (src_audio_node_ref_) {
     src_audio_node_ref_->ProduceSamples(sample_size, output);
   } else {

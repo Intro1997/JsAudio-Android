@@ -15,7 +15,7 @@ public:
       const ChannelInterpretation &channel_interpretation =
           ChannelInterpretation::kSpeakers);
 
-  void ProduceSamples(size_t sample_size,
+  void ProduceSamples(const size_t &sample_size,
                       std::vector<std::vector<float>> &output) override;
 
   void ConnectTo(std::shared_ptr<AudioNode> dst_audio_node_ref) override;

@@ -100,12 +100,12 @@ AudioNode::ChannelInterpretation AudioNode::channel_interpretation() const {
   return channel_interpretation_;
 }
 
-void AudioNode::ProduceSamples(size_t sample_size,
+void AudioNode::ProduceSamples(const size_t &sample_size,
                                std::vector<std::vector<float>> &output) {
   FillWithZeros(sample_size, output);
 }
 
-void AudioNode::FillWithZeros(size_t sample_size,
+void AudioNode::FillWithZeros(const size_t &sample_size,
                               std::vector<std::vector<float>> &output) {
   output.resize(channel_count_);
   for (auto &channel : output) {

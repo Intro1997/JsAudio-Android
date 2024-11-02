@@ -22,7 +22,7 @@ public:
   void BeConnectedTo(std::shared_ptr<AudioNode> src_audio_node_ref) override;
   void Disconnect() override;
   void BeDisconnected(const AudioNode &audio_node) override;
-  void ProduceSamples(size_t sample_size,
+  void ProduceSamples(const size_t &sample_size,
                       std::vector<std::vector<float>> &output) override;
 
 protected:
@@ -31,7 +31,7 @@ protected:
   void set_gain_value(const float &gain_value);
 
 private:
-  void ProcessSamples(size_t sample_size,
+  void ProcessSamples(const size_t &sample_size,
                       std::vector<std::vector<float>> &outputs);
 
   std::shared_ptr<AudioParam> gain_ref_;

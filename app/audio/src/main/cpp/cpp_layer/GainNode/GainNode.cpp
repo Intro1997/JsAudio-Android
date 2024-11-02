@@ -95,7 +95,7 @@ void GainNode::BeDisconnected(const AudioNode &audio_node) {
   std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
   src_audio_node_ref_.reset();
 }
-void GainNode::ProduceSamples(size_t sample_size,
+void GainNode::ProduceSamples(const size_t &sample_size,
                               std::vector<std::vector<float>> &output) {
   if (src_audio_node_ref_) {
     src_audio_node_ref_->ProduceSamples(sample_size, output);
@@ -105,7 +105,7 @@ void GainNode::ProduceSamples(size_t sample_size,
   }
 }
 
-void GainNode::ProcessSamples(size_t sample_size,
+void GainNode::ProcessSamples(const size_t &sample_size,
                               std::vector<std::vector<float>> &outputs) {
   // TODO: make optimization here
   for (auto &channel : outputs) {
