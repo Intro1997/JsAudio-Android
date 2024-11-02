@@ -17,9 +17,12 @@ public:
   };
 
   static std::shared_ptr<OscillatorNode>
-  CreateOscillatorNode(std::shared_ptr<std::mutex> audio_context_lock_ref,
-                       const OscillatorOptions &options,
-                       const float &sample_rate);
+  CreateOscillatorNode(const float &sample_rate,
+                       std::shared_ptr<std::mutex> audio_context_lock_ref);
+  static std::shared_ptr<OscillatorNode>
+  CreateOscillatorNode(const OscillatorOptions &options,
+                       const float &sample_rate,
+                       std::shared_ptr<std::mutex> audio_context_lock_ref);
 
   void ProduceSamples(const size_t &sample_size,
                       std::vector<std::vector<float>> &output) override;

@@ -99,8 +99,8 @@ static std::shared_ptr<OscillatorNode> GetOscillatorNodeRef(
     throw napi_error;
   }
 
-  return OscillatorNode::CreateOscillatorNode(audio_context_lock_ref, options,
-                                              sample_rate);
+  return OscillatorNode::CreateOscillatorNode(options, sample_rate,
+                                              audio_context_lock_ref);
 }
 
 namespace js_audio {

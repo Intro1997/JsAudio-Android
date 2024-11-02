@@ -127,5 +127,5 @@ GetGainNodeRef(const Napi_IH::IHCallbackInfo &info,
     throw napi_error;
   }
 
-  return GainNode::CreateGain(options, audio_context_lock_ref);
+  return GainNode::CreateGainNode(options, audio_context_lock_ref);
 }

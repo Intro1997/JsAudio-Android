@@ -12,8 +12,10 @@ public:
 
 public:
   static std::shared_ptr<GainNode>
-  CreateGain(const GainNodeOptions &options,
-             std::shared_ptr<std::mutex> audio_context_lock_ref);
+  CreateGainNode(std::shared_ptr<std::mutex> audio_context_lock_ref);
+  static std::shared_ptr<GainNode>
+  CreateGainNode(const GainNodeOptions &options,
+                 std::shared_ptr<std::mutex> audio_context_lock_ref);
   static GainNodeOptions GetDefaultOptions();
 
   std::shared_ptr<AudioParam> gain_ref() const;

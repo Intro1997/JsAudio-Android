@@ -17,7 +17,13 @@ public:
 };
 
 std::shared_ptr<GainNode>
-GainNode::CreateGain(const GainNodeOptions &options,
+GainNode::CreateGainNode(std::shared_ptr<std::mutex> audio_context_lock_ref) {
+  GainNodeOptions options = GetDefaultOptions();
+  return CreateGainNode(options, audio_context_lock_ref);
+}
+
+std::shared_ptr<GainNode>
+GainNode::CreateGainNode(const GainNodeOptions &options,
                      std::shared_ptr<std::mutex> audio_context_lock_ref) {
   std::shared_ptr<GainNode> gain_node_ref =
       std::make_shared<GainNodeConstructHelper>(options,

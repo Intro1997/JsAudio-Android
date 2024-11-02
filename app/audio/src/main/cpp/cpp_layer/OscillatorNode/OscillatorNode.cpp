@@ -66,8 +66,15 @@ OscillatorNode::OscillatorNode(
       type_(options.type), sample_rate_(sample_rate), current_time_(0) {}
 
 std::shared_ptr<OscillatorNode> OscillatorNode::CreateOscillatorNode(
-    std::shared_ptr<std::mutex> audio_context_lock_ref,
-    const OscillatorOptions &options, const float &sample_rate) {
+    const float &sample_rate,
+    std::shared_ptr<std::mutex> audio_context_lock_ref) {
+  OscillatorOptions options = GetDefaultOptions();
+  return CreateOscillatorNode(options, sample_rate, audio_context_lock_ref);
+}
+
+std::shared_ptr<OscillatorNode> OscillatorNode::CreateOscillatorNode(
+    const OscillatorOptions &options, const float &sample_rate,
+    std::shared_ptr<std::mutex> audio_context_lock_ref) {
   std::shared_ptr<OscillatorNode> oscillator_node_ref =
       std::make_shared<OscillatorNodeConstructHelper>(audio_context_lock_ref,
                                                       options, sample_rate);

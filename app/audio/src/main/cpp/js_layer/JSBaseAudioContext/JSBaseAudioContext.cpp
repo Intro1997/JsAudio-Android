@@ -102,9 +102,8 @@ Napi::Value
 JSBaseAudioContext::createOscillator(const Napi::CallbackInfo &info) {
   std::shared_ptr<OscillatorNode> oscillator_node_ref =
       OscillatorNode::CreateOscillatorNode(
-          base_audio_context_ref_->GetLock(),
-          OscillatorNode::GetDefaultOptions(),
-          base_audio_context_ref_->sample_rate());
+          base_audio_context_ref_->sample_rate(),
+          base_audio_context_ref_->GetLock());
   Napi::Object js_oscillator_node =
       JSOscillatorNode::FindClass<JSOscillatorNode>()
           .NewWithArgs<JSOscillatorNode>({info.This()}, oscillator_node_ref);
@@ -136,9 +135,8 @@ Napi::Value JSBaseAudioContext::createBuffer(const Napi::CallbackInfo &info) {
 }
 
 Napi::Value JSBaseAudioContext::createGain(const Napi::CallbackInfo &info) {
-  auto options = GainNode::GetDefaultOptions();
   std::shared_ptr<GainNode> gain_node_ref =
-      GainNode::CreateGain(options, base_audio_context_ref_->GetLock());
+      GainNode::CreateGainNode(base_audio_context_ref_->GetLock());
   return FindClass<JSGainNode>().NewWithArgs<JSGainNode>({info.This()},
                                                          gain_node_ref);
 }
