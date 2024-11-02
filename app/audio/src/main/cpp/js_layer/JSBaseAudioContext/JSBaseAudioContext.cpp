@@ -26,7 +26,7 @@ JSBaseAudioContext::JSBaseAudioContext(
               {info.This()},
               base_audio_context_ref_->audio_destination_node_ref());
 
-  js_destination_node_ref_ = Napi::Persistent(js_destination_node);
+  napi_destination_node_ref_ = Napi::Persistent(js_destination_node);
 
   bool is_add_to_audio_player = false;
   auto audio_engine_ptr = AudioEngine::Get().lock();
@@ -44,7 +44,7 @@ JSBaseAudioContext::JSBaseAudioContext(
     // we do not need to reserve cpp pointer
     // when add to audio player failed
     base_audio_context_ref_.reset();
-    js_destination_node_ref_.Reset();
+    napi_destination_node_ref_.Reset();
     LOGE("Add Base Audio Context to Audio Player failed!\n");
   }
 }
@@ -73,7 +73,7 @@ void JSBaseAudioContext::Init(Napi::Env env, Napi::Object exports) {
 
 Napi::Value
 JSBaseAudioContext::getDestinationNode(const Napi::CallbackInfo &info) {
-  return js_destination_node_ref_.Value();
+  return napi_destination_node_ref_.Value();
 }
 
 Napi::Value JSBaseAudioContext::getSampleRate(const Napi::CallbackInfo &info) {

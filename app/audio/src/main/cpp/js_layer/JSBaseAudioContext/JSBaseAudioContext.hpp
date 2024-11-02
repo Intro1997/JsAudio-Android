@@ -25,6 +25,6 @@ protected:
   std::shared_ptr<BaseAudioContext> base_audio_context_ref_;
 
 private:
-  Napi::ObjectReference js_destination_node_ref_;
+  Napi::ObjectReference napi_destination_node_ref_;
 };
 } // namespace js_audio

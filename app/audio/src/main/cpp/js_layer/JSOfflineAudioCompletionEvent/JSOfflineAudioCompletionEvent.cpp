@@ -19,11 +19,11 @@ JSOfflineAudioCompletionEvent::JSOfflineAudioCompletionEvent(
          "JSOfflineAudioCompletionEvent without AudioBuffer object.\n");
     return;
   }
-  js_ret_audio_buffer_ref_ = Napi::Persistent(info[0].As<Napi::Object>());
+  napi_ret_audio_buffer_ref_ = Napi::Persistent(info[0].As<Napi::Object>());
 }
 
 Napi::Value
 JSOfflineAudioCompletionEvent::getAudioBuffer(const Napi::CallbackInfo &info) {
-  return js_ret_audio_buffer_ref_.Value();
+  return napi_ret_audio_buffer_ref_.Value();
 }
 } // namespace js_audio

@@ -28,6 +28,6 @@ private:
   Napi::Value disconnect(const Napi::CallbackInfo &info);
 
   // weak ref
-  Napi::ObjectReference napi_audio_context_ref_;
+  Napi::ObjectReference napi_audio_context_ptr_;
 };
 } // namespace js_audio

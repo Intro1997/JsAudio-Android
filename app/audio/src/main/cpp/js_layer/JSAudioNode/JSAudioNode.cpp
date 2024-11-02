@@ -31,9 +31,9 @@ JSAudioNode::JSAudioNode(const Napi_IH::IHCallbackInfo &info,
     return;
   }
 
-  napi_audio_context_ref_ = Napi::Weak(info[0].As<Napi::Object>());
+  napi_audio_context_ptr_ = Napi::Weak(info[0].As<Napi::Object>());
   JSBaseAudioContext *js_base_audio_context_ptr =
-      UnWrap<JSBaseAudioContext>(napi_audio_context_ref_.Value());
+      UnWrap<JSBaseAudioContext>(napi_audio_context_ptr_.Value());
   if (js_base_audio_context_ptr) {
     audio_node_ref_->base_audio_context_ptr_ =
         js_base_audio_context_ptr->GetAudioContext();
@@ -99,7 +99,7 @@ bool JSAudioNode::ExtractOptionsFromInfo(
 }
 
 Napi::Value JSAudioNode::getContext(const Napi::CallbackInfo &info) {
-  Napi::Object napi_audio_context = napi_audio_context_ref_.Value();
+  Napi::Object napi_audio_context = napi_audio_context_ptr_.Value();
   if (napi_audio_context.IsEmpty()) {
     LOGW("Warn: the context of AudioNode is expired!\n");
   }
@@ -174,9 +174,9 @@ Napi::Value JSAudioNode::connect(const Napi::CallbackInfo &info) {
   }
 
   JSBaseAudioContext *js_base_audio_ctx_ptr =
-      UnWrap<JSBaseAudioContext>(napi_audio_context_ref_.Value());
+      UnWrap<JSBaseAudioContext>(napi_audio_context_ptr_.Value());
   JSBaseAudioContext *other_js_base_audio_ctx_ptr = UnWrap<JSBaseAudioContext>(
-      js_dest_audio_node_ptr->napi_audio_context_ref_.Value());
+      js_dest_audio_node_ptr->napi_audio_context_ptr_.Value());
 
   if (!js_base_audio_ctx_ptr) {
     LOGE("Error: the context of AudioNode is expired!\n");

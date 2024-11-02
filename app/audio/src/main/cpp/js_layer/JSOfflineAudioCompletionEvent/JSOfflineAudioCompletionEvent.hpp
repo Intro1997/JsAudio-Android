@@ -9,6 +9,6 @@ public:
   JSOfflineAudioCompletionEvent(const Napi_IH::IHCallbackInfo &info);
 
 private:
-  Napi::ObjectReference js_ret_audio_buffer_ref_;
+  Napi::ObjectReference napi_ret_audio_buffer_ref_;
 };
 } // namespace js_audio
