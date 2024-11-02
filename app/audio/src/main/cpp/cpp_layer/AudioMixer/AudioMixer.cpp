@@ -28,8 +28,8 @@ void AudioMixer::Convert2ChannelFloatToSlint16(
   dst.clear();
   dst.resize(convert_size * 2);
   for (size_t i = 0; i < convert_size; i++) {
-    dst[i * 2] = src[0][i] * (float)INT16_MAX;
-    dst[i * 2 + 1] = src[1][i] * (float)INT16_MAX;
+    dst[i * 2] = std::clamp(src[0][i], -1.0f, 1.0f) * (float)INT16_MAX;
+    dst[i * 2 + 1] = std::clamp(src[1][i], -1.0f, 1.0f) * (float)INT16_MAX;
   }
 }
 
