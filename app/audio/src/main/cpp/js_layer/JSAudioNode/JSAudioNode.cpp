@@ -2,6 +2,25 @@
 #include "JSBaseAudioContext.hpp"
 #include "logger.hpp"
 
+using AudioNode = js_audio::AudioNode;
+using ChannelCountMode = js_audio::AudioNode::ChannelCountMode;
+using ChannelInterpretation = js_audio::AudioNode::ChannelInterpretation;
+
+static bool GetOptionsChannelCount(const std::string &audio_node_type_name,
+                                   Napi::Env napi_env,
+                                   const Napi::Object &options,
+                                   uint32_t &channel_count,
+                                   Napi::Error &napi_error);
+static bool GetOptionsChannelCountMode(const std::string &audio_node_type_name,
+                                       Napi::Env napi_env,
+                                       const Napi::Object &options,
+                                       ChannelCountMode &channel_count_mode,
+                                       Napi::Error &napi_error);
+static bool
+GetOptionsChannelInterpretation(const std::string &audio_node_type_name,
+                                Napi::Env napi_env, const Napi::Object &options,
+                                ChannelInterpretation &channel_interpretation,
+                                Napi::Error &napi_error);
 namespace js_audio {
 
 JSAudioNode::JSAudioNode(const Napi_IH::IHCallbackInfo &info,
@@ -38,6 +57,45 @@ void JSAudioNode::Init(Napi::Env env, Napi::Object exports) {
        InstanceMethod<JSAudioNode, &JSAudioNode::connect>("connect"),
        InstanceMethod<JSAudioNode, &JSAudioNode::disconnect>("disconnect")},
       Napi_IH::ClassVisibility::kHideConstructor);
+}
+
+/**
+ * audio_node_type_name: Type of AudioNode, used to print error info. For
+ * example, Gain is type of GainNode;
+ */
+bool JSAudioNode::ExtractOptionsFromInfo(
+    const std::string &audio_node_type_name,
+    const Napi_IH::IHCallbackInfo &info, AudioNode::AudioNodeOptions &options,
+    Napi::Error &napi_error) {
+  if (info.Length() < 2 || info[1].IsUndefined() || info[1].IsNull()) {
+    return true;
+  }
+  if (!info[1].IsObject()) {
+    napi_error = Napi_IH::TypeError::New(
+        info.Env(),
+        "Failed to construct '%sNode': The provided value is not "
+        "of type '%sOptions'.\n",
+        audio_node_type_name.c_str(), audio_node_type_name.c_str());
+    return false;
+  }
+
+  Napi::Object js_options = info[1].ToObject();
+
+  if (!GetOptionsChannelCount(audio_node_type_name, info.Env(), js_options,
+                              options.channel_count, napi_error)) {
+    return false;
+  }
+  if (!GetOptionsChannelCountMode(audio_node_type_name, info.Env(), js_options,
+                                  options.channel_count_mode, napi_error)) {
+    return false;
+  }
+  if (!GetOptionsChannelInterpretation(
+          audio_node_type_name, info.Env(), js_options,
+          options.channel_interpretation, napi_error)) {
+    return false;
+  }
+
+  return true;
 }
 
 Napi::Value JSAudioNode::getContext(const Napi::CallbackInfo &info) {
@@ -151,3 +209,69 @@ Napi::Value JSAudioNode::disconnect(const Napi::CallbackInfo &info) {
 }
 
 } // namespace js_audio
+
+bool GetOptionsChannelCount(const std::string &audio_node_type_name,
+                            Napi::Env napi_env, const Napi::Object &options,
+                            uint32_t &channel_count, Napi::Error &napi_error) {
+  napi_error.Reset();
+  if (options.Has("channelCount")) {
+    uint32_t maybe_channel_count = options.Get("channelCount").ToNumber();
+
+    if (!AudioNode::IsValidChannelCount(maybe_channel_count)) {
+      napi_error = Napi_IH::RangeError::New(
+          napi_env,
+          "Failed to construct '%sNode': The channel count provided (%u) is "
+          "outside the range [%u, %u].\n",
+          audio_node_type_name.c_str(), maybe_channel_count,
+          AudioNode::kMinChannelCount, AudioNode::kMaxChannelCount);
+      return false;
+    }
+    channel_count = maybe_channel_count;
+  }
+  return true;
+}
+
+bool GetOptionsChannelCountMode(const std::string &audio_node_type_name,
+                                Napi::Env napi_env, const Napi::Object &options,
+                                ChannelCountMode &channel_count_mode,
+                                Napi::Error &napi_error) {
+  napi_error.Reset();
+  if (options.Has("channelCountMode")) {
+    std::string str_channel_count_mode =
+        options.Get("channelCountMode").ToString();
+    if (!AudioNode::ConvertToChannelCountMode(str_channel_count_mode,
+                                              channel_count_mode)) {
+      napi_error = Napi_IH::TypeError::New(
+          napi_env,
+          "Failed to construct '%sNode': Failed to read the 'channelCountMode' "
+          "property from 'AudioNodeOptions': The provided value '%s' is not a "
+          "valid enum value of type ChannelCountMode.\n",
+          audio_node_type_name.c_str(), str_channel_count_mode.c_str());
+      return false;
+    }
+  }
+  return true;
+}
+
+bool GetOptionsChannelInterpretation(
+    const std::string &audio_node_type_name, Napi::Env napi_env,
+    const Napi::Object &options, ChannelInterpretation &channel_interpretation,
+    Napi::Error &napi_error) {
+  napi_error.Reset();
+  if (options.Has("channelInterpretation")) {
+    std::string str_channel_interpretation =
+        options.Get("channelInterpretation").ToString();
+    if (!AudioNode::ConvertToChannelInterpretation(str_channel_interpretation,
+                                                   channel_interpretation)) {
+      napi_error = Napi_IH::TypeError::New(
+          napi_env,
+          "Failed to construct '%sNode': Failed to read the "
+          "'channelInterpretation' property from 'AudioNodeOptions': The "
+          "provided value '%s' is not a valid enum value of type "
+          "ChannelInterpretation.\n",
+          audio_node_type_name.c_str(), str_channel_interpretation.c_str());
+      return false;
+    }
+  }
+  return true;
+}

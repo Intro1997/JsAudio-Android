@@ -10,6 +10,8 @@ using GainNodeOptions = js_audio::GainNode::GainNodeOptions;
 using ChannelCountMode = js_audio::AudioNode::ChannelCountMode;
 using ChannelInterpretation = js_audio::AudioNode::ChannelInterpretation;
 using JSBaseAudioContext = js_audio::JSBaseAudioContext;
+using JSAudioNode = js_audio::JSAudioNode;
+
 template <typename T>
 Napi_IH::FunctionWrapper (*FindClass)() = Napi_IH::IHObjectWrap::FindClass<T>;
 
@@ -23,19 +25,6 @@ static bool GetGainValueFromJsOptions(Napi::Env napi_env,
                                       const Napi::Object &options, float &gain,
                                       Napi::Error &napi_error);
 // TODO: move to JSAudioNode protect area
-static bool GetOptionsChannelCount(Napi::Env napi_env,
-                                   const Napi::Object &options,
-                                   uint32_t &channel_count,
-                                   Napi::Error &napi_error);
-static bool GetOptionsChannelCountMode(Napi::Env napi_env,
-                                       const Napi::Object &options,
-
-                                       ChannelCountMode &channel_count_mode,
-                                       Napi::Error &napi_error);
-static bool
-GetOptionsChannelInterpretation(Napi::Env napi_env, const Napi::Object &options,
-                                ChannelInterpretation &channel_interpretation,
-                                Napi::Error &napi_error);
 
 namespace js_audio {
 JSGainNode::JSGainNode(const Napi_IH::IHCallbackInfo &info,
@@ -70,23 +59,14 @@ bool ExtractOptionsFromInfo(const Napi_IH::IHCallbackInfo &info,
                     "of type 'GainOptions'.\n");
     return false;
   }
+  if (!JSAudioNode::ExtractOptionsFromInfo("Gain", info, options, napi_error)) {
+    return false;
+  }
 
   Napi::Object js_options = info[1].ToObject();
 
   if (!GetGainValueFromJsOptions(info.Env(), js_options, options.gain,
                                  napi_error)) {
-    return false;
-  }
-  if (!GetOptionsChannelCount(info.Env(), js_options, options.channel_count,
-                              napi_error)) {
-    return false;
-  }
-  if (!GetOptionsChannelCountMode(info.Env(), js_options,
-                                  options.channel_count_mode, napi_error)) {
-    return false;
-  }
-  if (!GetOptionsChannelInterpretation(
-          info.Env(), js_options, options.channel_interpretation, napi_error)) {
     return false;
   }
 
@@ -107,75 +87,6 @@ static bool GetGainValueFromJsOptions(Napi::Env napi_env,
       return false;
     }
     gain = maybe_gain;
-  }
-  return true;
-}
-
-static bool GetOptionsChannelCount(Napi::Env napi_env,
-                                   const Napi::Object &options,
-                                   uint32_t &channel_count,
-                                   Napi::Error &napi_error) {
-  napi_error.Reset();
-  if (options.Has("channelCount")) {
-    uint32_t maybe_channel_count = options.Get("channelCount").ToNumber();
-
-    if (!AudioNode::IsValidChannelCount(maybe_channel_count)) {
-      napi_error = Napi::RangeError::New(
-          napi_env, "Failed to construct 'GainNode': The channel count "
-                    "provided (" +
-                        std::to_string(maybe_channel_count) +
-                        " ) is outside the range [" +
-                        std::to_string(AudioNode::kMinChannelCount) + ", " +
-                        std::to_string(AudioNode::kMaxChannelCount) + "].\n");
-      return false;
-    }
-    channel_count = maybe_channel_count;
-  }
-  return true;
-}
-
-static bool GetOptionsChannelCountMode(Napi::Env napi_env,
-                                       const Napi::Object &options,
-                                       ChannelCountMode &channel_count_mode,
-                                       Napi::Error &napi_error) {
-  napi_error.Reset();
-  if (options.Has("channelCountMode")) {
-    std::string str_channel_count_mode =
-        options.Get("channelCountMode").ToString();
-    if (!AudioNode::ConvertToChannelCountMode(str_channel_count_mode,
-                                              channel_count_mode)) {
-      napi_error = Napi::TypeError::New(
-          napi_env,
-          "Failed to construct 'GainNode': Failed to read the "
-          "'channelCountMode' property from 'AudioNodeOptions': The provided "
-          "value '" +
-              str_channel_count_mode +
-              "' is not a valid enum value of type ChannelCountMode.\n");
-      return false;
-    }
-  }
-  return true;
-}
-
-static bool
-GetOptionsChannelInterpretation(Napi::Env napi_env, const Napi::Object &options,
-                                ChannelInterpretation &channel_interpretation,
-                                Napi::Error &napi_error) {
-  napi_error.Reset();
-  if (options.Has("channelInterpretation")) {
-    std::string str_channel_interpretation =
-        options.Get("channelInterpretation").ToString();
-    if (!AudioNode::ConvertToChannelInterpretation(str_channel_interpretation,
-                                                   channel_interpretation)) {
-      napi_error = Napi::TypeError::New(
-          napi_env,
-          "Failed to construct 'GainNode': Failed to read the "
-          "'channelInterpretation' property from 'AudioNodeOptions': The "
-          "provided value '" +
-              str_channel_interpretation +
-              "' is not a valid enum value of type ChannelInterpretation.\n");
-      return false;
-    }
   }
   return true;
 }

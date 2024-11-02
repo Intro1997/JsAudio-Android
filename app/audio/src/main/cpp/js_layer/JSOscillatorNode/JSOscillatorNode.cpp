@@ -6,17 +6,13 @@
 
 using OscillatorNode = js_audio::OscillatorNode;
 using JSBaseAudioContext = js_audio::JSBaseAudioContext;
+using JSAudioNode = js_audio::JSAudioNode;
 using OscillatorNode = js_audio::OscillatorNode;
 using OscillatorOptions = OscillatorNode::OscillatorOptions;
 using OscillatorType = OscillatorNode::OscillatorType;
 using AudioNode = js_audio::AudioNode;
 using ChannelCountMode = AudioNode::ChannelCountMode;
 using ChannelInterpretation = AudioNode::ChannelInterpretation;
-
-struct ErrorWrapper {
-  Napi::Error error;
-  std::string msg;
-};
 
 template <typename T>
 Napi_IH::FunctionWrapper (*FindClass)() = Napi_IH::IHObjectWrap::FindClass<T>;
@@ -31,59 +27,33 @@ static bool GetOptionsFrequency(const Napi::Object &options, Napi::Env napi_env,
                                 float &frequency, const float &sample_rate,
                                 Napi::Error &napi_error);
 
-static bool GetOptionsChannelCount(const Napi::Object &options,
-                                   Napi::Env napi_env, uint32_t &channel_count,
-                                   Napi::Error &napi_error);
-
-static bool GetOptionsChannelCountMode(const Napi::Object &options,
-                                       Napi::Env napi_env,
-                                       ChannelCountMode &channel_count_mode,
-                                       Napi::Error &napi_error);
-
-static bool
-GetOptionsChannelInterpretation(const Napi::Object &options, Napi::Env napi_env,
-                                ChannelInterpretation &channel_interpretation,
-                                Napi::Error &napi_error);
-
-static bool GetOptionsParams(const Napi_IH::IHCallbackInfo &info,
-                             const float &sample_rate,
-                             OscillatorOptions &osc_options,
-                             Napi::Error &napi_error) {
+static bool ExtractOptionsFromInfo(const Napi_IH::IHCallbackInfo &info,
+                                   const float &sample_rate,
+                                   OscillatorOptions &options,
+                                   Napi::Error &napi_error) {
   if (info.Length() < 2 || info[1].IsNull() || info[1].IsUndefined()) {
-    // options object is optional
-    LOGW("Info only has one element!\n");
     return true;
   }
-
   if (!info[1].IsObject()) {
     napi_error = Napi::TypeError::New(
         info.Env(), "Failed to construct 'OscillatorNode': The provided value "
                     "is not of type 'OscillatorOptions'.\n");
     return false;
   }
+  if (!JSAudioNode::ExtractOptionsFromInfo("Oscillator", info, options,
+                                           napi_error)) {
+    return false;
+  }
 
-  Napi::Object options = info[1].As<Napi::Object>();
-  if (!GetOptionsType(options, info.Env(), osc_options.type, napi_error)) {
+  Napi::Object js_options = info[1].As<Napi::Object>();
+  if (!GetOptionsType(js_options, info.Env(), options.type, napi_error)) {
     return false;
   }
-  if (!GetOptionsDetune(options, info.Env(), osc_options.detune, napi_error)) {
+  if (!GetOptionsDetune(js_options, info.Env(), options.detune, napi_error)) {
     return false;
   }
-  if (!GetOptionsFrequency(options, info.Env(), osc_options.frequency,
+  if (!GetOptionsFrequency(js_options, info.Env(), options.frequency,
                            sample_rate, napi_error)) {
-    return false;
-  }
-  if (!GetOptionsChannelCount(options, info.Env(), osc_options.channel_count,
-                              napi_error)) {
-    return false;
-  }
-  if (!GetOptionsChannelCountMode(options, info.Env(),
-                                  osc_options.channel_count_mode, napi_error)) {
-    return false;
-  }
-  if (!GetOptionsChannelInterpretation(options, info.Env(),
-                                       osc_options.channel_interpretation,
-                                       napi_error)) {
     return false;
   }
   return true;
@@ -122,19 +92,15 @@ static std::shared_ptr<OscillatorNode> GetOscillatorNodeRef(
       js_base_audio_context_ptr->GetAudioContextLock();
   float sample_rate = js_base_audio_context_ptr->GetSampleRate();
 
-  OscillatorOptions osc_options = OscillatorNode::GetDefaultOptions();
+  OscillatorOptions options = OscillatorNode::GetDefaultOptions();
   Napi::Error napi_error;
 
-  if (info.Length() >= 2) {
-    if (!GetOptionsParams(info, sample_rate, osc_options, napi_error)) {
-      if (!napi_error.IsEmpty()) {
-        throw napi_error;
-      }
-    }
+  if (!ExtractOptionsFromInfo(info, sample_rate, options, napi_error)) {
+    throw napi_error;
   }
 
-  return OscillatorNode::CreateOscillatorNode(audio_context_lock_ref,
-                                              osc_options, sample_rate);
+  return OscillatorNode::CreateOscillatorNode(audio_context_lock_ref, options,
+                                              sample_rate);
 }
 
 namespace js_audio {
@@ -253,74 +219,6 @@ static bool GetOptionsFrequency(const Napi::Object &options, Napi::Env napi_env,
       return false;
     }
     frequency = std::clamp(maybe_frequency, -sample_rate / 2, sample_rate / 2);
-  }
-  return true;
-}
-
-static bool GetOptionsChannelCount(const Napi::Object &options,
-                                   Napi::Env napi_env, uint32_t &channel_count,
-                                   Napi::Error &napi_error) {
-  napi_error.Reset();
-  if (options.Has("channelCount")) {
-    uint32_t maybe_channel_count = options.Get("channelCount").ToNumber();
-
-    if (!AudioNode::IsValidChannelCount(maybe_channel_count)) {
-      napi_error = Napi::RangeError::New(
-          napi_env, "Failed to construct 'OscillatorNode': The channel count "
-                    "provided (" +
-                        std::to_string(maybe_channel_count) +
-                        " ) is outside the range [" +
-                        std::to_string(AudioNode::kMinChannelCount) + ", " +
-                        std::to_string(AudioNode::kMaxChannelCount) + "].\n");
-      return false;
-    }
-    channel_count = maybe_channel_count;
-  }
-  return true;
-}
-
-static bool GetOptionsChannelCountMode(const Napi::Object &options,
-                                       Napi::Env napi_env,
-                                       ChannelCountMode &channel_count_mode,
-                                       Napi::Error &napi_error) {
-  napi_error.Reset();
-  if (options.Has("channelCountMode")) {
-    std::string str_channel_count_mode =
-        options.Get("channelCountMode").ToString();
-    if (!AudioNode::ConvertToChannelCountMode(str_channel_count_mode,
-                                              channel_count_mode)) {
-      napi_error = Napi::TypeError::New(
-          napi_env,
-          "Failed to construct 'OscillatorNode': Failed to read the "
-          "'channelCountMode' property from 'AudioNodeOptions': The "
-          "provided value '" +
-              str_channel_count_mode +
-              "' is not a valid enum value of type ChannelCountMode.\n");
-      return false;
-    }
-  }
-  return true;
-}
-
-static bool
-GetOptionsChannelInterpretation(const Napi::Object &options, Napi::Env napi_env,
-                                ChannelInterpretation &channel_interpretation,
-                                Napi::Error &napi_error) {
-  napi_error.Reset();
-  if (options.Has("channelInterpretation")) {
-    std::string str_channel_interpretation =
-        options.Get("channelInterpretation").ToString();
-    if (!AudioNode::ConvertToChannelInterpretation(str_channel_interpretation,
-                                                   channel_interpretation)) {
-      napi_error = Napi::TypeError::New(
-          napi_env,
-          "Failed to construct 'OscillatorNode': Failed to read the "
-          "'channelInterpretation' property from 'AudioNodeOptions': The "
-          "provided value '" +
-              str_channel_interpretation +
-              "' is not a valid enum value of type ChannelInterpretation.\n");
-      return false;
-    }
   }
   return true;
 }

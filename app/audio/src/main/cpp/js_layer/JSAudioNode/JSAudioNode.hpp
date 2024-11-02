@@ -8,6 +8,11 @@ public:
               std::shared_ptr<AudioNode> audio_destination_node_ref = nullptr);
   static void Init(Napi::Env env, Napi::Object exports);
 
+  static bool ExtractOptionsFromInfo(const std::string &audio_node_type_name,
+                                     const Napi_IH::IHCallbackInfo &info,
+                                     AudioNode::AudioNodeOptions &options,
+                                     Napi::Error &napi_error);
+
 protected:
   std::shared_ptr<AudioNode> audio_node_ref_;
 
@@ -22,7 +27,6 @@ private:
   Napi::Value connect(const Napi::CallbackInfo &info);
   Napi::Value disconnect(const Napi::CallbackInfo &info);
 
-  bool IsSameAudioContext(const JSAudioNode *other_audio_node);
   // weak ref
   Napi::ObjectReference napi_audio_context_ref_;
 };
