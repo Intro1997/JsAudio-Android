@@ -30,6 +30,10 @@ JSAudioNode::JSAudioNode(const Napi_IH::IHCallbackInfo &info,
     LOGE("Error: Cannot create AudioNode without AudioContext!\n");
     return;
   }
+  if (!audio_node_ref_) {
+    LOGE("Error: Cannot create AudioNode without valid audio_node_ref!\n");
+    return;
+  }
 
   napi_audio_context_ptr_ = Napi::Weak(info[0].As<Napi::Object>());
   JSBaseAudioContext *js_base_audio_context_ptr =
