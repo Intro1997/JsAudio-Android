@@ -28,7 +28,7 @@
 | OfflineAudioCompletionEvent | <font color="green">Complete</font>                        | <font color="grey">No Wpt Test</font>                                                                    |
 | OfflineAudioContext         | <font color="green">Complete</font>                        | <font color="green">Complete</font>                                                                      |
 | OscillatorNode              | <font color="green">Complete</font>                        | <font color="yellow">Not Pass All Wpt Test (lack support of "ChannelMergerNode")</font>                  |
-| GainNode                    | <font color="red">Complete</font>                          | <font color="yellow">Not Pass All Wpt Test (lack support of "ChannelMergerNode")</font>                  |
+| GainNode                    | <font color="green">Complete</font>                          | <font color="yellow">Not Pass All Wpt Test (lack support of "ChannelMergerNode")</font>                  |
 | DelayNode                   | <font color="red">Not Complete</font>                      | <font color="red">Not Test Yet</font>                                                                    |
 | AudioBufferSourceNode       | <font color="red">Not Complete</font>                      | <font color="red">Not Test Yet</font>                                                                    |
 | MediaRecorderNode           | <font color="red">Not Complete</font>                      | <font color="red">Not Test Yet</font>                                                                    |
