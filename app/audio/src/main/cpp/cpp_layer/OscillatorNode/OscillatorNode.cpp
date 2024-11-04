@@ -91,13 +91,13 @@ std::shared_ptr<OscillatorNode> OscillatorNode::CreateOscillatorNode(
   const float max_frequency = sample_rate / 2;
 
   oscillator_node_ref->frequency_ref_ = std::make_shared<AudioParam>(
-      AudioParam::K_RATE,
       std::clamp(options.frequency, min_frequency, max_frequency),
-      min_frequency, max_frequency, audio_context_lock_ref, setter_cb);
+      AudioParam::K_RATE, kDefaultFrequency, min_frequency, max_frequency,
+      audio_context_lock_ref, setter_cb);
 
   oscillator_node_ref->detune_ref_ = std::make_shared<AudioParam>(
-      AudioParam::K_RATE, options.detune, kDetuneMin, kDetuneMax,
-      audio_context_lock_ref, setter_cb);
+      options.detune, AudioParam::K_RATE, kDefaultDetune, kDetuneMin,
+      kDetuneMax, audio_context_lock_ref, setter_cb);
 
   oscillator_node_ref->UpdateComputedFreq();
 

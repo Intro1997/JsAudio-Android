@@ -12,7 +12,16 @@ AudioParam::AudioParam(const std::string &automation_rate,
                        std::shared_ptr<std::mutex> audio_context_lock_ref,
                        std::function<SetterCallbackFunc> setter_cb,
                        std::function<GetterCallbackFunc> getter_cb)
-    : value_(default_value), automation_rate_(automation_rate),
+    : AudioParam(default_value, automation_rate, default_value, min_value,
+                 max_value, audio_context_lock_ref, setter_cb, getter_cb) {}
+
+AudioParam::AudioParam(const float &value, const std::string &automation_rate,
+                       const float &default_value, const float &min_value,
+                       const float &max_value,
+                       std::shared_ptr<std::mutex> audio_context_lock_ref,
+                       std::function<SetterCallbackFunc> setter_cb,
+                       std::function<GetterCallbackFunc> getter_cb)
+    : value_(value), automation_rate_(automation_rate),
       default_value_(default_value), min_value_(min_value),
       max_value_(max_value), audio_context_lock_ref_(audio_context_lock_ref),
       setter_cb_(std::move(setter_cb)), getter_cb_(std::move(getter_cb)) {}

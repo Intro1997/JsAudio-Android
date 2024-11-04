@@ -8,6 +8,7 @@ using ChannelInterpretation = AudioNode::ChannelInterpretation;
 
 const uint32_t GainNode::kNumberOfInputs = 1;
 const uint32_t GainNode::kNumberOfOutputs = 1;
+const float GainNode::kDefaultGain = 1.0f;
 
 class GainNodeConstructHelper : public GainNode {
 public:
@@ -24,7 +25,7 @@ GainNode::CreateGainNode(std::shared_ptr<std::mutex> audio_context_lock_ref) {
 
 std::shared_ptr<GainNode>
 GainNode::CreateGainNode(const GainNodeOptions &options,
-                     std::shared_ptr<std::mutex> audio_context_lock_ref) {
+                         std::shared_ptr<std::mutex> audio_context_lock_ref) {
   std::shared_ptr<GainNode> gain_node_ref =
       std::make_shared<GainNodeConstructHelper>(options,
                                                 audio_context_lock_ref);
@@ -37,9 +38,9 @@ GainNode::CreateGainNode(const GainNodeOptions &options,
         }
       };
 
-  gain_node_ref->gain_ref_ =
-      std::make_shared<AudioParam>(AudioParam::A_RATE, options.gain, FLT_MIN,
-                                   FLT_MAX, audio_context_lock_ref, setter_cb);
+  gain_node_ref->gain_ref_ = std::make_shared<AudioParam>(
+      options.gain, AudioParam::A_RATE, kDefaultGain, FLT_MIN, FLT_MAX,
+      audio_context_lock_ref, setter_cb);
   return gain_node_ref;
 }
 

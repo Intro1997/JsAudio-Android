@@ -44,6 +44,7 @@ private:
 
   static const uint32_t kNumberOfInputs;
   static const uint32_t kNumberOfOutputs;
+  static const float kDefaultGain;
 };
 
 } // namespace js_audio

@@ -13,6 +13,12 @@ public:
              std::shared_ptr<std::mutex> audio_context_lock_ref,
              std::function<SetterCallbackFunc> setter_cb = nullptr,
              std::function<GetterCallbackFunc> getter_cb = nullptr);
+  AudioParam(const float &value, const std::string &automation_rate,
+             const float &default_value, const float &min_value,
+             const float &max_value,
+             std::shared_ptr<std::mutex> audio_context_lock_ref,
+             std::function<SetterCallbackFunc> setter_cb = nullptr,
+             std::function<GetterCallbackFunc> getter_cb = nullptr);
 
   void set_value(const float &value);
 
