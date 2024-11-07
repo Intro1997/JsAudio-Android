@@ -26,6 +26,12 @@ public:
   void BeConnectedTo(std::shared_ptr<AudioNode> src_audio_node_ref) override;
   void Disconnect() override;
   void BeDisconnected(const AudioNode &audio_node) override;
+  static bool IsValidMaxDelayTime(const float &max_delay_time);
+
+  static uint32_t kNumberOfInputs;
+  static uint32_t kNumberOfOutputs;
+  static uint32_t kMaxOfMaxDelayTime;
+  static uint32_t kMinOfMaxDelayTime;
 
 protected:
   DelayNode(const DelayOptions &options, const float &sample_rate,
@@ -41,9 +47,6 @@ private:
                            const std::vector<std::vector<float>> &output);
   void ReadBufferToOutput(const size_t &sample_size,
                           std::vector<std::vector<float>> &output);
-
-  static uint32_t kNumberOfInputs;
-  static uint32_t kNumberOfOutputs;
 
   std::shared_ptr<AudioParam> delay_time_ref_;
   mutable std::mutex delay_time_lock_;

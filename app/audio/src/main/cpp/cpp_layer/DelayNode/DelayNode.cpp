@@ -7,6 +7,8 @@ namespace js_audio {
 
 uint32_t DelayNode::kNumberOfInputs = 1;
 uint32_t DelayNode::kNumberOfOutputs = 1;
+uint32_t DelayNode::kMaxOfMaxDelayTime = 180;
+uint32_t DelayNode::kMinOfMaxDelayTime = 0;
 
 class DelayNodeConstructHelper : public DelayNode {
 public:
@@ -223,6 +225,14 @@ void DelayNode::BeDisconnected(const AudioNode &audio_node) {
 
   std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
   src_audio_node_ref_.reset();
+}
+
+bool DelayNode::IsValidMaxDelayTime(const float &max_delay_time) {
+  if (max_delay_time <= kMinChannelCount ||
+      max_delay_time >= kMaxChannelCount) {
+    return false;
+  }
+  return true;
 }
 
 DelayNode::DelayNode(const DelayOptions &options, const float &sample_rate,

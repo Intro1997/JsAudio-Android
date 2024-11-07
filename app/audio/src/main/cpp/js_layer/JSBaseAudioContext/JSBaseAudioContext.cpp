@@ -1,8 +1,10 @@
 #include "JSBaseAudioContext.hpp"
 #include "AudioEngine.hpp"
+#include "DelayNode.hpp"
 #include "GainNode.hpp"
 #include "JSAudioBuffer.hpp"
 #include "JSAudioDestinationNode.hpp"
+#include "JSDelayNode.hpp"
 #include "JSGainNode.hpp"
 #include "JSOscillatorNode.hpp"
 #include "OscillatorNode.hpp"
@@ -67,6 +69,8 @@ void JSBaseAudioContext::Init(Napi::Env env, Napi::Object exports) {
               "createBuffer"),
           InstanceMethod<JSBaseAudioContext, &JSBaseAudioContext::createGain>(
               "createGain"),
+          InstanceMethod<JSBaseAudioContext, &JSBaseAudioContext::createDelay>(
+              "createDelay"),
       },
       Napi_IH::ClassVisibility::kHideConstructor);
 }
@@ -101,9 +105,8 @@ float JSBaseAudioContext::GetSampleRate() const {
 Napi::Value
 JSBaseAudioContext::createOscillator(const Napi::CallbackInfo &info) {
   std::shared_ptr<OscillatorNode> oscillator_node_ref =
-      OscillatorNode::CreateOscillatorNode(
-          base_audio_context_ref_->sample_rate(),
-          base_audio_context_ref_->GetLock());
+      OscillatorNode::CreateOscillatorNode(GetSampleRate(),
+                                           GetAudioContextLock());
   Napi::Object js_oscillator_node =
       JSOscillatorNode::FindClass<JSOscillatorNode>()
           .NewWithArgs<JSOscillatorNode>({info.This()}, oscillator_node_ref);
@@ -136,8 +139,32 @@ Napi::Value JSBaseAudioContext::createBuffer(const Napi::CallbackInfo &info) {
 
 Napi::Value JSBaseAudioContext::createGain(const Napi::CallbackInfo &info) {
   std::shared_ptr<GainNode> gain_node_ref =
-      GainNode::CreateGainNode(base_audio_context_ref_->GetLock());
+      GainNode::CreateGainNode(GetAudioContextLock());
   return FindClass<JSGainNode>().NewWithArgs<JSGainNode>({info.This()},
                                                          gain_node_ref);
+}
+
+Napi::Value JSBaseAudioContext::createDelay(const Napi::CallbackInfo &info) {
+  auto options = DelayNode::GetDefaultOptions();
+  if (info.Length() > 0) {
+    float max_delay_time = info[0].ToNumber();
+    if (std::isnan(max_delay_time)) {
+      throw Napi::TypeError::New(
+          info.Env(), "Failed to execute 'createDelay' on 'BaseAudioContext': "
+                      "The provided double value is non-finite.\n");
+    } else if (!DelayNode::IsValidMaxDelayTime(max_delay_time)) {
+      throw Napi_IH::RangeError::New(
+          info.Env(),
+          "Failed to execute 'createDelay' on 'BaseAudioContext': The max "
+          "delay time provided (%f) is outside the range (%f, %f).\n",
+          max_delay_time, DelayNode::kMinOfMaxDelayTime,
+          DelayNode::kMaxOfMaxDelayTime);
+    }
+    options.max_delay_time = max_delay_time;
+  }
+  std::shared_ptr<DelayNode> delay_node_ref = DelayNode::CreateDelayNode(
+      options, GetSampleRate(), GetAudioContextLock());
+  return FindClass<JSDelayNode>().NewWithArgs<JSDelayNode>({info.This()},
+                                                           delay_node_ref);
 }
 } // namespace js_audio
