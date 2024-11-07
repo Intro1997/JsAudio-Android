@@ -28,8 +28,8 @@
 | OfflineAudioCompletionEvent | <font color="green">Complete</font>                        | <font color="grey">No Wpt Test</font>                                                                    |
 | OfflineAudioContext         | <font color="green">Complete</font>                        | <font color="green">Complete</font>                                                                      |
 | OscillatorNode              | <font color="green">Complete</font>                        | <font color="yellow">Not Pass All Wpt Test (lack support of "ChannelMergerNode")</font>                  |
-| GainNode                    | <font color="green">Complete</font>                          | <font color="yellow">Not Pass All Wpt Test (lack support of "ChannelMergerNode")</font>                  |
-| DelayNode                   | <font color="red">Not Complete</font>                      | <font color="red">Not Test Yet</font>                                                                    |
-| AudioBufferSourceNode       | <font color="red">Not Complete</font>                      | <font color="red">Not Test Yet</font>                                                                    |
+| GainNode                    | <font color="green">Complete</font>                        | <font color="yellow">Not Pass All Wpt Test (lack support of "ChannelMergerNode")</font>                  |
+| DelayNode                   | <font color="green">Complete</font>                        | <font color="red">Not Test Yet (lack support of "ConstantSourceNode", "AudioBufferSourceNode", "ChannelSplitterNode", "ChannelMergerNode")</font>    |
+| AudioBufferSourceNode       | <font color="red">Not Complete</font>                      | <font color="red">Not Test Yet (lack support of "AudioWorkletNode", "ChannelMergerNode")</font>                                                                    |
 | MediaRecorderNode           | <font color="red">Not Complete</font>                      | <font color="red">Not Test Yet</font>                                                                    |
 | MicrophoneStreamNode        | <font color="red">Not Complete</font>                      | <font color="red">Not Test Yet</font>                                                                    |
