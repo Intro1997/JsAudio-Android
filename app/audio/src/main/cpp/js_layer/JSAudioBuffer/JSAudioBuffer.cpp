@@ -149,9 +149,9 @@ Napi::Value JSAudioBuffer::copyToChannel(const Napi::CallbackInfo &info) {
         "not of type 'Float32Array'.\n");
   } else {
     std::string constructor_name;
-    Napi_IH::GetObjectConstrcutorName(info[0].As<Napi::Object>(),
-                                      constructor_name);
-    if (constructor_name != "Float32Array") {
+
+    if (!Napi_IH::VerifyInstanceType(info[0].As<Napi::Object>(),
+                                     "Float32Array")) {
       throw Napi::TypeError::New(info.Env(),
                                  "Failed to execute 'copyToChannel' on "
                                  "'AudioBuffer': parameter 1 is "
@@ -221,9 +221,8 @@ Napi::Value JSAudioBuffer::copyFromChannel(const Napi::CallbackInfo &info) {
         "not of type 'Float32Array'.\n");
   } else {
     std::string constructor_name;
-    Napi_IH::GetObjectConstrcutorName(info[0].As<Napi::Object>(),
-                                      constructor_name);
-    if (constructor_name != "Float32Array") {
+    if (!Napi_IH::VerifyInstanceType(info[0].As<Napi::Object>(),
+                                     "Float32Array")) {
       throw Napi::TypeError::New(info.Env(),
                                  "Failed to execute 'copyFromChannel' on "
                                  "'AudioBuffer': parameter 1 is "

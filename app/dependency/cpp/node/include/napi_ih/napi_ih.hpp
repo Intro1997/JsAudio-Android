@@ -30,8 +30,8 @@ enum class ClassVisibility {
   kHideConstructor,
 };
 
-inline bool GetObjectConstrcutorName(const Napi::Object &object,
-                                     std::string &receive);
+inline bool VerifyInstanceType(const Napi::Object &object,
+                               const std::string &type_name);
 
 class Error {
 public:

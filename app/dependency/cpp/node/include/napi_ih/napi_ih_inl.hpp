@@ -2,9 +2,10 @@
 #define NAPI_IH_INL_HPP
 
 namespace Napi_IH {
-inline bool GetObjectConstrcutorName(const Napi::Object &object,
-                                     std::string &receive) {
-  receive = "";
+
+inline bool VerifyInstanceType(const Napi::Object &object,
+                               const std::string &type_name) {
+
   if (!object.Has("constructor") || !object.Get("constructor").IsFunction()) {
     return false;
   }
@@ -12,7 +13,9 @@ inline bool GetObjectConstrcutorName(const Napi::Object &object,
   if (!constructor.Has("name") || !constructor.Get("name").IsString()) {
     return false;
   }
-  receive = constructor.Get("name").As<Napi::String>();
+  if (type_name != std::string(constructor.Get("name").As<Napi::String>())) {
+    return false;
+  }
   return true;
 }
 
