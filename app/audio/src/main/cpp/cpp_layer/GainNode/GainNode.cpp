@@ -39,8 +39,9 @@ GainNode::CreateGainNode(const GainNodeOptions &options,
       };
 
   gain_node_ref->gain_ref_ = std::make_shared<AudioParam>(
-      options.gain, AudioParam::A_RATE, kDefaultGain, FLT_MIN, FLT_MAX,
-      audio_context_lock_ref, setter_cb);
+      "Gain.gain", options.gain, AudioParam::A_RATE, kDefaultGain, -FLT_MAX,
+      FLT_MAX, audio_context_lock_ref, setter_cb);
+
   return gain_node_ref;
 }
 

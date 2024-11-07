@@ -8,14 +8,15 @@ public:
   using SetterCallbackFunc = void(const float &);
   using GetterCallbackFunc = void();
 
-  AudioParam(const std::string &automation_rate, const float &default_value,
+  AudioParam(const std::string &node_property_name,
+             const std::string &automation_rate, const float &default_value,
              const float &min_value, const float &max_value,
              std::shared_ptr<std::mutex> audio_context_lock_ref,
              std::function<SetterCallbackFunc> setter_cb = nullptr,
              std::function<GetterCallbackFunc> getter_cb = nullptr);
-  AudioParam(const float &value, const std::string &automation_rate,
-             const float &default_value, const float &min_value,
-             const float &max_value,
+  AudioParam(const std::string &node_property_name, const float &value,
+             const std::string &automation_rate, const float &default_value,
+             const float &min_value, const float &max_value,
              std::shared_ptr<std::mutex> audio_context_lock_ref,
              std::function<SetterCallbackFunc> setter_cb = nullptr,
              std::function<GetterCallbackFunc> getter_cb = nullptr);
@@ -41,5 +42,7 @@ private:
 
   std::function<SetterCallbackFunc> setter_cb_;
   std::function<GetterCallbackFunc> getter_cb_;
+
+  const std::string node_property_name_;
 };
 } // namespace js_audio

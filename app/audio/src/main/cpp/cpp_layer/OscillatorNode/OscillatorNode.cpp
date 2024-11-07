@@ -91,13 +91,14 @@ std::shared_ptr<OscillatorNode> OscillatorNode::CreateOscillatorNode(
   const float max_frequency = sample_rate / 2;
 
   oscillator_node_ref->frequency_ref_ = std::make_shared<AudioParam>(
+      "Oscillator.frequency",
       std::clamp(options.frequency, min_frequency, max_frequency),
       AudioParam::K_RATE, kDefaultFrequency, min_frequency, max_frequency,
       audio_context_lock_ref, setter_cb);
 
   oscillator_node_ref->detune_ref_ = std::make_shared<AudioParam>(
-      options.detune, AudioParam::K_RATE, kDefaultDetune, kDetuneMin,
-      kDetuneMax, audio_context_lock_ref, setter_cb);
+      "Oscillator.detune", options.detune, AudioParam::K_RATE, kDefaultDetune,
+      kDetuneMin, kDetuneMax, audio_context_lock_ref, setter_cb);
 
   oscillator_node_ref->UpdateComputedFreq();
 
@@ -106,15 +107,16 @@ std::shared_ptr<OscillatorNode> OscillatorNode::CreateOscillatorNode(
 
 void OscillatorNode::ProduceSamples(const size_t &sample_size,
                                     std::vector<std::vector<float>> &output) {
-  if (state() != State::Start) {
-    FillWithZeros(sample_size, output);
-    return;
-  }
   // Warn: you should not use any getter api here!
   // we have locked in AudioContext.ProduceSamples() outside!
   if (output.size() < 2) {
     output.resize(2);
   }
+  if (state() != State::Start) {
+    FillWithZeros(sample_size, output);
+    return;
+  }
+
   for (auto &channel : output) {
     if (channel.size() < sample_size) {
       channel.resize(sample_size, 0);
@@ -235,6 +237,9 @@ void OscillatorNode::CreateWaveform(const WaveProducer::WaveType &type,
 }
 
 void OscillatorNode::UpdateComputedFreq() {
+  if (!frequency_ref() || !detune_ref()) {
+    return;
+  }
   const float freq_value = frequency_ref()->value();
   const float detune_value = detune_ref()->value();
 

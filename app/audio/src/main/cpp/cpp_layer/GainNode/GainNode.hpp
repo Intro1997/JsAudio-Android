@@ -30,9 +30,9 @@ public:
 protected:
   GainNode(const GainNodeOptions &options,
            std::shared_ptr<std::mutex> audio_context_lock_ref);
-  void set_gain_value(const float &gain_value);
 
 private:
+  void set_gain_value(const float &gain_value);
   void ProcessSamples(const size_t &sample_size,
                       std::vector<std::vector<float>> &outputs);
 
