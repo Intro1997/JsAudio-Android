@@ -1,4 +1,5 @@
 #include "JSAudioParam.hpp"
+#include <cmath>
 namespace js_audio {
 
 JSAudioParam::JSAudioParam(const Napi_IH::IHCallbackInfo &info,
@@ -21,14 +22,13 @@ void JSAudioParam::Init(Napi::Env env, Napi::Object exports) {
 
 void JSAudioParam::setValue(const Napi::CallbackInfo &info,
                             const Napi::Value &value) {
-  if (!value.IsNumber()) {
-    LOGE("Error: Invalid AudioParam Value! Value must be number!\n");
+  float new_value = value.ToNumber();
+  if (std::isnan(new_value)) {
+    throw Napi::TypeError::New(
+        info.Env(), "Failed to set the 'value' property on 'AudioParam': The "
+                    "provided float value is non-finite.\n");
   }
-
-  if (audio_param_ref_) {
-    float new_value = value.As<Napi::Number>().operator float();
-    audio_param_ref_->set_value(new_value);
-  }
+  audio_param_ref_->set_value(new_value);
 }
 
 Napi::Value JSAudioParam::getValue(const Napi::CallbackInfo &info) {
