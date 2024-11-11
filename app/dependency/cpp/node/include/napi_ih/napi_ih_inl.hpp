@@ -3,8 +3,8 @@
 
 namespace Napi_IH {
 
-inline bool VerifyInstanceType(const Napi::Object &object,
-                               const std::string &type_name) {
+inline bool VerifyExactInstanceType(const Napi::Object &object,
+                                    const std::string &napi_type_name) {
 
   if (!object.Has("constructor") || !object.Get("constructor").IsFunction()) {
     return false;
@@ -13,7 +13,15 @@ inline bool VerifyInstanceType(const Napi::Object &object,
   if (!constructor.Has("name") || !constructor.Get("name").IsString()) {
     return false;
   }
-  if (type_name != std::string(constructor.Get("name").As<Napi::String>())) {
+  if (napi_type_name !=
+      std::string(constructor.Get("name").As<Napi::String>())) {
+    return false;
+  }
+  return true;
+}
+
+template <typename T> inline bool VerifyInstanceOf(const Napi::Object &object) {
+  if (!object.InstanceOf(IHObjectWrap::FindClass<T>().InnerFunction())) {
     return false;
   }
   return true;

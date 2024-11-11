@@ -30,8 +30,13 @@ enum class ClassVisibility {
   kHideConstructor,
 };
 
-inline bool VerifyInstanceType(const Napi::Object &object,
-                               const std::string &type_name);
+#define NAPI_IH_VERIFY_INSTANCE_OF(napi_obj, napi_type_name)                   \
+  (VerifyExactInstanceType(napi_obj, #napi_type_name) ||                       \
+   VerifyInstanceOf<JS##napi_type_name>(napi_obj))
+
+inline bool VerifyExactInstanceType(const Napi::Object &object,
+                                    const std::string &napi_type_name);
+template <typename T> inline bool VerifyInstanceOf(const Napi::Object &object);
 
 class Error {
 public:
