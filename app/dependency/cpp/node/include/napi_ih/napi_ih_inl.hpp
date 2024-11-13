@@ -1,6 +1,7 @@
 #ifndef NAPI_IH_INL_HPP
 #define NAPI_IH_INL_HPP
 
+#include <memory>
 namespace Napi_IH {
 
 inline bool VerifyExactInstanceType(const Napi::Object &object,
@@ -62,7 +63,13 @@ FunctionWrapper::NewWithArgs(size_t argc, const napi_value *args,
     return {};
   }
   ClassMetaInfo &class_meta_info = ClassMetaInfoInstance<T>::GetInstance();
-  class_meta_info.ctor_helper = [=](const Napi_IH::IHCallbackInfo &info) {
+
+  class_meta_info.ctor_helper =
+      [=](const Napi_IH::IHCallbackInfo &info,
+          WrappedDeleterType *deleter) -> std::unique_ptr<IHObjectWrap> {
+    *deleter = [](std::unique_ptr<IHObjectWrap> &wrapped) {
+      std::unique_ptr<T> origin_type_ptr(static_cast<T *>(wrapped.release()));
+    };
     return std::move(std::make_unique<T>(info, ctor_args...));
   };
 
@@ -131,28 +138,46 @@ class MethodWrapper : public Napi::ObjectWrap<MethodWrapper> {
   friend class IHObjectWrap;
 
 public:
+  using WrappedDeleterType =
+      std::function<void(std::unique_ptr<IHObjectWrap> &wrapped)>;
+
   MethodWrapper(const Napi::CallbackInfo &info)
       : Napi::ObjectWrap<MethodWrapper>(info) {
-    ClassMetaInfo *meta_info = reinterpret_cast<ClassMetaInfo *>(info.Data());
+    ClassMetaInfo *meta_info = static_cast<ClassMetaInfo *>(info.Data());
     if (meta_info->ctor_helper) {
-      wrapped_ = meta_info->ctor_helper({info, meta_info->data});
+      wrapped_ =
+          meta_info->ctor_helper({info, meta_info->data}, &wrapper_deleter_);
     } else if (meta_info->ctor) {
-      wrapped_ = meta_info->ctor({info, meta_info->data});
+      wrapped_ = meta_info->ctor({info, meta_info->data}, &wrapper_deleter_);
+    }
+  }
+
+  ~MethodWrapper() {
+    if (wrapper_deleter_) {
+      wrapper_deleter_(wrapped_);
     }
   }
 
   template <typename T>
   static std::unique_ptr<IHObjectWrap>
-  ConstructObject(const Napi_IH::IHCallbackInfo &info) {
+  ConstructObject(const Napi_IH::IHCallbackInfo &info,
+                  WrappedDeleterType *deleter = nullptr) {
     if (!std::is_base_of<IHObjectWrap, T>::value) {
       return nullptr;
     }
+    if (deleter) {
+      *deleter = [](std::unique_ptr<IHObjectWrap> &wrapped) {
+        std::unique_ptr<T> origin_type_ptr(static_cast<T *>(wrapped.release()));
+      };
+    }
+
     return std::move(std::make_unique<T>(info));
   }
 
   template <typename T>
   static std::unique_ptr<IHObjectWrap>
-  IllegalConstructor(const Napi_IH::IHCallbackInfo &info) {
+  IllegalConstructor(const Napi_IH::IHCallbackInfo &info,
+                     Napi_IH::WrappedDeleterType *) {
     throw Napi::TypeError::New(info.Env(), "Illegal constructor\n");
   }
 
@@ -167,14 +192,14 @@ public:
   template <typename T, void (T::*method)(const Napi::CallbackInfo &)>
   void CallInstanceVoidMethodCallback(const Napi::CallbackInfo &info) {
     if (wrapped_ && std::is_base_of<IHObjectWrap, T>::value) {
-      T *origin_ptr = reinterpret_cast<T *>(wrapped_.get());
+      T *origin_ptr = static_cast<T *>(wrapped_.get());
     }
   }
 
   template <typename T, Napi::Value (T::*method)(const Napi::CallbackInfo &)>
   Napi::Value CallInstanceMethodCallback(const Napi::CallbackInfo &info) {
     if (wrapped_ && std::is_base_of<IHObjectWrap, T>::value) {
-      T *origin_ptr = reinterpret_cast<T *>(wrapped_.get());
+      T *origin_ptr = static_cast<T *>(wrapped_.get());
       return (origin_ptr->*method)(info);
     }
     return {};
@@ -183,7 +208,7 @@ public:
   template <typename T, Napi::Value (T::*method)(const Napi::CallbackInfo &)>
   Napi::Value CallInstanceGetterCallback(const Napi::CallbackInfo &info) {
     if (method && wrapped_ && std::is_base_of<IHObjectWrap, T>::value) {
-      T *origin_ptr = reinterpret_cast<T *>(wrapped_.get());
+      T *origin_ptr = static_cast<T *>(wrapped_.get());
       return (origin_ptr->*method)(info);
     }
     return {};
@@ -194,7 +219,7 @@ public:
   void CallInstanceSetterCallback(const Napi::CallbackInfo &info,
                                   const Napi::Value &value) {
     if (method && wrapped_ && std::is_base_of<IHObjectWrap, T>::value) {
-      T *origin_ptr = reinterpret_cast<T *>(wrapped_.get());
+      T *origin_ptr = static_cast<T *>(wrapped_.get());
       (origin_ptr->*method)(info, value);
     }
   }
@@ -225,6 +250,7 @@ public:
 
 private:
   std::unique_ptr<IHObjectWrap> wrapped_;
+  std::function<void(std::unique_ptr<IHObjectWrap> &)> wrapper_deleter_;
 };
 
 template <typename T> inline T Error::InnerNew(Napi::Env env, const char *msg) {

@@ -18,6 +18,7 @@
 #include "logger.hpp"
 #include <functional>
 #include <map>
+#include <memory>
 #include <napi/napi.h>
 
 namespace Napi_IH {
@@ -120,8 +121,12 @@ private:
   void *user_data_;
 };
 
-using ConstructorFunc =
-    std::unique_ptr<IHObjectWrap> (*)(const Napi_IH::IHCallbackInfo &);
+using WrappedDeleterType =
+    std::function<void(std::unique_ptr<IHObjectWrap> &wrapped)>;
+using ConstructorFunc = std::unique_ptr<IHObjectWrap> (*)(
+    const Napi_IH::IHCallbackInfo &, WrappedDeleterType *);
+using ConstructorHelpFunc = std::function<std::unique_ptr<IHObjectWrap>(
+    const Napi_IH::IHCallbackInfo &, WrappedDeleterType *)>;
 
 struct ClassMetaInfo {
   const char *name = "";
@@ -130,9 +135,7 @@ struct ClassMetaInfo {
   std::vector<Napi::ClassPropertyDescriptor<MethodWrapper>> descriptors;
   bool export_type = true;
   void *data = nullptr;
-  std::function<std::unique_ptr<IHObjectWrap>(
-      const Napi_IH::IHCallbackInfo &info)>
-      ctor_helper;
+  ConstructorHelpFunc ctor_helper;
 };
 
 class Registration {
