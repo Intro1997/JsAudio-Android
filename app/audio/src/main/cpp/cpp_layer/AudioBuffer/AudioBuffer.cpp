@@ -98,14 +98,15 @@ void AudioBuffer::CopyFromChannel(float *dest_ptr, const uint32_t &dest_size,
   }
 }
 
-std::vector<float> AudioBuffer::GetChannelData(const uint32_t channel) const {
+const std::vector<float> *
+AudioBuffer::GetChannelDataPtr(const uint32_t channel) const {
   // maybe there is an other better way instead of return copy
   try {
-    return audio_channel_buffers_.at(channel);
+    return &audio_channel_buffers_.at(channel);
   } catch (std::out_of_range const &err) {
     LOGE("Channel %u is out of range of %zu\n", channel,
          audio_channel_buffers_.size());
   }
-  return {};
+  return nullptr;
 }
 } // namespace js_audio

@@ -91,7 +91,7 @@ JSAudioBuffer::JSAudioBuffer(const Napi_IH::IHCallbackInfo &info,
   }
 
   if (!audio_buffer_ref_) {
-    LOGE("Error! Innner auido buffer pointer reference is invalid!\n");
+    LOGE("Error! Inner audio buffer pointer reference is invalid!\n");
     throw Napi::Error::New(info.Env(), "Inner error!\n");
   }
 
@@ -150,8 +150,8 @@ Napi::Value JSAudioBuffer::copyToChannel(const Napi::CallbackInfo &info) {
   } else {
     std::string constructor_name;
 
-    if (!Napi_IH::VerifyInstanceType(info[0].As<Napi::Object>(),
-                                     "Float32Array")) {
+    if (!Napi_IH::VerifyExactInstanceType(info[0].As<Napi::Object>(),
+                                          "Float32Array")) {
       throw Napi::TypeError::New(info.Env(),
                                  "Failed to execute 'copyToChannel' on "
                                  "'AudioBuffer': parameter 1 is "
@@ -221,8 +221,8 @@ Napi::Value JSAudioBuffer::copyFromChannel(const Napi::CallbackInfo &info) {
         "not of type 'Float32Array'.\n");
   } else {
     std::string constructor_name;
-    if (!Napi_IH::VerifyInstanceType(info[0].As<Napi::Object>(),
-                                     "Float32Array")) {
+    if (!Napi_IH::VerifyExactInstanceType(info[0].As<Napi::Object>(),
+                                          "Float32Array")) {
       throw Napi::TypeError::New(info.Env(),
                                  "Failed to execute 'copyFromChannel' on "
                                  "'AudioBuffer': parameter 1 is "
@@ -258,4 +258,7 @@ Napi::Value JSAudioBuffer::copyFromChannel(const Napi::CallbackInfo &info) {
   return info.Env().Undefined();
 }
 
+std::shared_ptr<AudioBuffer> JSAudioBuffer::GetInnerAudioBuffer() const {
+  return audio_buffer_ref_;
+}
 }; // namespace js_audio

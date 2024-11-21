@@ -8,6 +8,7 @@
 #include "preload_script.hpp"
 
 #include "JSAudioBuffer.hpp"
+#include "JSAudioBufferSourceNode.hpp"
 #include "JSAudioContext.hpp"
 #include "JSAudioDestinationNode.hpp"
 #include "JSAudioNode.hpp"
@@ -33,6 +34,7 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports) {
   js_audio::JSOfflineAudioContext::Init(env, exports);
   js_audio::JSGainNode::Init(env, exports);
   js_audio::JSDelayNode::Init(env, exports);
+  js_audio::JSAudioBufferSourceNode::Init(env, exports);
 
   return exports;
 }

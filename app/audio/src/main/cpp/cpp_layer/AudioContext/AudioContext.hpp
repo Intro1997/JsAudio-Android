@@ -6,6 +6,7 @@ class AudioContext : public BaseAudioContext {
 public:
   AudioContext();
 
+  double current_time() override;
   double GetCurrentTime() override;
 
 private:

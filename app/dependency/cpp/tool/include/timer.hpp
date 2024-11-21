@@ -5,6 +5,10 @@
 
 enum class TimeUnit { kSecond = 0, kMillisecond, kMicorsecond, kNanosecond };
 
+inline bool IsSameTime(const double &t1, const double &t2) {
+  return (std::abs(t1 - t2) <= 1e-6);
+}
+
 template <typename T1, typename T2>
 inline T1 ConvertTimeToType(T2 duration, const TimeUnit &unit) {
   switch (unit) {

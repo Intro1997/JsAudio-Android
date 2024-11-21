@@ -1,4 +1,5 @@
 #include "JSAudioDestinationNode.hpp"
+#include "BaseAudioContext.hpp"
 #include "logger.hpp"
 #include <memory>
 
@@ -6,8 +7,9 @@ namespace js_audio {
 
 JSAudioDestinationNode::JSAudioDestinationNode(
     const Napi_IH::IHCallbackInfo &info,
-    std::shared_ptr<AudioDestinationNode> audio_destination_node_ref)
-    : JSAudioNode(info, audio_destination_node_ref),
+    std::shared_ptr<AudioDestinationNode> audio_destination_node_ref,
+    std::shared_ptr<BaseAudioContext> base_audio_context_ref)
+    : JSAudioNode(info, audio_destination_node_ref, base_audio_context_ref),
       audio_destination_node_ptr_(
           std::static_pointer_cast<AudioDestinationNode>(
               JSAudioNode::audio_node_ref_)) {}

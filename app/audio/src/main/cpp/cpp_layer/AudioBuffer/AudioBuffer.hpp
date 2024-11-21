@@ -23,7 +23,7 @@ public:
                        const uint32_t channel_number,
                        const uint32_t &src_start_idx) const;
 
-  std::vector<float> GetChannelData(const uint32_t channel) const;
+  const std::vector<float> *GetChannelDataPtr(const uint32_t channel) const;
 
 private:
   uint32_t number_of_channel_;

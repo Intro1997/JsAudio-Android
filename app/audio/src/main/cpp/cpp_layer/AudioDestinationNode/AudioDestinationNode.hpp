@@ -3,6 +3,7 @@
 
 #include <SLES/OpenSLES.h>
 #include <memory>
+#include <vector>
 namespace js_audio {
 class AudioDestinationNode : public AudioNode {
 public:
@@ -31,6 +32,6 @@ private:
   void GetSourceNodesOutput(float *data, uint32_t sample_size);
 
   const uint32_t max_channel_count_;
-  std::shared_ptr<AudioNode> src_audio_node_ref_;
+  std::vector<std::shared_ptr<AudioNode>> src_audio_node_refs_;
 };
 } // namespace js_audio

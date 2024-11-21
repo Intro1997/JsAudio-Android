@@ -21,6 +21,8 @@ public:
   Napi::Value getChannelData(const Napi::CallbackInfo &info);
   Napi::Value copyFromChannel(const Napi::CallbackInfo &info);
 
+  std::shared_ptr<AudioBuffer> GetInnerAudioBuffer() const;
+
 private:
   std::vector<Napi::ObjectReference> js_channels_ref_;
   std::shared_ptr<AudioBuffer> audio_buffer_ref_;

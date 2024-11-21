@@ -1,6 +1,7 @@
 #include "AudioContext.hpp"
 #include "AudioEngine.hpp"
 #include "timer.hpp"
+#include <thread>
 #include <tuple>
 
 using AudioEngine = js_audio::AudioEngine;
@@ -22,6 +23,8 @@ AudioContext::AudioContext()
     : BaseAudioContext(GetBaseAudioContextParams()),
       construct_microsecond_time_(
           GetCurrentSystemTime<double>(TimeUnit::kMicorsecond)) {}
+
+double AudioContext::current_time() { return GetCurrentTime(); }
 
 double AudioContext::GetCurrentTime() {
   double micro_diff = GetCurrentSystemTime<double>(TimeUnit::kMicorsecond) -

@@ -62,6 +62,8 @@ protected:
   bool IsSelfPtr(std::shared_ptr<AudioNode> other_ref);
   void FillWithZeros(const size_t &sample_size,
                      std::vector<std::vector<float>> &output);
+  void FillWithZeros(const size_t & channel_count, const size_t &sample_size,
+                     std::vector<std::vector<float>> &output);
 
   const uint32_t number_of_inputs_;
   const uint32_t number_of_outputs_;

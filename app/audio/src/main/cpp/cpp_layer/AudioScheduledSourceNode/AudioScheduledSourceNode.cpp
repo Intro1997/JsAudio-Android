@@ -17,6 +17,7 @@ AudioScheduledSourceNode::AudioScheduledSourceNode(
                 audio_context_lock_ref) {
   state_ref_ = std::make_shared<State>(State::Stop);
   has_started_ = false;
+  stop_time_ = INFINITY;
 }
 
 void AudioScheduledSourceNode::ConnectTo(
@@ -47,8 +48,8 @@ void AudioScheduledSourceNode::BeDisconnected(const AudioNode &audio_node) {
   LOGE("Error! Should not get in here!\n");
 }
 
-void AudioScheduledSourceNode::Start(const float &when) {
-  if (has_started_) {
+void AudioScheduledSourceNode::Start(const double &when) {
+  if (has_started()) {
     LOGE("Start AudioScheduledSourceNode failed! Node can only start once!\n");
     return;
   }
@@ -57,23 +58,12 @@ void AudioScheduledSourceNode::Start(const float &when) {
     return;
   }
 
-  has_started_ = true;
-
-  if (std::shared_ptr<BaseAudioContext> base_audio_context_ref =
-          base_audio_context_ptr_.lock()) {
-    float wait_time = when - base_audio_context_ref->GetCurrentTime();
-    if (wait_time <= 0) {
-      set_state(State::Start);
-    } else {
-      ScheduleStateChange(State::Start, wait_time);
-    }
-  } else {
-    LOGE(
-        "AudioScheduleSourceNode start failed! BaseAudioContext is invalid!\n");
-  }
+  set_has_started(true);
+  set_start_time(when);
+  set_state(State::Start);
 }
 
-void AudioScheduledSourceNode::Stop(const float &when) {
+void AudioScheduledSourceNode::Stop(const double &when) {
   if (state() == State::Stop) {
     return;
   }
@@ -81,18 +71,31 @@ void AudioScheduledSourceNode::Stop(const float &when) {
     LOGE("invalid when time %f\n", when);
     return;
   }
+  set_stop_time(when);
+  set_state(State::Start);
+}
 
-  if (std::shared_ptr<BaseAudioContext> base_audio_context_ref =
-          base_audio_context_ptr_.lock()) {
-    float wait_time = when - base_audio_context_ref->GetCurrentTime();
-    if (wait_time <= 0) {
-      set_state(State::Stop);
-    } else {
-      ScheduleStateChange(State::Stop, wait_time);
-    }
-  } else {
-    LOGE("AudioScheduleSourceNode stop failed! BaseAudioContext is invalid!\n");
-  }
+bool AudioScheduledSourceNode::has_started() const { return has_started_; }
+
+void AudioScheduledSourceNode::set_has_started(const bool &value) {
+  has_started_ = value;
+}
+
+double AudioScheduledSourceNode::start_time() const {
+  std::lock_guard<std::mutex> guard(start_time_lock_);
+  return start_time_;
+}
+void AudioScheduledSourceNode::set_start_time(const double &time) {
+  std::lock_guard<std::mutex> guard(start_time_lock_);
+  start_time_ = time;
+}
+double AudioScheduledSourceNode::stop_time() const {
+  std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
+  return stop_time_;
+}
+void AudioScheduledSourceNode::set_stop_time(const double &time) {
+  std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
+  stop_time_ = time;
 }
 
 AudioScheduledSourceNode::State AudioScheduledSourceNode::state() const {
@@ -105,15 +108,4 @@ void AudioScheduledSourceNode::set_state(const State &state) {
   *state_ref_ = state;
 }
 
-void AudioScheduledSourceNode::ScheduleStateChange(const State &state,
-                                                   const float &delay_time) {
-  std::weak_ptr<State> state_ptr = state_ref_;
-  std::thread t([=]() {
-    std::this_thread::sleep_for(std::chrono::duration<float>(delay_time));
-    if (auto state_ref = state_ptr.lock()) {
-      *state_ref = state;
-    }
-  });
-  t.detach();
-}
 }; // namespace js_audio

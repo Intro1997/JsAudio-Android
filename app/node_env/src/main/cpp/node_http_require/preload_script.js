@@ -4,7 +4,7 @@ const Module = require("module");
 const originFindPath = Module._findPath;
 Module._findPath = function (request, paths, isMain) {
   // TODO: use array to save folder that need to be loaded by http
-  if (request.includes("js_tests")) {
+  if (request.includes("js_tests") || request.includes("./")) {
     return request;
   } else {
     originFindPath(request, paths, isMain);

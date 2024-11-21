@@ -20,7 +20,6 @@ function wptGainNodeTest0() {
 
   Object.assign(globalThis, globalThis.self);
   window["GainNode"] = GainNode;
-  console.log("GainNode = ", GainNode);
   globalThis.DOMException = getDomException();
 
   let context;

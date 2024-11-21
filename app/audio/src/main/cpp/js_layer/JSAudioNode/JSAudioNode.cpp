@@ -23,8 +23,10 @@ GetOptionsChannelInterpretation(const std::string &audio_node_type_name,
                                 Napi::Error &napi_error);
 namespace js_audio {
 
-JSAudioNode::JSAudioNode(const Napi_IH::IHCallbackInfo &info,
-                         std::shared_ptr<AudioNode> audio_node_ref)
+JSAudioNode::JSAudioNode(
+    const Napi_IH::IHCallbackInfo &info,
+    std::shared_ptr<AudioNode> audio_node_ref,
+    std::shared_ptr<BaseAudioContext> base_audio_context_ref)
     : Napi_IH::IHObjectWrap(info), audio_node_ref_(audio_node_ref) {
   if (info.Length() < 1 || !info[0].IsObject()) {
     LOGE("Error: Cannot create AudioNode without AudioContext!\n");
@@ -36,11 +38,16 @@ JSAudioNode::JSAudioNode(const Napi_IH::IHCallbackInfo &info,
   }
 
   napi_audio_context_ptr_ = Napi::Weak(info[0].As<Napi::Object>());
-  JSBaseAudioContext *js_base_audio_context_ptr =
-      UnWrap<JSBaseAudioContext>(napi_audio_context_ptr_.Value());
-  if (js_base_audio_context_ptr) {
-    audio_node_ref_->base_audio_context_ptr_ =
-        js_base_audio_context_ptr->GetAudioContext();
+  if (base_audio_context_ref) {
+    // use for destination node
+    audio_node_ref_->base_audio_context_ptr_ = base_audio_context_ref;
+  } else {
+    JSBaseAudioContext *js_base_audio_context_ptr =
+        UnWrap<JSBaseAudioContext>(napi_audio_context_ptr_.Value());
+    if (js_base_audio_context_ptr) {
+      audio_node_ref_->base_audio_context_ptr_ =
+          js_base_audio_context_ptr->GetAudioContext();
+    }
   }
 }
 

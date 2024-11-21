@@ -3,6 +3,7 @@
 #include "DelayNode.hpp"
 #include "GainNode.hpp"
 #include "JSAudioBuffer.hpp"
+#include "JSAudioBufferSourceNode.hpp"
 #include "JSAudioDestinationNode.hpp"
 #include "JSDelayNode.hpp"
 #include "JSGainNode.hpp"
@@ -26,7 +27,8 @@ JSBaseAudioContext::JSBaseAudioContext(
       JSAudioDestinationNode::FindClass<JSAudioDestinationNode>()
           .NewWithArgs<JSAudioDestinationNode>(
               {info.This()},
-              base_audio_context_ref_->audio_destination_node_ref());
+              base_audio_context_ref_->audio_destination_node_ref(),
+              base_audio_context_ref_);
 
   napi_destination_node_ref_ = Napi::Persistent(js_destination_node);
 
@@ -67,6 +69,9 @@ void JSBaseAudioContext::Init(Napi::Env env, Napi::Object exports) {
               "createOscillator"),
           InstanceMethod<JSBaseAudioContext, &JSBaseAudioContext::createBuffer>(
               "createBuffer"),
+          InstanceMethod<JSBaseAudioContext,
+                         &JSBaseAudioContext::createBufferSource>(
+              "createBufferSource"),
           InstanceMethod<JSBaseAudioContext, &JSBaseAudioContext::createGain>(
               "createGain"),
           InstanceMethod<JSBaseAudioContext, &JSBaseAudioContext::createDelay>(
@@ -135,6 +140,16 @@ Napi::Value JSBaseAudioContext::createBuffer(const Napi::CallbackInfo &info) {
     LOGE("Create JSAudioBuffer failed! Need 3 number parameters.\n");
   }
   return info.Env().Undefined();
+}
+
+Napi::Value
+JSBaseAudioContext::createBufferSource(const Napi::CallbackInfo &info) {
+  auto audio_buffer_source_node_ref =
+      AudioBufferSourceNode::CreateAudioBufferSourceNode(GetSampleRate(),
+                                                         GetAudioContextLock());
+  return FindClass<JSAudioBufferSourceNode>()
+      .NewWithArgs<JSAudioBufferSourceNode>({info.This()},
+                                            audio_buffer_source_node_ref);
 }
 
 Napi::Value JSBaseAudioContext::createGain(const Napi::CallbackInfo &info) {

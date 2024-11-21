@@ -19,6 +19,7 @@ public:
   Napi::Value getCurrentTime(const Napi::CallbackInfo &info);
   Napi::Value createOscillator(const Napi::CallbackInfo &info);
   Napi::Value createBuffer(const Napi::CallbackInfo &info);
+  Napi::Value createBufferSource(const Napi::CallbackInfo &info);
   Napi::Value createGain(const Napi::CallbackInfo &info);
   Napi::Value createDelay(const Napi::CallbackInfo &info);
 

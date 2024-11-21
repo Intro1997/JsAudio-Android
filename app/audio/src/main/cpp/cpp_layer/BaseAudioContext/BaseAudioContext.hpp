@@ -4,6 +4,7 @@
 namespace js_audio {
 class BaseAudioContext {
 public:
+  friend class AudioDestinationNode;
   enum class ContextType { kOnline = 0, kOffline };
 
   BaseAudioContext(const ContextType &type = ContextType::kOffline,
@@ -14,7 +15,9 @@ public:
   float sample_rate() const;
   uint32_t number_of_channels() const;
 
+  virtual double current_time();
   virtual double GetCurrentTime();
+
   std::shared_ptr<std::mutex> GetLock() const;
 
   void ProduceSamples(const size_t &sample_size,
@@ -28,7 +31,12 @@ private:
   std::shared_ptr<std::mutex> audio_context_lock_ref_;
 
 protected:
+  virtual void UpdateCurrentTime(const size_t &sample_size);
+
   // be assigned in derived class
+  double current_time_;
+  std::mutex current_time_lock_;
+
   float sample_rate_;
   uint32_t number_of_channels_;
   ContextType context_type_;

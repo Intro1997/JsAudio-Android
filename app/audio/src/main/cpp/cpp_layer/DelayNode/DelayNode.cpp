@@ -192,7 +192,7 @@ void DelayNode::ReadBufferToOutput(const size_t &sample_size,
 
 void DelayNode::ConnectTo(std::shared_ptr<AudioNode> dst_audio_node_ref) {
   if (IsSelfPtr(dst_audio_node_ref)) {
-    LOGE("Cannot conenct to self!\n");
+    LOGE("Cannot connect to self!\n");
     return;
   }
   std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
@@ -201,7 +201,7 @@ void DelayNode::ConnectTo(std::shared_ptr<AudioNode> dst_audio_node_ref) {
 
 void DelayNode::BeConnectedTo(std::shared_ptr<AudioNode> src_audio_node_ref) {
   if (IsSelfPtr(src_audio_node_ref)) {
-    LOGE("Cannot be conencted to self!\n");
+    LOGE("Cannot be connected to self!\n");
     return;
   }
   std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
@@ -228,8 +228,8 @@ void DelayNode::BeDisconnected(const AudioNode &audio_node) {
 }
 
 bool DelayNode::IsValidMaxDelayTime(const float &max_delay_time) {
-  if (max_delay_time <= kMinChannelCount ||
-      max_delay_time >= kMaxChannelCount) {
+  if (max_delay_time <= kMinOfMaxDelayTime ||
+      max_delay_time >= kMaxOfMaxDelayTime) {
     return false;
   }
   return true;

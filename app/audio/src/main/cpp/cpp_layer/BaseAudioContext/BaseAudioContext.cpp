@@ -15,7 +15,7 @@ BaseAudioContext::BaseAudioContext(
 BaseAudioContext::BaseAudioContext(const ContextType &type,
                                    const uint32_t &number_of_channels,
                                    const float &sample_rate)
-    : audio_context_lock_ref_(std::make_shared<std::mutex>()),
+    : audio_context_lock_ref_(std::make_shared<std::mutex>()), current_time_(0),
       sample_rate_(sample_rate), number_of_channels_(number_of_channels),
       context_type_(type),
       audio_destination_node_ref_(std::make_shared<AudioDestinationNode>(
@@ -30,11 +30,15 @@ BaseAudioContext::audio_destination_node_ref() {
   return audio_destination_node_ref_;
 }
 
+void BaseAudioContext::UpdateCurrentTime(const size_t &sample_size) {}
+
 float BaseAudioContext::sample_rate() const { return sample_rate_; }
 
 uint32_t BaseAudioContext::number_of_channels() const {
   return number_of_channels_;
 }
+
+double BaseAudioContext::current_time() { return 0; }
 
 double BaseAudioContext::GetCurrentTime() { return 0; }
 

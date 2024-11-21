@@ -12,9 +12,6 @@ using ChannelInterpretation = js_audio::AudioNode::ChannelInterpretation;
 using JSBaseAudioContext = js_audio::JSBaseAudioContext;
 using JSAudioNode = js_audio::JSAudioNode;
 
-template <typename T>
-Napi_IH::FunctionWrapper (*FindClass)() = Napi_IH::IHObjectWrap::FindClass<T>;
-
 static std::shared_ptr<GainNode>
 GetGainNodeRef(const Napi_IH::IHCallbackInfo &info,
                std::shared_ptr<GainNode> gain_node_ref);
@@ -108,13 +105,13 @@ GetGainNodeRef(const Napi_IH::IHCallbackInfo &info,
                     "of type 'BaseAudioContext'.\n");
   }
 
-  Napi::Object js_base_audio_context = info[0].As<Napi::Object>();
-  if (!js_base_audio_context.InstanceOf(
-          FindClass<JSBaseAudioContext>().InnerFunction())) {
+  Napi::Object js_base_audio_context = info[0].ToObject();
+  if (!Napi_IH::VerifyInstanceOf<JSBaseAudioContext>(js_base_audio_context)) {
     throw Napi::TypeError::New(info.Env(),
                                "Failed to construct 'GainNode': parameter 1 is "
                                "not of type 'BaseAudioContext'.\n");
   }
+
 
   JSBaseAudioContext *js_base_audio_context_ptr =
       Napi_IH::IHObjectWrap::UnWrap<JSBaseAudioContext>(js_base_audio_context);

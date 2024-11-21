@@ -107,7 +107,13 @@ void AudioNode::ProduceSamples(const size_t &sample_size,
 
 void AudioNode::FillWithZeros(const size_t &sample_size,
                               std::vector<std::vector<float>> &output) {
-  output.resize(channel_count_);
+  FillWithZeros(channel_count_, sample_size, output);
+}
+
+void AudioNode::FillWithZeros(const size_t &channel_count,
+                              const size_t &sample_size,
+                              std::vector<std::vector<float>> &output) {
+  output.resize(channel_count);
   for (auto &channel : output) {
     channel.clear();
     channel.resize(sample_size, 0);

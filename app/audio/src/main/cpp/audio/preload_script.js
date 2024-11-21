@@ -6,3 +6,5 @@ globalThis.AudioParam = process._linkedBinding("audio").AudioParam;
 globalThis.AudioBuffer = process._linkedBinding("audio").AudioBuffer;
 globalThis.GainNode = process._linkedBinding("audio").GainNode;
 globalThis.DelayNode = process._linkedBinding("audio").DelayNode;
+globalThis.AudioBufferSourceNode =
+  process._linkedBinding("audio").AudioBufferSourceNode;

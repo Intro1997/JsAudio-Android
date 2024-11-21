@@ -10,7 +10,12 @@ public:
 
   static void Init(Napi::Env env, Napi::Object exports);
 
-  Napi::Value Start(const Napi::CallbackInfo &info);
-  Napi::Value Stop(const Napi::CallbackInfo &info);
+  virtual Napi::Value start(const Napi::CallbackInfo &info);
+  Napi::Value stop(const Napi::CallbackInfo &info);
+
+protected:
+  bool IsWhenValid(const double &when, const char *type_name,
+                   const char *func_name, Napi::Env env,
+                   Napi::Error &napi_error);
 };
 } // namespace js_audio
