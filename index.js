@@ -11,13 +11,20 @@ const {
 } = require("js_tests/audio_buffer_source_node_test.js");
 
 async function AllTest() {
-  await AudioBufferTest();
-  await OscillatorTest();
-  await OfflineAudioContextTest();
-  await DestinationNodeTest();
-  await GainNodeTest();
-  await DelayNodeTest();
-  await AudioBufferSourceNodeTest();
+  const task_list = [
+    AudioBufferTest,
+    OscillatorTest,
+    OfflineAudioContextTest,
+    DestinationNodeTest,
+    GainNodeTest,
+    DelayNodeTest,
+    AudioBufferSourceNodeTest,
+  ];
+
+  for (let i = 0; i < task_list.length; i++) {
+    await task_list[i]();
+    global.gc();
+  }
 }
 
 async function GetTuneAudioBuffer(tunes, numberOfChannels, ctx) {

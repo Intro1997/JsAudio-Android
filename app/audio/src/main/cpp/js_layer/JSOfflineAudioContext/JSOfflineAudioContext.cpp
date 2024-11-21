@@ -57,7 +57,7 @@ JSOfflineAudioContext::startRendering(const Napi::CallbackInfo &info) {
 
   bool is_start =
       std::static_pointer_cast<OfflineAudioContext>(base_audio_context_ref_)
-          ->StartRendering(cb_ref);
+          ->StartRendering(cb_ref, base_audio_context_ref_);
   if (!is_start) {
     LOGE("InvalidStateError: Failed to execute 'startRendering' on "
          "'OfflineAudioContext': cannot startRendering when an "

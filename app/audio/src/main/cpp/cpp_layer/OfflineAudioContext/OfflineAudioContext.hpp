@@ -12,7 +12,8 @@ public:
 
   // TODO: alias a type ot cb
   bool StartRendering(
-      const std::function<void(std::shared_ptr<AudioBuffer>)> &cb_ref);
+      const std::function<void(std::shared_ptr<AudioBuffer>)> &cb_ref,
+      std::weak_ptr<BaseAudioContext> self_ptr);
 
   // return real time
   double current_time() override;
@@ -34,7 +35,8 @@ private:
 
   // TODO: alias a type ot cb
   void InnerRendering(
-      const std::function<void(std::shared_ptr<AudioBuffer>)> &cb_ref);
+      const std::function<void(std::shared_ptr<AudioBuffer>)> &cb_ref,
+      std::weak_ptr<BaseAudioContext> self_ptr);
   void InitOutputArray(std::vector<std::vector<float>> &output,
                        const size_t size);
 
