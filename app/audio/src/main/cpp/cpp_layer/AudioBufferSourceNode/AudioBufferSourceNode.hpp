@@ -82,8 +82,6 @@ private:
   void MakeOutputValid(const size_t &sample_size,
                        std::vector<std::vector<float>> &output);
 
-  const float sample_rate_;
-  const double seconds_per_sample_;
   std::shared_ptr<AudioBuffer> audio_buffer_ref_;
   std::shared_ptr<AudioParam> detune_ref_;
   bool loop_;

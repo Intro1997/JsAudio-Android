@@ -37,9 +37,9 @@ void JSGainNode::Init(Napi::Env env, Napi::Object exports) {
 }
 
 Napi::Value JSGainNode::getGain(const Napi::CallbackInfo &info) {
-  if (auto gain_node_ref = gain_node_ptr_.lock()) {
-    return FindClass<JSAudioParam>().NewWithArgs<JSAudioParam>(
-        {}, gain_node_ref->gain_ref());
+  if (auto ref = gain_node_ptr_.lock()) {
+    return FindClass<JSAudioParam>().NewWithArgs<JSAudioParam>({},
+                                                               ref->gain_ref());
   }
   return info.Env().Undefined();
 }
@@ -111,7 +111,6 @@ GetGainNodeRef(const Napi_IH::IHCallbackInfo &info,
                                "Failed to construct 'GainNode': parameter 1 is "
                                "not of type 'BaseAudioContext'.\n");
   }
-
 
   JSBaseAudioContext *js_base_audio_context_ptr =
       Napi_IH::IHObjectWrap::UnWrap<JSBaseAudioContext>(js_base_audio_context);

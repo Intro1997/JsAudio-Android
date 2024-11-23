@@ -21,44 +21,7 @@ static std::tuple<std::decay_t<Args>...>
 DecayTuple(const std::tuple<Args...> &) {
   return std::make_tuple(std::decay_t<Args>{}...);
 }
-
-#define PCM_SAMPLE_LENGTH 9
-#define PCM_SAMPLE_CHANNEL 2
-#define AUDIO_DATA_STORAGE_SIZE (44100 * PCM_SAMPLE_CHANNEL * PCM_SAMPLE_LENGTH)
-#define AUDIO_DATA_BUFFER_SIZE (44100)
 #define DOUBLE_M_PI (M_PI * 2)
-#define DO_TONE_FREQ (261.6)
-#define REI_TONE_FREQ (293.6)
-#define MI_TONE_FREQ (329.6)
-#define FA_TONE_FREQ (349.2)
-#define SOL_TONE_FREQ (392)
-#define DETUNE (0)
-#define AUDIO_SEGMENT_DATA_SIZE 4096
-
-static SLint16 *InitPcmData() {
-  auto pcm_data = new SLint16[AUDIO_DATA_STORAGE_SIZE]();
-
-  const double sine_list[] = {
-      DOUBLE_M_PI * (DO_TONE_FREQ * std::pow(2.0, DETUNE / 1200.0)) / 44100.0,
-      DOUBLE_M_PI * (REI_TONE_FREQ * std::pow(2.0, DETUNE / 1200.0)) / 44100.0,
-      DOUBLE_M_PI * (MI_TONE_FREQ * std::pow(2.0, DETUNE / 1200.0)) / 44100.0,
-      DOUBLE_M_PI * (FA_TONE_FREQ * std::pow(2.0, DETUNE / 1200.0)) / 44100.0,
-      DOUBLE_M_PI * (SOL_TONE_FREQ * std::pow(2.0, DETUNE / 1200.0)) / 44100.0,
-  };
-
-  uint32_t start = 0;
-  uint32_t end = 44100;
-  for (uint32_t j = 0; j < PCM_SAMPLE_LENGTH; j++) {
-    uint32_t idx = j > 4 ? (8 - j) : j;
-    for (uint32_t i = start; i < end; i++) {
-      double ret = sin(sine_list[idx] * (double)i);
-      pcm_data[i * 2] = pcm_data[i * 2 + 1] = ret * INT16_MAX;
-    }
-    start = end;
-    end += 44100;
-  }
-  return pcm_data;
-}
 
 namespace js_audio {
 AudioBufferQueuePlayer::AudioBufferQueuePlayer(

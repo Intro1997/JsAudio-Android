@@ -4,6 +4,9 @@
 #include <cmath>
 #include <vector>
 
+#define DOUBLE_M_PI (M_PI * 2)
+#define TRIBLE_PI_2 3 * M_PI_2
+
 namespace js_audio {
 class WaveProducer {
 public:
@@ -32,9 +35,6 @@ public:
 };
 static const double kSawtoothWaveKParam = 1.0f / M_PI;
 static const double kTriangleWaveKParam = 2.0f / M_PI;
-
-#define DOUBLE_M_PI (M_PI * 2)
-#define TRIBLE_PI_2 3 * M_PI_2
 
 template <typename T>
 void WaveProducer::CreateSineWave(const double &step, double &current_time,

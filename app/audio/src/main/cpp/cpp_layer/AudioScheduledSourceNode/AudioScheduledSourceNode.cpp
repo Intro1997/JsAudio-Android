@@ -11,10 +11,13 @@ AudioScheduledSourceNode::AudioScheduledSourceNode(
     const uint32_t &channel_count,
     const AudioNode::ChannelCountMode &channel_count_mode,
     const AudioNode::ChannelInterpretation &channel_interpretation,
-    std::shared_ptr<std::mutex> audio_context_lock_ref)
+    std::shared_ptr<std::mutex> audio_context_lock_ref,
+    const float &sample_rate)
     : AudioNode(number_of_inputs, number_of_outputs, channel_count,
                 channel_count_mode, channel_interpretation,
-                audio_context_lock_ref) {
+                audio_context_lock_ref),
+      sample_rate_(sample_rate),
+      seconds_per_sample_(sample_rate ? 1.0f / sample_rate : 0.0f) {
   state_ref_ = std::make_shared<State>(State::Stop);
   has_started_ = false;
   stop_time_ = INFINITY;
@@ -24,6 +27,10 @@ void AudioScheduledSourceNode::ConnectTo(
     std::shared_ptr<AudioNode> dst_audio_node_ref) {
   if (IsSelfPtr(dst_audio_node_ref)) {
     LOGE("Error! Cannot connect to self!\n");
+    return;
+  } else if (!IsSameContext(dst_audio_node_ref)) {
+    LOGE("Error! Cannot connect to audio node which is created by other audio "
+         "context !\n");
     return;
   }
 

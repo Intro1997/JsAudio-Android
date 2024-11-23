@@ -1,6 +1,9 @@
 #include "OscillatorNode.hpp"
+#include "BaseAudioContext.hpp"
 #include "logger.hpp"
 #include <cmath>
+
+#define DOUBLE_M_PI (M_PI * 2)
 
 namespace js_audio {
 
@@ -22,32 +25,6 @@ const OscillatorNode::ChannelInterpretation
     OscillatorNode::kDefaultChannelInterpretation =
         ChannelInterpretation::kSpeakers;
 
-#define PCM_SAMPLE_LENGTH 9
-#define PCM_SAMPLE_CHANNEL 2
-#define AUDIO_DATA_STORAGE_SIZE (44100 * PCM_SAMPLE_CHANNEL * PCM_SAMPLE_LENGTH)
-#define AUDIO_DATA_BUFFER_SIZE (44100)
-#define DOUBLE_M_PI (M_PI * 2)
-#define DO_TONE_FREQ (261.6)
-#define REI_TONE_FREQ (293.6)
-#define MI_TONE_FREQ (329.6)
-#define FA_TONE_FREQ (349.2)
-#define SOL_TONE_FREQ (392)
-#define DETUNE (0)
-#define AUDIO_SEGMENT_DATA_SIZE 4096
-#define TRIBLE_PI_2 3 * M_PI_2
-
-static void CreateTestPcmData(size_t sample_size,
-                              std::vector<SLint16> &output) {
-  output.resize(sample_size * 2, 0);
-  const double do_sine_step = DOUBLE_M_PI *
-                              (DO_TONE_FREQ * std::pow(2.0, DETUNE / 1200.0)) /
-                              (double)44100;
-  for (size_t i = 0; i < sample_size; i++) {
-    double ret = sin(do_sine_step * (double)i);
-    output[i * 2] = output[i * 2 + 1] = ret * INT16_MAX;
-  }
-}
-
 class OscillatorNodeConstructHelper : public OscillatorNode {
 public:
   OscillatorNodeConstructHelper(
@@ -62,8 +39,8 @@ OscillatorNode::OscillatorNode(
     : AudioScheduledSourceNode(
           kNumberOfInputs, kNumberOfOutputs, options.channel_count,
           options.channel_count_mode, options.channel_interpretation,
-          audio_context_lock_ref),
-      type_(options.type), sample_rate_(sample_rate), current_time_(0) {}
+          audio_context_lock_ref, sample_rate),
+      type_(options.type), current_time_(0) {}
 
 std::shared_ptr<OscillatorNode> OscillatorNode::CreateOscillatorNode(
     const float &sample_rate,
@@ -107,23 +84,25 @@ std::shared_ptr<OscillatorNode> OscillatorNode::CreateOscillatorNode(
 
 void OscillatorNode::ProduceSamples(const size_t &sample_size,
                                     std::vector<std::vector<float>> &output) {
-  // Warn: you should not use any getter api here!
-  // we have locked in AudioContext.ProduceSamples() outside!
-  if (output.size() < 2) {
-    output.resize(2);
-  }
-  if (state() != State::Start) {
+  if (start_time_ >= stop_time_ || state() != State::Start) {
     FillWithZeros(sample_size, output);
     return;
   }
 
-  for (auto &channel : output) {
-    if (channel.size() < sample_size) {
-      channel.resize(sample_size, 0);
-    }
+  MakeOutputValid(sample_size, output);
+
+  size_t front_zero_sample_size = 0;
+  size_t process_sample_size = 0;
+  size_t back_zero_sample_size = 0;
+  GetOutputRegionSize(sample_size, front_zero_sample_size, process_sample_size,
+                      back_zero_sample_size);
+  AssignOutputWithZeros(output, 0, front_zero_sample_size);
+  Process(output, front_zero_sample_size, process_sample_size);
+  AssignOutputWithZeros(output, front_zero_sample_size + process_sample_size,
+                        back_zero_sample_size);
+  if (back_zero_sample_size >= sample_size) {
+    set_state(State::Stop);
   }
-  CreateWaveform(type_, sample_size, output[0]);
-  output[1].assign(output[0].begin(), output[0].end());
 }
 
 OscillatorNode::OscillatorOptions OscillatorNode::GetDefaultOptions() {
@@ -182,6 +161,118 @@ void OscillatorNode::set_type(const std::string &type) {
   std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
   if (!ConvertToOscillatorType(type, type_)) {
     LOGE("Set oscillator node type error: Use unknown type %s\n", type.c_str());
+  }
+}
+
+void OscillatorNode::MakeOutputValid(const size_t &sample_size,
+                                     std::vector<std::vector<float>> &output) {
+  if (output.size() < channel_count_) {
+    output.resize(channel_count_);
+  }
+  for (auto &channel : output) {
+    if (channel.size() < sample_size) {
+      channel.resize(sample_size, 0);
+    }
+  }
+}
+
+void OscillatorNode::GetOutputRegionSize(const size_t sample_size,
+                                         size_t &front_zero_sample_size,
+                                         size_t &process_sample_size,
+                                         size_t &back_zero_sample_size) {
+  front_zero_sample_size = 0;
+  process_sample_size = 0;
+  back_zero_sample_size = 0;
+
+  if (!sample_size) {
+    return;
+  }
+
+  auto base_audio_context_ref = base_audio_context_ptr_.lock();
+  if (!base_audio_context_ref) {
+    LOGE("Invalid audio context reference!\n");
+    return;
+  }
+
+  // clang-format off
+  /** 
+   * Graph
+   *           front_zero_sample_size    process_sample_size      back_zero_sample_size
+   *                 ⬇️                     ⬇️                     ⬇️
+   *          |__________________｜_________________________|________________|
+   *          ⬆️                  ⬆️                        ⬆️                ⬆️
+   *   start_process_time        start_time_           stop_time         end_process_time
+   */
+  // clang-format on
+
+  const double start_produce_time = base_audio_context_ref->current_time();
+  const double output_time = (double)sample_size / seconds_per_sample_;
+  const double end_produce_time = start_produce_time + output_time;
+
+  // calculate front zeros count
+  if (end_produce_time <= start_time_) {
+    front_zero_sample_size = sample_size;
+    return;
+  } else if (start_produce_time < start_time_) {
+    front_zero_sample_size =
+        (start_time_ - start_produce_time) * (double)seconds_per_sample_;
+  }
+
+  // calculate back zeros count
+  if (end_produce_time > stop_time_) {
+    back_zero_sample_size =
+        (end_produce_time - stop_time_) * (double)seconds_per_sample_;
+  }
+
+  // calculate process smaple count
+  process_sample_size =
+      sample_size - front_zero_sample_size - back_zero_sample_size;
+}
+
+bool OscillatorNode::AssignOutputWithZeros(
+    std::vector<std::vector<float>> &output, const size_t &begin,
+    const size_t &sample_size) {
+  if (!sample_size) {
+    return true;
+  }
+  if (output.empty()) {
+    LOGE("Empty output!\n");
+    return false;
+  }
+  const size_t assign_cnt = begin + sample_size;
+  for (auto &channel : output) {
+    if (channel.size() <= begin || channel.size() < assign_cnt) {
+      LOGE("Try to assign channel<size: %zu> with begin<%zu> or "
+           "sample_size<%zu>!\n",
+           channel.size(), begin, begin + sample_size);
+      return false;
+    }
+  }
+
+  for (auto &channel : output) {
+    std::fill(channel.begin() + begin, channel.begin() + assign_cnt, 0);
+  }
+  return true;
+}
+
+void OscillatorNode::Process(std::vector<std::vector<float>> &output,
+                             const size_t &begin, const size_t &sample_size) {
+  if (output.empty()) {
+    LOGE("Output buffer has channel zero!\n");
+    return;
+  }
+
+  std::vector<float> channel_output;
+  CreateWaveform(type_, sample_size, channel_output);
+  for (auto &channel : output) {
+    if (sample_size + begin > channel.size()) {
+      LOGE("Write data length<begin: %zu, sample_size:%zu> largest than output "
+           "buffer size<%zu>!\n",
+           begin, sample_size, channel.size());
+      return;
+    }
+    std::copy(channel_output.begin(), channel_output.end(),
+              channel.begin() + begin);
   }
 }
 

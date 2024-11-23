@@ -124,4 +124,11 @@ bool AudioNode::IsSelfPtr(std::shared_ptr<AudioNode> other_ref) {
   return other_ref.get() == this;
 }
 
+bool AudioNode::IsSameContext(std::shared_ptr<AudioNode> other_ref) {
+  auto this_ctx_ref = base_audio_context_ptr_.lock();
+  auto other_ctx_ref = other_ref->base_audio_context_ptr_.lock();
+  return (this_ctx_ref && other_ctx_ref &&
+          this_ctx_ref.get() == other_ctx_ref.get());
+}
+
 } // namespace js_audio

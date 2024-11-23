@@ -13,7 +13,8 @@ public:
       const uint32_t &channel_count,
       const AudioNode::ChannelCountMode &channel_count_mode,
       const AudioNode::ChannelInterpretation &channel_interpretation,
-      std::shared_ptr<std::mutex> audio_context_lock_ref);
+      std::shared_ptr<std::mutex> audio_context_lock_ref,
+      const float &sample_rate);
   void ConnectTo(std::shared_ptr<AudioNode> dst_audio_node_ref) override;
   void BeConnectedTo(std::shared_ptr<AudioNode> src_audio_node_ref) override;
   void Disconnect() override;
@@ -38,6 +39,8 @@ protected:
   double stop_time_;
   mutable std::mutex start_time_lock_;
   mutable std::mutex stop_time_lock_;
+  const float sample_rate_;
+  const double seconds_per_sample_;
 
 private:
   std::weak_ptr<AudioNode> dst_audio_node_ptr_;

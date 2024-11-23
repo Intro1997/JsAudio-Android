@@ -47,6 +47,17 @@ protected:
 
 private:
   const WaveProducer::WaveType &inner_type() const;
+  
+  void MakeOutputValid(const size_t &sample_size,
+                       std::vector<std::vector<float>> &output);
+  void GetOutputRegionSize(const size_t sample_size,
+                           size_t &front_zero_sample_size,
+                           size_t &process_sample_size,
+                           size_t &back_zero_sample_size);
+  bool AssignOutputWithZeros(std::vector<std::vector<float>> &output,
+                             const size_t &begin, const size_t &sample_size);
+  void Process(std::vector<std::vector<float>> &output, const size_t &begin,
+               const size_t &sample_size);
 
   const char *ConvertTypeToString(const WaveProducer::WaveType &type) const;
   void UpdateComputedFreq();
@@ -58,7 +69,6 @@ private:
   std::shared_ptr<AudioParam> detune_ref_;
   WaveProducer::WaveType type_;
 
-  const float sample_rate_;
   float computed_freq_;
   float sign_;
   float step_;

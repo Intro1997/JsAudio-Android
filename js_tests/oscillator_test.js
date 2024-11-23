@@ -38,6 +38,7 @@ function OscillatorWaveTypeTest() {
   oscillatorNode.type = "sine";
   console.log("oscillatorNode.type = ", oscillatorNode.type);
   oscillatorNode.connect(audioCtx.destination);
+  oscillatorNode.start();
 
   setTimeout(() => {
     oscillatorNode.type = "sawtooth";
@@ -48,6 +49,9 @@ function OscillatorWaveTypeTest() {
   setTimeout(() => {
     oscillatorNode.type = "triangle";
   }, 3000);
+  setTimeout(() => {
+    oscillatorNode.stop();
+  }, 4000);
 }
 
 async function OscillatorTest() {

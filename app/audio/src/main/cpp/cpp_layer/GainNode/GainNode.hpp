@@ -33,8 +33,8 @@ protected:
 
 private:
   void set_gain_value(const float &gain_value);
-  void ProcessSamples(const size_t &sample_size,
-                      std::vector<std::vector<float>> &outputs);
+  void Process(const size_t &sample_size,
+               std::vector<std::vector<float>> &outputs);
 
   std::shared_ptr<AudioParam> gain_ref_;
   std::weak_ptr<AudioNode> dst_audio_node_ptr_;

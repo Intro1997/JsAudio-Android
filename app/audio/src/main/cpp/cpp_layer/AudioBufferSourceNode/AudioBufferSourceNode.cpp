@@ -101,7 +101,6 @@ void AudioBufferSourceNode::Start(const double &when, const double &offset,
     playing_time_ = current_time_ = offset_ = offset;
     duration_ = duration < 0 ? INFINITY : duration;
     stop_time_ = offset_ + duration_;
-    //    stop_time_ = when + offset_ + duration_;
   }
 }
 bool AudioBufferSourceNode::AssignOutputWithZeros(
@@ -337,8 +336,7 @@ AudioBufferSourceNode::AudioBufferSourceNode(
     : AudioScheduledSourceNode(kDefaultNumberOfInputs, kDefaultNumberOfOutputs,
                                kDefaultChannelCount, kDefaultChannelCountMode,
                                kDefaultChannelInterpretation,
-                               audio_context_lock_ref),
-      sample_rate_(sample_rate), seconds_per_sample_(1.0f / sample_rate_),
+                               audio_context_lock_ref, sample_rate),
       audio_buffer_ref_(options.buffer_ref), loop_(options.loop),
       loop_end_(options.loop_end), loop_start_(options.loop_start),
       current_time_(0), playing_time_(0), offset_(0), duration_(-1) {}
@@ -430,7 +428,7 @@ float AudioBufferSourceNode::GetCurrentTimeSampleFromBuffer(
     LOGE("Invalid channel data ptr!\n");
     return 0.0;
   }
-  
+
   if (left_idx == right_idx) {
     return channel_data_ptr->at(left_idx);
   }

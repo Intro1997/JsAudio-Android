@@ -63,6 +63,51 @@ void DelayNode::set_delay_time_value(const float &delay_time_value) {
   delay_time_value_ = delay_time_value;
 }
 
+void DelayNode::Process(const size_t &sample_size,
+                        std::vector<std::vector<float>> &output) {
+  // clang-format off
+  /**
+   * Algorithm Description
+   * 1. Append new output to buffer accroding to current_sample_index
+   * 2. Update delay_sample_index (which should vary accroding to delay time set
+   * by user in js code)
+   * 3. Read inner buffer according to delay_sample_index and sample_size
+   *
+   *
+   * DelayBuffer Produce Process
+   * let c_idx = current_sample_index
+   * let d_idx = delay_sample_index
+   * let s_size = sample_size
+   *
+   *      c_idx   c_idx+s_size       d_idx     c_idx+s_size
+   *        v           v               v           v
+   *        |===========|_______________|===========|_______________|  <-- delay_buffer
+   *              ^                           ^    
+   *           s_size                       s_size    
+   *         
+   * 0. delay_buffer.resize(inner_buffer.size() * 2)
+   * loop start
+   *    1. c_idx = 0
+   *    2. d_idx = delay_buffer.size() / 2
+   *    3. write s_size new data to delay_buffer begin with c_idx
+   *    4. update c_idx to (c_idx + s_size) % delay_buffer.size()
+   *    5. read s_size inner data to output_buffer begin with d_idx
+   *    6. update d_idx to (d_idx + s_size) % delay_buffer.size()
+   * loop end
+   */
+  // clang-format on
+
+  if (src_audio_node_ref_) {
+    src_audio_node_ref_->ProduceSamples(sample_size, output);
+    MakeBufferInvalid(output.size());
+    UpdateDelaySampleIdx(delay_time_value());
+    WriteOutputToBuffer(sample_size, output);
+    ReadBufferToOutput(sample_size, output);
+  } else {
+    AudioNode::FillWithZeros(sample_size, output);
+  }
+}
+
 float DelayNode::delay_time_value() const {
   std::lock_guard<std::mutex> guard(delay_time_lock_);
   return delay_time_value_;
@@ -93,17 +138,7 @@ void DelayNode::ProduceSamples(const size_t &sample_size,
     return;
   }
 
-  if (src_audio_node_ref_) {
-    src_audio_node_ref_->ProduceSamples(sample_size, output);
-    // TODO: move to ProcessSamples()
-    MakeBufferInvalid(output.size());
-    UpdateDelaySampleIdx(delay_time_value());
-    WriteOutputToBuffer(sample_size, output);
-    ReadBufferToOutput(sample_size, output);
-  } else {
-    AudioNode::FillWithZeros(sample_size, output);
-    return;
-  }
+  Process(sample_size, output);
 }
 
 bool DelayNode::IsBufferValid(const size_t &sample_size,
@@ -194,6 +229,10 @@ void DelayNode::ConnectTo(std::shared_ptr<AudioNode> dst_audio_node_ref) {
   if (IsSelfPtr(dst_audio_node_ref)) {
     LOGE("Cannot connect to self!\n");
     return;
+  } else if (!IsSameContext(dst_audio_node_ref)) {
+    LOGE("Error! Cannot connect to audio node which is created by other audio "
+         "context !\n");
+    return;
   }
   std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
   dst_audio_node_ptr_ = dst_audio_node_ref;
@@ -202,6 +241,10 @@ void DelayNode::ConnectTo(std::shared_ptr<AudioNode> dst_audio_node_ref) {
 void DelayNode::BeConnectedTo(std::shared_ptr<AudioNode> src_audio_node_ref) {
   if (IsSelfPtr(src_audio_node_ref)) {
     LOGE("Cannot be connected to self!\n");
+    return;
+  } else if (!IsSameContext(src_audio_node_ref)) {
+    LOGE("Error! Cannot be connected to audio node which is created by other "
+         "audio context !\n");
     return;
   }
   std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);

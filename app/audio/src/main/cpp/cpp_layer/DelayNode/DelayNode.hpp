@@ -39,7 +39,8 @@ protected:
 
 private:
   void set_delay_time_value(const float &delay_time_value);
-
+  void Process(const size_t &sample_size,
+                      std::vector<std::vector<float>> &output);
   bool IsBufferValid(const size_t &sample_size,
                      const std::vector<std::vector<float>> &output);
   void MakeBufferInvalid(const size_t channel_size);

@@ -53,6 +53,10 @@ void AudioDestinationNode::BeConnectedTo(
   if (IsSelfPtr(src_audio_node_ref)) {
     LOGE("Self cannot be connected to self!\n");
     return;
+  } else if (!IsSameContext(src_audio_node_ref)) {
+    LOGE("Error! Cannot be connected to audio node which is created by other audio "
+         "context !\n");
+    return;
   }
 
   std::lock_guard<std::mutex> guard(*audio_context_lock_ref_);
