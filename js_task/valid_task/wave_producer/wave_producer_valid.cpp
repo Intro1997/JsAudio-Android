@@ -60,7 +60,7 @@ int ValidateData(const std::vector<double> &wave_producer_samples,
       }
       pass_error_cnt--;
     }
-    wave_producer_sample_idx += 2;
+    wave_producer_sample_idx += 1;
   }
 
   validate_data_file.close();
