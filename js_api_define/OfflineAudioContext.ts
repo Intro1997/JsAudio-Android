@@ -25,41 +25,7 @@ interface OfflineAudioContext extends BaseAudioContext {
     sampleRate: number /* number */
   ): OfflineAudioContext
 
-  // @ts-ignore
-  oncomplete(ev: OfflineAudioCompletionEvent)
-
   startRendering(): Promise<AudioBuffer>;
-  suspend(suspendTime: number /* double  */): Promise<undefined>;
-  resume(): Promise<undefined>;
-
-
-  addEventListener<K extends keyof OfflineAudioContextEventMap>(
-    type: K,
-    listener: (
-      ev: OfflineAudioContextEventMap[K] /* OfflineAudioCompletionEvent */
-    ) => any,
-    options?: boolean | AddEventListenerOptions
-  ): void;
-
-  addEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions
-  ): void;
-
-  removeEventListener<K extends keyof OfflineAudioContextEventMap>(
-    type: K,
-    listener: (
-      ev: OfflineAudioContextEventMap[K] /* OfflineAudioCompletionEvent */
-    ) => any,
-    options?: boolean | EventListenerOptions
-  ): void;
-
-  removeEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: boolean | EventListenerOptions
-  ): void;
 
   readonly length: number /* unsigned long */;
 }

@@ -22,30 +22,4 @@ interface AudioBufferSourceNode extends AudioScheduledSourceNode {
    * if (duration + offset <= loop_start), playing empty sound
    */
   start(when?: number, offset?: number, duration?: number): void;
-  // addEventListener<K extends keyof AudioScheduledSourceNodeEventMap>(
-  //   type: K,
-  //   listener: (
-  //     this: AudioBufferSourceNode,
-  //     ev: AudioScheduledSourceNodeEventMap[K]
-  //   ) => any,
-  //   options?: boolean | AddEventListenerOptions
-  // ): void;
-  // addEventListener(
-  //   type: string,
-  //   listener: EventListenerOrEventListenerObject,
-  //   options?: boolean | AddEventListenerOptions
-  // ): void;
-  // removeEventListener<K extends keyof AudioScheduledSourceNodeEventMap>(
-  //   type: K,
-  //   listener: (
-  //     this: AudioBufferSourceNode,
-  //     ev: AudioScheduledSourceNodeEventMap[K]
-  //   ) => any,
-  //   options?: boolean | EventListenerOptions
-  // ): void;
-  // removeEventListener(
-  //   type: string,
-  //   listener: EventListenerOrEventListenerObject,
-  //   options?: boolean | EventListenerOptions
-  // ): void;
 }

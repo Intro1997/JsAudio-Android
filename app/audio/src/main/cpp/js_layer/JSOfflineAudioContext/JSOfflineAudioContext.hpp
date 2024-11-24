@@ -9,10 +9,8 @@ public:
 public:
   JSOfflineAudioContext(const Napi_IH::IHCallbackInfo &info);
 
-  // Napi::Value Resume(const Napi::CallbackInfo &info);
-  // Napi::Value Suspend(const Napi::CallbackInfo &info);
   Napi::Value startRendering(const Napi::CallbackInfo &info);
-  
+
   Napi::Value getLength(const Napi::CallbackInfo &info);
 
 private:
