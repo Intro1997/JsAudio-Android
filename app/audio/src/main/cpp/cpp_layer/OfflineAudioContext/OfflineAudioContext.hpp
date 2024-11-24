@@ -5,15 +5,16 @@
 #include <thread>
 namespace js_audio {
 class OfflineAudioContext : public BaseAudioContext {
+  using StartRenderingCb =
+      const std::function<void(std::shared_ptr<AudioBuffer>)>;
+
 public:
   OfflineAudioContext(const uint32_t &number_of_channels = 0,
                       const uint32_t &length = 0,
                       const float &sample_rate = 0.0f);
 
-  // TODO: alias a type ot cb
-  bool StartRendering(
-      const std::function<void(std::shared_ptr<AudioBuffer>)> &cb_ref,
-      std::weak_ptr<BaseAudioContext> self_ptr);
+  bool StartRendering(const StartRenderingCb &cb_ref,
+                      std::weak_ptr<BaseAudioContext> self_ptr);
 
   // return real time
   double current_time() override;
@@ -33,10 +34,8 @@ private:
     std::function<void()> cb;
   };
 
-  // TODO: alias a type ot cb
-  void InnerRendering(
-      const std::function<void(std::shared_ptr<AudioBuffer>)> &cb_ref,
-      std::weak_ptr<BaseAudioContext> self_ptr);
+  void InnerRendering(const StartRenderingCb &cb_ref,
+                      std::weak_ptr<BaseAudioContext> self_ptr);
   void InitOutputArray(std::vector<std::vector<float>> &output,
                        const size_t size);
 

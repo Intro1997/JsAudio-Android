@@ -24,7 +24,7 @@ struct AudioPlayerConfig {
 
 class AudioPlayer {
 public:
-  AudioPlayer(const AudioPlayerConfig &audio_player_config); // TODO: remove it
+  AudioPlayer(const AudioPlayerConfig &audio_player_config);
 
   virtual void Start();
 

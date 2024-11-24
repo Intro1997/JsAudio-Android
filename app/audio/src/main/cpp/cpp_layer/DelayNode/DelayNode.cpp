@@ -185,7 +185,7 @@ void DelayNode::WriteOutputToBuffer(
       return;
     }
 
-    // TODO: use memcpy to optimize
+    // TODO: try to optimize here
     const size_t buffer_channel_size = buffer_[i].size();
     uint32_t curr_idx = current_sample_idx_;
     for (int j = 0; j < sample_size; j++, curr_idx++) {
@@ -201,8 +201,6 @@ void DelayNode::WriteOutputToBuffer(
 void DelayNode::ReadBufferToOutput(const size_t &sample_size,
                                    std::vector<std::vector<float>> &output) {
   if (!IsBufferValid(sample_size, output)) {
-    // TODO: implementation IsBufferValid:
-    // 1. check if buffer size >= output.size()
     LOGE("Inner buffer is not ready!\n");
     return;
   }

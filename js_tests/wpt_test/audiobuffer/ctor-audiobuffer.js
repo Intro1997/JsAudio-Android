@@ -4,8 +4,6 @@
  *    - nodejs has not IndexSizeError
  * 2. use RangeError to replace NotSupportedError
  *    - nodejs has not NotSupportedError
- * 3. comment multiple contexts test because we do not have AudioBufferSourceNode
- *    - TODO: finish AudioBufferSourceNode!
  */
 
 const testName = "wptAudioBufferTest1<ctor-audiobuffer.js>";
@@ -199,55 +197,55 @@ function wptAudioBufferTest1() {
     task.done();
   });
 
-  // audit.define("multiple contexts", (task, should) => {
-  //   // Test that an AudioBuffer can be used for different contexts.
-  //   let buffer = new AudioBuffer({
-  //     length: 128,
-  //     sampleRate: context.sampleRate,
-  //   });
+  audit.define("multiple contexts", (task, should) => {
+    // Test that an AudioBuffer can be used for different contexts.
+    let buffer = new AudioBuffer({
+      length: 128,
+      sampleRate: context.sampleRate,
+    });
 
-  //   // Don't use getChannelData here because we want to be able to use
-  //   // |data| to compare the final results of playing out this buffer.  (If
-  //   // we did, |data| gets detached when the sources play.)
-  //   let data = new Float32Array(buffer.length);
-  //   for (let k = 0; k < data.length; ++k) data[k] = 1 + k;
-  //   buffer.copyToChannel(data, 0);
+    // Don't use getChannelData here because we want to be able to use
+    // |data| to compare the final results of playing out this buffer.  (If
+    // we did, |data| gets detached when the sources play.)
+    let data = new Float32Array(buffer.length);
+    for (let k = 0; k < data.length; ++k) data[k] = 1 + k;
+    buffer.copyToChannel(data, 0);
 
-  //   let c1 = new OfflineAudioContext(1, 128, context.sampleRate);
-  //   let c2 = new OfflineAudioContext(1, 128, context.sampleRate);
+    let c1 = new OfflineAudioContext(1, 128, context.sampleRate);
+    let c2 = new OfflineAudioContext(1, 128, context.sampleRate);
 
-  //   let s1 = new AudioBufferSourceNode(c1, { buffer: buffer });
-  //   let s2 = new AudioBufferSourceNode(c2, { buffer: buffer });
+    let s1 = new AudioBufferSourceNode(c1, { buffer: buffer });
+    let s2 = new AudioBufferSourceNode(c2, { buffer: buffer });
 
-  //   s1.connect(c1.destination);
-  //   s2.connect(c2.destination);
+    s1.connect(c1.destination);
+    s2.connect(c2.destination);
 
-  //   s1.start();
-  //   s2.start();
+    s1.start();
+    s2.start();
 
-  //   Promise.all([
-  //     c1.startRendering().then(function (resultBuffer) {
-  //       return resultBuffer;
-  //     }),
-  //     c2.startRendering().then(function (resultBuffer) {
-  //       return resultBuffer;
-  //     }),
-  //   ]).then((resultBuffers) => {
-  //     let c1ResultValue = should(
-  //       resultBuffers[0].getChannelData(0),
-  //       "c1 result"
-  //     ).beEqualToArray(data);
-  //     let c2ResultValue = should(
-  //       resultBuffers[1].getChannelData(0),
-  //       "c2 result"
-  //     ).beEqualToArray(data);
-  //     should(
-  //       c1ResultValue && c2ResultValue,
-  //       "AudioBuffer shared between two different contexts"
-  //     ).message("correctly", "incorrectly");
-  //     task.done();
-  //   });
-  // });
+    Promise.all([
+      c1.startRendering().then(function (resultBuffer) {
+        return resultBuffer;
+      }),
+      c2.startRendering().then(function (resultBuffer) {
+        return resultBuffer;
+      }),
+    ]).then((resultBuffers) => {
+      let c1ResultValue = should(
+        resultBuffers[0].getChannelData(0),
+        "c1 result"
+      ).beEqualToArray(data);
+      let c2ResultValue = should(
+        resultBuffers[1].getChannelData(0),
+        "c2 result"
+      ).beEqualToArray(data);
+      should(
+        c1ResultValue && c2ResultValue,
+        "AudioBuffer shared between two different contexts"
+      ).message("correctly", "incorrectly");
+      task.done();
+    });
+  });
 
   audit.run();
   return waitUntilTestComplete(globalThis, testName);

@@ -246,7 +246,6 @@ void AudioBufferSourceNode::Process(std::vector<std::vector<float>> &output,
           GetCurrentTimeOutputSample(actual_loop_start, actual_loop_end, c);
       output[c][i] = sample_data;
     }
-    // TODO: move to update time
     current_time_ += seconds_per_sample_;
     playing_time_ += compute_playback_rate() * seconds_per_sample_;
   }

@@ -31,10 +31,8 @@ OfflineAudioContext::OfflineAudioContext(const uint32_t &number_of_channels,
   set_render_state(RenderState::kFinish);
 }
 
-// TODO: alias a type ot cb
 bool OfflineAudioContext::StartRendering(
-    const std::function<void(std::shared_ptr<AudioBuffer>)> &cb_ref,
-    std::weak_ptr<BaseAudioContext> self_ptr) {
+    const StartRenderingCb &cb_ref, std::weak_ptr<BaseAudioContext> self_ptr) {
   if (render_state() != RenderState::kFinish) {
     return false;
   }
@@ -72,10 +70,8 @@ void OfflineAudioContext::InitOutputArray(
   }
 }
 
-// TODO: alias a type ot cb
 void OfflineAudioContext::InnerRendering(
-    const std::function<void(std::shared_ptr<AudioBuffer>)> &cb_ref,
-    std::weak_ptr<BaseAudioContext> self_ptr) {
+    StartRenderingCb &cb_ref, std::weak_ptr<BaseAudioContext> self_ptr) {
   auto self_ref = self_ptr.lock();
   if (!self_ref) {
     LOGE("Invalid offline audio context\n");

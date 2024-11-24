@@ -33,7 +33,6 @@ void AudioMixer::Convert2ChannelFloatToSlint16(
   }
 }
 
-// TODO: MixSample only support 2 double channel sample now
 void AudioMixer::MixSample(const std::vector<SLint16> &samples0,
                            const std::vector<SLint16> &samples1,
                            std::vector<SLint16> &output) {

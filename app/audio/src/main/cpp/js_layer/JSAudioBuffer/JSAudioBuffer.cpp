@@ -29,7 +29,7 @@ GetAudioBufferRef(const Napi_IH::IHCallbackInfo &info) {
   uint32_t number_of_channels = 1;
   const uint32_t length = options.Get("length").ToNumber();
   const float sample_rate = options.Get("sampleRate").ToNumber();
-  // TODO: move all check to a util header
+
   if (options.Has("numberOfChannels")) {
     number_of_channels = options.Get("numberOfChannels").ToNumber();
     if (number_of_channels < 1 || number_of_channels > 32) {

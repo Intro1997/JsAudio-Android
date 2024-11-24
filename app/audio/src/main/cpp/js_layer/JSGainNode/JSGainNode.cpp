@@ -21,7 +21,6 @@ static bool ExtractOptionsFromInfo(const Napi_IH::IHCallbackInfo &info,
 static bool GetGainValueFromJsOptions(Napi::Env napi_env,
                                       const Napi::Object &options, float &gain,
                                       Napi::Error &napi_error);
-// TODO: move to JSAudioNode protect area
 
 namespace js_audio {
 JSGainNode::JSGainNode(const Napi_IH::IHCallbackInfo &info,

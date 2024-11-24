@@ -74,7 +74,6 @@ private:
   float step_;
   double current_time_; // should belong to [0, 2*pi]
 
-  // TODO: use FLT_MAX to calculate max of detune
   static const float kDetuneMax;
   static const float kDetuneMin;
   static const uint32_t kNumberOfInputs;

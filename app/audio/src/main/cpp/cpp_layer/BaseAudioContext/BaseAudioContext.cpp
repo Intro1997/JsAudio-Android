@@ -9,9 +9,6 @@ BaseAudioContext::BaseAudioContext(
     : BaseAudioContext(std::get<0>(params), std::get<1>(params),
                        std::get<2>(params)) {}
 
-// TODO: we now have 2 types of AudioContext, but we do not use AudioEngine  in
-// OfflineAudioContext. So we need to add sampleRate, numberOfChannels and
-// sampleRate to BaseAudioContext constructor and relative properties.
 BaseAudioContext::BaseAudioContext(const ContextType &type,
                                    const uint32_t &number_of_channels,
                                    const float &sample_rate)
