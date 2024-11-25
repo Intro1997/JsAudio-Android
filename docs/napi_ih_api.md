@@ -1,4 +1,4 @@
-# Description
+# NAPI_IH
 
 `napi_ih` means "napi inheritance helper" which is a pitch to napi to support inheritance and try to keep the style of napi. The implementation is inspired by https://github.com/ajihyf/node-addon-api-helper and https://mmomtchev.medium.com/-class-inheritance-with-node-api-and-node-addon-api-c180334d9902
 
