@@ -32,4 +32,4 @@ The node env of this project is based on [v14.17.0](https://github.com/toyobayas
 
 ### NAPI_IH
 
-The goal of the project architecture is to make the structure of the napi layer consistent with the cpp layer. But NAPI do not support inheritance, so we make a pitch to NAPI, that is [NAPI_IH](./napi_ih_api.md).
+The goal of the project architecture is to make the structure of the napi layer consistent with the cpp layer. But NAPI do not support inheritance, so we make a patch to NAPI, that is [NAPI_IH](./napi_ih_api.md).

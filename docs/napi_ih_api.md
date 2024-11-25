@@ -5,12 +5,12 @@
 # Warning
 
 This is a **VERY SIMPLE TRY** to make an inheritance patch of napi, and this only implements necessary apis for JSAudio-Android project!
-This patch **DOESN'T SUPPORT** multi-thread, **DOESN'T COMPATIABLE WITH** origin `napi_api_module()` api and **DOESN'T SUPPORT** multi-inheritance. This is designed to **ONLY BE USED** in JSAudio-Android PROJECT!
+This patch **DOESN'T SUPPORT** multi-thread, **DOESN'T COMPATIABLE WITH** origin `napi_api_module()` api and **DOESN'T SUPPORT** multi-inheritance. This is designed to **ONLY BE USED** in JSAudio-Android project!
 If you want to use napi with inheritance more safe and realiable, please try https://github.com/ajihyf/node-addon-api-helper.
 
 # Usage
 
-`napi_ih` only supports be used in inheritance.
+`napi_ih` only be used in inheritance.
 
 ## Inheritance
 
@@ -78,9 +78,12 @@ enum class ClassVisibility{
 
 `Napi_IH::IHCallbackInfo` is a wrapper of `Napi::CallbackInfo`.
 
-### IHCallbackInfo(const Napi::CallbackInfo &info);
+### IHCallbackInfo(info, user_data);
 
-You can only create `IHCallbackInfo` by a `Napi::CallbackInfo`, you cannot assign an `IHCallbackInfo` object to other.
+You can only create `IHCallbackInfo` by a `Napi::CallbackInfo`, you cannot assign an `IHCallbackInfo` object to another `IHCallbackInfo` object.
+
+- `[in] info`: A `Napi::CallbackInfo` type object.
+- `[in] data (optional)`: An optional `void *` pointer, which is used to pass user data to constructor. Default is `nullptr`.
 
 ### Napi::Env Env() const;
 
@@ -243,6 +246,34 @@ The `method` must be of the form
 void MethodName(const Napi::CallbackInfo& info);
 ```
 
+template <typename T, IHObjectWrap::InstanceMethodCallback<T> method>
+
+### InstanceMethod\<T, method\>(utf8name, attributes = napi_default, data = nullptr);
+
+```cpp
+template <typename T, IHObjectWrap::InstanceMethodCallback<T> method>
+static Napi::ClassPropertyDescriptor<MethodWrapper>
+InstanceMethod(const char *utf8name,
+                napi_property_attributes attributes = napi_default,
+                void *data = nullptr);
+```
+
+- `[in] T`: Current cpp class type which the `method` belongs to.
+- `[in] method`: The native function that represents a method provided by the
+  add-on.
+- `[in] utf8name`: Null-terminated string that represents the name of the method
+  provided by instances of the class.
+- `[in] attributes`: The attributes associated with the property. One or more of
+  `napi_property_attributes`.
+- `[in] data`: User-provided data passed into the method when it is invoked.
+
+Returns a `Napi::ClassPropertyDescriptor<T>` object that represents a method
+provided by instances of the class. The method must be of the form:
+
+```cpp
+Napi::Value MethodName(const Napi::CallbackInfo& info);
+```
+
 ### InstanceAccessor\<T, getter, setter = nullptr\>(..., vector<PropertyDescriptor>, ...)
 
 ```cpp
@@ -304,7 +335,7 @@ Return the cpp object pointer of the cpp object wrapped by js object. If T is no
 
 ## Napi_IH::FunctionWrapper
 
-A wrapper of `Napi::Function` to make sure you can pass parameters other than `const Napi::CallbackInfo&` type.
+A wrapper of `Napi::Function` to make sure you can new NAPI object with parameters other than `const Napi::CallbackInfo&` type.
 
 ### Constructor
 
@@ -356,8 +387,6 @@ private:
 };
 ```
 
-WARN: this api MUST be used in SYNC!
-
 ## Napi_IH::Error
 
 Class `Napi_IH::Error` is a `Napi::Error::New` function wrapper to help developer throwing error message with format form like `printf()` function in c/cpp.
@@ -408,6 +437,36 @@ static Napi::RangeError New(Napi::Env env, const char *format, Args... args);
 - `[in] env`: The environment in which to construct the `Napi::Error` object.
 - `[in] format`: Pointer to a null-terminated byte string specifying how to interpret the data.
 - `[in] args`: Arguments specifying data to print. If any argument after default argument promotions is not the type expected by the corresponding conversion specifier, or if there are fewer arguments than required by format, the behavior is undefined. If there are more arguments than required by format, the extraneous arguments are evaluated and ignored.
+
+## Helper API
+
+### NAPI_IH_API_MODULE(modname, regfunc)
+
+- `[in] modname`: A c string which represents the module name of created napi module.
+- `[in] regfunc`: A function which is type of `Napi::Object Init(Napi::Env env, Napi::Object exports)`. An initializer of created napi module.
+
+Register napi module with `modname`.
+
+### NAPI_IH_VERIFY_INSTANCE_OF(napi_obj, napi_type_name)
+
+- `[in] napi_obj`: A `Napi::Object` object.
+- `[in] napi_type_name`: A c string or `std::string` which represent the object type specified in `DefineClass()` or js built-in type.
+
+Check if `napi_obj` is a type of `napi_type_name`, if yes, return true; otherwise return false.
+
+### bool VerifyExactInstanceType(object, napi_type_name)
+
+- `[in] object`: A `Napi::Object` object.
+- `[in] napi_type_name`: A c string or `std::string` which represent the object type specified in `DefineClass()`.
+
+Check if `object` is the exactly type of `napi_type_name`, if yes, return true; otherwise return false.
+
+### bool VerifyInstanceOf<T>(const Napi::Object &object);
+
+- `[in] T`: Class name which inherits from IHObjectWrap.
+- `[in] object`: A `Napi::Object` object.
+
+Check if `object` is type of `T`, if yes, return true; otherwise return false.
 
 # Thanks
 
