@@ -7,23 +7,27 @@ This project aims to run Web Audio API in Android with javascript code. Most of 
 
 Now it supports following Web Audio feature:
 
-| Features                    | Interface Support State                     | Test State                                                                                                                                                        |
-| --------------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AudioBuffer                 | <font color="green">Full Support</font>     | <font color="yellow">Not Pass All Wpt Test (lack support of "ConvolverNode", "ChannelMergerNode")</font>                                                          |
-| AudioContext                | <font color="green">Partial Support</font>  | <font color="yellow">Not Test Yet</font>                                                                                                                          |
-| AudioDestinationNode        | <font color="yellow">Full Support</font>    | <font color="green">Complete</font>                                                                                                                               |
-| AudioNode                   | <font color="yellow">Partial Support</font> | <font color="red">Not Test Yet</font>                                                                                                                             |
-| AudioParam                  | <font color="yellow">Partial Support</font> | <font color="red">Not Test Yet</font>                                                                                                                             |
-| AudioScheduledSourceNode    | <font color="yellow">Partial Support</font> | <font color="grey">No Wpt Test</font>                                                                                                                             |
-| BaseAudioContext            | <font color="yellow">Partial Support</font> | <font color="grey">No Wpt Test</font>                                                                                                                             |
-| OfflineAudioCompletionEvent | <font color="yellow">Partial Support</font> | <font color="grey">No Wpt Test</font>                                                                                                                             |
-| OfflineAudioContext         | <font color="yellow">Partial Support</font> | <font color="green">Complete</font>                                                                                                                               |
-| OscillatorNode              | <font color="yellow">Partial Support</font> | <font color="yellow">Not Pass All Wpt Test (lack support of "ChannelMergerNode")</font>                                                                           |
-| GainNode                    | <font color="green">Full Support</font>     | <font color="yellow">Not Pass All Wpt Test (lack support of "ChannelMergerNode")</font>                                                                           |
-| DelayNode                   | <font color="green">Full Support</font>     | <font color="yellow">Not Pass All Wpt Test (lack support of "ConstantSourceNode", "ChannelSplitterNode", "ChannelMergerNode")</font>                              |
-| AudioBufferSourceNode       | <font color="green">Full Support</font>     | <font color="yellow">Not Pass All Wpt Test (lack support of "AudioWorkletNode", "ChannelMergerNode", "EventListener", "decodeAudioData", "setValueAtTime")</font> |
+| Features                    | Interface Support State                                              | Test State                                                                 |
+| --------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| AudioBuffer                 | ![Static Badge](https://img.shields.io/badge/Full_Support-green)     | ![Static Badge](https://img.shields.io/badge/Not_Pass_All_Wpt_Test-orange) |
+| AudioContext                | ![Static Badge](https://img.shields.io/badge/Partial_Support-orange) | ![Static Badge](https://img.shields.io/badge/Not_Test_Yet-%23FF0000)       |
+| AudioDestinationNode        | ![Static Badge](https://img.shields.io/badge/Full_Support-green)     | ![Static Badge](https://img.shields.io/badge/Complete-green)               |
+| AudioNode                   | ![Static Badge](https://img.shields.io/badge/Partial_Support-orange) | ![Static Badge](https://img.shields.io/badge/Not_Test_Yet-%23FF0000)       |
+| AudioParam                  | ![Static Badge](https://img.shields.io/badge/Partial_Support-orange) | ![Static Badge](https://img.shields.io/badge/Not_Test_Yet-%23FF0000)       |
+| AudioScheduledSourceNode    | ![Static Badge](https://img.shields.io/badge/Partial_Support-orange) | ![Static Badge](https://img.shields.io/badge/No_Wpt_Test-grey)             |
+| BaseAudioContext            | ![Static Badge](https://img.shields.io/badge/Partial_Support-orange) | ![Static Badge](https://img.shields.io/badge/No_Wpt_Test-grey)             |
+| OfflineAudioCompletionEvent | ![Static Badge](https://img.shields.io/badge/Partial_Support-orange) | ![Static Badge](https://img.shields.io/badge/No_Wpt_Test-grey)             |
+| OfflineAudioContext         | ![Static Badge](https://img.shields.io/badge/Partial_Support-orange) | ![Static Badge](https://img.shields.io/badge/Complete-green)               |
+| OscillatorNode              | ![Static Badge](https://img.shields.io/badge/Partial_Support-orange) | ![Static Badge](https://img.shields.io/badge/Not_Pass_All_Wpt_Test-orange) |
+| GainNode                    | ![Static Badge](https://img.shields.io/badge/Full_Support-green)     | ![Static Badge](https://img.shields.io/badge/Not_Pass_All_Wpt_Test-orange) |
+| DelayNode                   | ![Static Badge](https://img.shields.io/badge/Full_Support-green)     | ![Static Badge](https://img.shields.io/badge/Not_Pass_All_Wpt_Test-orange) |
+| AudioBufferSourceNode       | ![Static Badge](https://img.shields.io/badge/Full_Support-green)     | ![Static Badge](https://img.shields.io/badge/Not_Pass_All_Wpt_Test-orange) |
 
 more detail info is descript [here](./js_api_define/features.md).
+
+![Static Badge](https://img.shields.io/badge/Pass-green)
+![Static Badge](https://img.shields.io/badge/Not_Pass_All-orange)
+![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)
 
 # Build & Run
 

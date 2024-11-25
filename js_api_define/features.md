@@ -11,16 +11,16 @@ All Support
 
 ### WPT Test
 
-| Wpt Test                                       | Test State                        | Description                     |
-| ---------------------------------------------- | --------------------------------- | ------------------------------- |
-| acquire-the-content.html                       | <font color="red">Not Test</font> | Not implement ConvolverNode     |
-| audiobuffer-copy-channel.html                  | <font color="green">Pass</font>   |                                 |
-| audiobuffer-getChannelData.html                | <font color="green">Pass</font>   |                                 |
-| audiobuffer-reuse.html                         | <font color="red">Not Test</font> | Not implement ChannelMergerNode |
-| audiobuffer.html                               | <font color="green">Pass</font>   |                                 |
-| ctor-audiobuffer.html                          | <font color="green">Pass</font>   |                                 |
-| crashtests/copyFromChannel-bufferOffset-1.html | <font color="green">Pass</font>   |                                 |
-| crashtests/copyToChannel-bufferOffset-1.html   | <font color="green">Pass</font>   |                                 |
+| Wpt Test                                       | Test State                                                                                | Description                     |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------- |
+| acquire-the-content.html                       | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font> | Not implement ConvolverNode     |
+| audiobuffer-copy-channel.html                  | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                 |
+| audiobuffer-getChannelData.html                | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                 |
+| audiobuffer-reuse.html                         | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font> | Not implement ChannelMergerNode |
+| audiobuffer.html                               | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                 |
+| ctor-audiobuffer.html                          | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                 |
+| crashtests/copyFromChannel-bufferOffset-1.html | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                 |
+| crashtests/copyToChannel-bufferOffset-1.html   | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                 |
 
 ## AudioContext
 
@@ -47,7 +47,7 @@ All Support
 
 ### WPT Test
 
-Not Test Yet
+![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)
 
 ## AudioDestinationNode
 
@@ -84,7 +84,7 @@ Pass All Test
 
 ### WPT Test
 
-Not Test Yet
+![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)
 
 ## AudioParam
 
@@ -107,7 +107,7 @@ Not Test Yet
 
 ### WPT Test
 
-Not Test Yet
+![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)
 
 ## AudioScheduledSourceNode
 
@@ -121,7 +121,7 @@ Not Test Yet
 
 ### WPT Test
 
-Not Test Yet (No Wpt Test)
+![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000) (No Wpt Test)
 
 ## BaseAudioContext
 
@@ -159,7 +159,7 @@ Not Test Yet (No Wpt Test)
 
 ### WPT Test
 
-Not Test Yet (No Wpt Test)
+![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000) (No Wpt Test)
 
 ## OfflineAudioCompletionEvent
 
@@ -172,7 +172,7 @@ Not Test Yet (No Wpt Test)
 
 ### WPT Test
 
-Not Test Yet (No Wpt Test)
+![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000) (No Wpt Test)
 
 ## OfflineAudioContext
 
@@ -190,12 +190,12 @@ Not Test Yet (No Wpt Test)
 
 ### WPT Test
 
-| Wpt Test                                            | Test State                        | Description                           |
-| --------------------------------------------------- | --------------------------------- | ------------------------------------- |
-| ctor-offlineaudiocontext.html                       | <font color="green">Pass</font>   |                                       |
-| current-time-block-size.html                        | <font color="green">Pass</font>   |                                       |
-| offlineaudiocontext-detached-execution-context.html | <font color="red">Not Test</font> | do not support document in NodeJS env |
-| startrendering-after-discard.html                   | <font color="red">Not Test</font> | do not support document in NodeJS env |
+| Wpt Test                                            | Test State                                                                                | Description                           |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------- |
+| ctor-offlineaudiocontext.html                       | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                       |
+| current-time-block-size.html                        | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                       |
+| offlineaudiocontext-detached-execution-context.html | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font> | do not support document in NodeJS env |
+| startrendering-after-discard.html                   | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font> | do not support document in NodeJS env |
 
 ## OscillatorNode
 
@@ -211,13 +211,13 @@ Not Test Yet (No Wpt Test)
 
 ### WPT Test
 
-| Wpt Test                          | Test State                               | Description                             |
-| --------------------------------- | ---------------------------------------- | --------------------------------------- |
-| ctor-oscillator.html              | <font color="yellow">Not Pass All</font> | Not implement PeriodicWave              |
-| detune-limiting.html              | <font color="red">Not Test</font>        | Not implement ChannelMergerNode         |
-| detune-overflow.html              | <font color="green">Pass</font>          |                                         |
-| osc-basic-waveform.html           | <font color="yellow">Not Pass All</font> | Not implement PeriodicWave              |
-| crashtests/stop-before-start.html | <font color="red">Not Test</font>        | Not implement AudioParam.setValueAtTime |
+| Wpt Test                          | Test State                                                                                    | Description                             |
+| --------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------- |
+| ctor-oscillator.html              | <font color="yellow">![Static Badge](https://img.shields.io/badge/Not_Pass_All-orange)</font> | Not implement PeriodicWave              |
+| detune-limiting.html              | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font>     | Not implement ChannelMergerNode         |
+| detune-overflow.html              | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>           |                                         |
+| osc-basic-waveform.html           | <font color="yellow">![Static Badge](https://img.shields.io/badge/Not_Pass_All-orange)</font> | Not implement PeriodicWave              |
+| crashtests/stop-before-start.html | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font>     | Not implement AudioParam.setValueAtTime |
 
 ## DelayNode
 
@@ -227,19 +227,19 @@ All Support
 
 ### WPT Test
 
-| Wpt Test                            | Test State                        | Description                                                              |
-| ----------------------------------- | --------------------------------- | ------------------------------------------------------------------------ |
-| ctor-delay.html                     | <font color="green">Pass</font>   |                                                                          |
-| delay-test.html                     | <font color="red">Not Test</font> | Not implement ConstantSourceNode                                         |
-| delaynode-channel-count-1.html      | <font color="red">Not Test</font> | Not implement ChannelSplitterNode, ChannelMergerNode, ConstantSourceNode |
-| delaynode-max-default-delay.html    | <font color="green">Pass</font>   |                                                                          |
-| delaynode-max-nondefault-delay.html | <font color="green">Pass</font>   |                                                                          |
-| delaynode-maxdelay.html             | <font color="green">Pass</font>   |                                                                          |
-| delaynode-maxdelaylimit.html        | <font color="green">Pass</font>   |                                                                          |
-| delaynode-scheduling.html           | <font color="red">Not Test</font> | Not implement AudioParam.setValueAtTime                                  |
-| delaynode.html                      | <font color="green">Pass</font>   |                                                                          |
-| maxdelay-rounding.html              | <font color="red">Not Test</font> | Not implement ConstantSourceNode                                         |
-| no-dezippering.html                 | <font color="red">Not Test</font> | Not implement ConstantSourceNode,AudioParam.setValueAtTime               |
+| Wpt Test                            | Test State                                                                                | Description                                                              |
+| ----------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| ctor-delay.html                     | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                                          |
+| delay-test.html                     | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font> | Not implement ConstantSourceNode                                         |
+| delaynode-channel-count-1.html      | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font> | Not implement ChannelSplitterNode, ChannelMergerNode, ConstantSourceNode |
+| delaynode-max-default-delay.html    | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                                          |
+| delaynode-max-nondefault-delay.html | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                                          |
+| delaynode-maxdelay.html             | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                                          |
+| delaynode-maxdelaylimit.html        | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                                          |
+| delaynode-scheduling.html           | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font> | Not implement AudioParam.setValueAtTime                                  |
+| delaynode.html                      | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                                          |
+| maxdelay-rounding.html              | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font> | Not implement ConstantSourceNode                                         |
+| no-dezippering.html                 | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font> | Not implement ConstantSourceNode,AudioParam.setValueAtTime               |
 
 ## GainNode
 
@@ -249,12 +249,12 @@ All Support
 
 ### WPT Test
 
-| Wpt Test            | Test State                        | Description                                         |
-| ------------------- | --------------------------------- | --------------------------------------------------- |
-| ctor-gain.html      | <font color="green">Pass</font>   |                                                     |
-| gain-basic.html     | <font color="green">Pass</font>   |                                                     |
-| gain.html           | <font color="green">Pass</font>   |                                                     |
-| no-dezippering.html | <font color="red">Not Test</font> | Not implement ConstantSourceNode, ChannelMergerNode |
+| Wpt Test            | Test State                                                                                | Description                                         |
+| ------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| ctor-gain.html      | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                     |
+| gain-basic.html     | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                     |
+| gain.html           | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                     |
+| no-dezippering.html | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font> | Not implement ConstantSourceNode, ChannelMergerNode |
 
 ## AudioBufferSourceNode
 
@@ -264,25 +264,25 @@ All Support
 
 ### WPT Test
 
-| Wpt Test                                 | Test State                        | Description                                    |
-| ---------------------------------------- | --------------------------------- | ---------------------------------------------- |
-| active-processing.https.html             | <font color="red">Not Test</font> | Not implement AudioWorkletNode                 |
-| audiobuffersource-basic.html             | <font color="green">Pass</font>   |                                                |
-| audiobuffersource-channels.html          | <font color="green">Pass</font>   |                                                |
-| audiobuffersource-duration-loop.html     | <font color="green">Pass</font>   |                                                |
-| audiobuffersource-ended.html             | <font color="red">Not Test</font> | Not implement AudioScheduledSourceNode.onended |
-| audiobuffersource-grain.html             | <font color="green">Pass</font>   |                                                |
-| audiobuffersource-multi-channels.html    | <font color="red">Not Test</font> | Not implement AudioContext.decodeAudioData     |
-| audiobuffersource-null.html              | <font color="green">Pass</font>   |                                                |
-| audiobuffersource-one-sample-loop.html   | <font color="green">Pass</font>   |                                                |
-| audiobuffersource-playbackrate-zero.html | <font color="red">Not Test</font> | Not implement AudioParam.setValueAtTime        |
-| audiobuffersource-start.html             | <font color="green">Pass</font>   |                                                |
-| audiosource-onended.html                 | <font color="red">Not Test</font> | Not implement AudioScheduledSourceNode.onended |
-| audiosource-time-limits.html             | <font color="green">Pass</font>   |                                                |
-| buffer-resampling.html                   | <font color="red">Not Test</font> | Not implement ChannelMergerNode                |
-| ctor-audiobuffersource.html              | <font color="green">Pass</font>   |                                                |
-| note-grain-on-play.html                  | <font color="green">Pass</font>   |                                                |
-| note-grain-on-timing.html                | <font color="green">Pass</font>   |                                                |
-| sample-accurate-scheduling.html          | <font color="green">Pass</font>   |                                                |
-| sub-sample-buffer-stitching.html         | <font color="red">Not Test</font> | Not implement ChannelMergerNode                |
-| sub-sample-scheduling.html               | <font color="red">Not Test</font> | Not implement ChannelMergerNode                |
+| Wpt Test                                 | Test State                                                                                | Description                                    |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| active-processing.https.html             | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font> | Not implement AudioWorkletNode                 |
+| audiobuffersource-basic.html             | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                |
+| audiobuffersource-channels.html          | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                |
+| audiobuffersource-duration-loop.html     | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                |
+| audiobuffersource-ended.html             | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font> | Not implement AudioScheduledSourceNode.onended |
+| audiobuffersource-grain.html             | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                |
+| audiobuffersource-multi-channels.html    | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font> | Not implement AudioContext.decodeAudioData     |
+| audiobuffersource-null.html              | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                |
+| audiobuffersource-one-sample-loop.html   | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                |
+| audiobuffersource-playbackrate-zero.html | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font> | Not implement AudioParam.setValueAtTime        |
+| audiobuffersource-start.html             | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                |
+| audiosource-onended.html                 | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font> | Not implement AudioScheduledSourceNode.onended |
+| audiosource-time-limits.html             | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                |
+| buffer-resampling.html                   | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font> | Not implement ChannelMergerNode                |
+| ctor-audiobuffersource.html              | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                |
+| note-grain-on-play.html                  | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                |
+| note-grain-on-timing.html                | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                |
+| sample-accurate-scheduling.html          | <font color="green">![Static Badge](https://img.shields.io/badge/Pass-green)</font>       |                                                |
+| sub-sample-buffer-stitching.html         | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font> | Not implement ChannelMergerNode                |
+| sub-sample-scheduling.html               | <font color="red">![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)</font> | Not implement ChannelMergerNode                |
