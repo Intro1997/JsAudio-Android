@@ -25,10 +25,6 @@ Now it supports following Web Audio feature:
 
 more detail info is descript [here](./js_api_define/features.md).
 
-![Static Badge](https://img.shields.io/badge/Pass-green)
-![Static Badge](https://img.shields.io/badge/Not_Pass_All-orange)
-![Static Badge](https://img.shields.io/badge/Not_Test-%23FF0000)
-
 # Build & Run
 
 1. run `npm install` for installing dependency
