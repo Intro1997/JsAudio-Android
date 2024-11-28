@@ -1,0 +1,38 @@
+{
+  "clang-tidy": {
+    "macos": {
+      "support": true,
+      "installer": "brew",
+      "cmd": "install llvm"
+    },
+    "windows": {
+      "support": true,
+      "installer": "choco",
+      "cmd": "install"
+    },
+    "linux": {
+      "support": true,
+      "root": true,
+      "installer": "apt-get",
+      "cmd": "install clang-tidy"
+    }
+  },
+  "clang-format": {
+    "macos": {
+      "support": true,
+      "installer": "brew",
+      "cmd": "install llvm"
+    },
+    "windows": {
+      "support": true,
+      "installer": "choco",
+      "cmd": "install clang-format"
+    },
+    "linux": {
+      "support": true,
+      "root": true,
+      "installer": "apt-get",
+      "cmd": "install clang-format"
+    }
+  }
+}
