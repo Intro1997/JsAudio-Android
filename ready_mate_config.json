@@ -8,7 +8,7 @@
     "windows": {
       "support": true,
       "installer": "choco",
-      "cmd": "install"
+      "cmd": "install llvm"
     },
     "linux": {
       "support": true,
@@ -26,7 +26,7 @@
     "windows": {
       "support": true,
       "installer": "choco",
-      "cmd": "install clang-format"
+      "cmd": "install llvm"
     },
     "linux": {
       "support": true,
