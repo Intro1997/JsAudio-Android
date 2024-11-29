@@ -1,7 +1,7 @@
 {
-  "name": "jsaudio-test",
+  "name": "jsaudio-android-scritps",
   "version": "1.0.0",
-  "description": "",
+  "description": "some js scripts used to prepare jsaudio-android develop and run env.",
   "main": "index.js",
   "scripts": {
     "compress": "node js_task/compress.js",
@@ -11,7 +11,7 @@
     "prepare": "readymate && husky && echo 'npx lint-staged' > .husky/pre-commit"
   },
   "author": "Intro1997",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "http-server": "^14.1.1",
     "uglify-js": "^3.18.0",
