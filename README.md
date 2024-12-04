@@ -51,6 +51,7 @@ see [develop.md](./docs/develop.md)
 
 # Thanks
 
-1. Test case based on [wpt](https://github.com/web-platform-tests/wpt).
-2. NAPI_IH base on [node-addon-api-helper](https://github.com/ajihyf/node-addon-api-helper).
-3. Use [ProcessPhoenix](https://github.com/JakeWharton/ProcessPhoenix) to restart Android App.
+1. The NodeJS runtime is base on [node-android-build](https://github.com/toyobayashi/node-android-build) v14.17.0 release verison, Thanks!
+2. Test case based on [wpt](https://github.com/web-platform-tests/wpt).
+3. NAPI_IH base on [node-addon-api-helper](https://github.com/ajihyf/node-addon-api-helper).
+4. Use [ProcessPhoenix](https://github.com/JakeWharton/ProcessPhoenix) to restart Android App.
