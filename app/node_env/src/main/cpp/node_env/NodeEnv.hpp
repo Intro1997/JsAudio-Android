@@ -36,7 +36,7 @@ private:
   static int PrepareUvloop(const std::vector<std::string> &vec_argv);
   static int PrepareNodeEnv(std::vector<std::string> &args);
   static void LoadInternalModules();
-  static node::IsolateData *CreateNodeIsoateData();
+  static node::IsolateData *CreateNodeIsolateData();
   static node::Environment *
   CreateNodeEnv(const std::vector<std::string> &argv,
                 const std::vector<std::string> &exec_argv);

@@ -205,7 +205,7 @@ int NodeEnv::PrepareNodeEnv(std::vector<std::string> &argv) {
   v8::V8::InitializePlatform(instance_->platform_.get());
   v8::V8::Initialize();
 
-  node::IsolateData *isolate_data = CreateNodeIsoateData();
+  node::IsolateData *isolate_data = CreateNodeIsolateData();
   if (isolate_data == nullptr) {
     LOGE("Create node isolate data failed!\n");
     return NI_NODE_CREATE_ISOLATE_DATA_FAILED;
@@ -226,7 +226,7 @@ void NodeEnv::Clear() {
   }
 }
 
-node::IsolateData *NodeEnv::CreateNodeIsoateData() {
+node::IsolateData *NodeEnv::CreateNodeIsolateData() {
   uv_loop_t &loop = instance_->loop_;
   node::MultiIsolatePlatform *platform = instance_->platform_.get();
 

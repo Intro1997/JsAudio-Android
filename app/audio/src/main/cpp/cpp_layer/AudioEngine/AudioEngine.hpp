@@ -19,8 +19,6 @@ public:
   ~AudioEngine();
 
   static std::weak_ptr<AudioEngine> Get();
-  static void SetPlayerSampleRate(const uint32_t &sample_rate);
-  static void SetPlayerSamplesPerBuffer(const uint32_t &samples_per_buffer);
 
   void Start();
   void Pause();

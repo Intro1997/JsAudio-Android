@@ -435,8 +435,8 @@ inline void Registration::ProcessClassMetaInfo(
   }
   ClassMetaInfo *parent = info->parent;
   if (parent != nullptr) {
-    ProcessClassMetaInfo(env, exports, parent, ctor_table);
     // TODO: this can be optimized mem space by while loop
+    ProcessClassMetaInfo(env, exports, parent, ctor_table);
     info->descriptors.reserve(info->descriptors.size() +
                               parent->descriptors.size());
     info->descriptors.insert(info->descriptors.end(),
