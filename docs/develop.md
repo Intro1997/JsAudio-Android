@@ -28,7 +28,7 @@ NOTE: if you find vscode not recognize cpp symbol, make sure to switch the Andro
 
 ### NodeJS
 
-The node env of this project is based on [v14.17.0](https://github.com/toyobayashi/node-android-build/releases/tag/v14.17.0) of [node-android-build](https://github.com/toyobayashi/node-android-build). The build tutorial is referenced to [在 Android 应用中嵌入 Node.js](https://toyobayashi.github.io/2021/03/29/NodeEmbedding/)
+The `libnode.so ` built with [nodejs-mobile](https://github.com/nodejs-mobile/nodejs-mobile) on macOS in [lima](https://github.com/lima-vm/lima) and [containerd](https://github.com/containerd/containerd) x86_64 linux vm. More detail please read [build_nodejs.md](./build_nodejs.md).
 
 ### NAPI_IH
 

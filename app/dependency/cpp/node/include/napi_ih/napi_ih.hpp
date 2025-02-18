@@ -15,11 +15,14 @@
 #ifndef NAPI_IH_HPP
 #define NAPI_IH_HPP
 
-#include "logger.hpp"
+#include <napi/napi.h>
+
 #include <functional>
 #include <map>
 #include <memory>
-#include <napi/napi.h>
+#include <unordered_map>
+
+#include "logger.hpp"
 
 namespace Napi_IH {
 class MethodWrapper;
@@ -31,40 +34,42 @@ enum class ClassVisibility {
   kHideConstructor,
 };
 
-#define NAPI_IH_VERIFY_INSTANCE_OF(napi_obj, napi_type_name)                   \
-  (VerifyExactInstanceType(napi_obj, #napi_type_name) ||                       \
+#define NAPI_IH_VERIFY_INSTANCE_OF(napi_obj, napi_type_name) \
+  (VerifyExactInstanceType(napi_obj, #napi_type_name) ||     \
    VerifyInstanceOf<JS##napi_type_name>(napi_obj))
 
 inline bool VerifyExactInstanceType(const Napi::Object &object,
                                     const std::string &napi_type_name);
-template <typename T> inline bool VerifyInstanceOf(const Napi::Object &object);
+template <typename T>
+inline bool VerifyInstanceOf(const Napi::Object &object);
 
 class Error {
-public:
+ public:
   template <typename... Args>
   static Napi::Error New(Napi::Env env, const char *format, Args... args);
 
-protected:
+ protected:
   enum class ErrorType { kError = 0, kTypeError = 1, kRangeError = 2 };
 
-  template <typename T> static T InnerNew(Napi::Env env, const char *msg);
+  template <typename T>
+  static T InnerNew(Napi::Env env, const char *msg);
 
   template <typename... Args>
   static std::string string_format(const char *format, Args... args);
 };
 class TypeError : public Error {
-public:
+ public:
   template <typename... Args>
   static Napi::TypeError New(Napi::Env env, const char *format, Args... args);
 };
 class RangeError : public Error {
-public:
+ public:
   template <typename... Args>
   static Napi::RangeError New(Napi::Env env, const char *format, Args... args);
 };
 
 class FunctionWrapper {
-public:
+ public:
   FunctionWrapper() = default;
   FunctionWrapper(const Napi::Function &function);
 
@@ -78,31 +83,31 @@ public:
   // the args will be 'a' and 'name'. We can't use this function
   // with the constructor has non-default value
   template <typename T, typename... Args>
-  Napi::MaybeOrValue<Napi::Object>
-  NewWithArgs(const std::initializer_list<napi_value> &args,
-              Args... ctor_args) const;
+  Napi::MaybeOrValue<Napi::Object> NewWithArgs(
+      const std::initializer_list<napi_value> &args, Args... ctor_args) const;
   template <typename T, typename... Args>
-  Napi::MaybeOrValue<Napi::Object>
-  NewWithArgs(const std::vector<napi_value> &args, Args... ctor_args) const;
+  Napi::MaybeOrValue<Napi::Object> NewWithArgs(
+      const std::vector<napi_value> &args, Args... ctor_args) const;
   template <typename T, typename... Args>
-  Napi::MaybeOrValue<Napi::Object>
-  NewWithArgs(size_t argc, const napi_value *args, Args... ctor_args) const;
+  Napi::MaybeOrValue<Napi::Object> NewWithArgs(size_t argc,
+                                               const napi_value *args,
+                                               Args... ctor_args) const;
 
-  Napi::MaybeOrValue<Napi::Object>
-  New(const std::initializer_list<napi_value> &args) const;
-  Napi::MaybeOrValue<Napi::Object>
-  New(const std::vector<napi_value> &args) const;
+  Napi::MaybeOrValue<Napi::Object> New(
+      const std::initializer_list<napi_value> &args) const;
+  Napi::MaybeOrValue<Napi::Object> New(
+      const std::vector<napi_value> &args) const;
   Napi::MaybeOrValue<Napi::Object> New(size_t argc,
                                        const napi_value *args) const;
 
   inline Napi::Function InnerFunction() const;
 
-private:
+ private:
   Napi::Function function_;
 };
 
 class IHCallbackInfo {
-public:
+ public:
   IHCallbackInfo(const Napi::CallbackInfo &info, void *user_data = nullptr);
 
   NAPI_DISALLOW_ASSIGN_COPY(IHCallbackInfo)
@@ -116,7 +121,7 @@ public:
   void *Data() const;
   const Napi::CallbackInfo &InnerCallbackInfo() const;
 
-private:
+ private:
   const Napi::CallbackInfo &info_;
   void *user_data_;
 };
@@ -129,6 +134,8 @@ using ConstructorHelpFunc = std::function<std::unique_ptr<IHObjectWrap>(
     const Napi_IH::IHCallbackInfo &, WrappedDeleterType *)>;
 
 struct ClassMetaInfo {
+  using PropertyName = const char *;
+
   const char *name = "";
   ClassMetaInfo *parent = nullptr;
   ConstructorFunc ctor;
@@ -136,15 +143,50 @@ struct ClassMetaInfo {
   bool export_type = true;
   void *data = nullptr;
   ConstructorHelpFunc ctor_helper;
+  std::unordered_map<PropertyName, bool> member_search_map;
+
+  void InitDescriptors(const napi_property_descriptor *start,
+                       const size_t &cnt) {
+    if (!descriptors.empty()) {
+      return;
+    }
+    const auto *curr = start;
+    const auto *end = start + cnt;
+    size_t idx = 0;
+    descriptors.reserve(cnt);
+    while (curr != end) {
+      descriptors.push_back(*curr);
+      member_search_map[curr->utf8name] = true;
+      curr++;
+      idx++;
+    }
+  }
+
+  void AddDescriptors(
+      const std::vector<Napi::ClassPropertyDescriptor<MethodWrapper>> &descs,
+      const size_t &cnt) {
+    descriptors.reserve(cnt);
+    for (const napi_property_descriptor &desc : descs) {
+      if (!HasProperty(desc.utf8name)) {
+        descriptors.push_back(desc);
+        member_search_map[desc.utf8name] = true;
+      }
+    }
+  }
+
+  inline bool HasProperty(const char *name) const {
+    return !(member_search_map.find(name) == member_search_map.end());
+  }
 };
 
 class Registration {
-public:
+ public:
   static void StartRegistration(Napi::Env env, Napi::Object exports);
   static void AddClassMetaInfo(const char *name, ClassMetaInfo *info);
-  template <typename T> static Napi_IH::FunctionWrapper FindClass();
+  template <typename T>
+  static Napi_IH::FunctionWrapper FindClass();
 
-private:
+ private:
   static void ProcessClassMetaInfo(
       Napi::Env env, Napi::Object exports, ClassMetaInfo *info,
       std::map<ClassMetaInfo *, Napi::FunctionReference> &ctor_table);
@@ -157,39 +199,39 @@ private:
 class IHObjectWrap {
   friend Registration;
 
-public:
+ public:
   IHObjectWrap(const Napi_IH::IHCallbackInfo &info);
 
   using PropertyDescriptor = Napi::ClassPropertyDescriptor<MethodWrapper>;
   using NonBase = IHObjectWrap;
 
   template <typename T>
-  static void
-  DefineClass(Napi::Env env, const char *utf8name,
-              const std::initializer_list<PropertyDescriptor> &properties,
-              ClassVisibility visibility = ClassVisibility::kDefault,
-              void *data = nullptr);
+  static void DefineClass(
+      Napi::Env env, const char *utf8name,
+      const std::initializer_list<PropertyDescriptor> &properties,
+      ClassVisibility visibility = ClassVisibility::kDefault,
+      void *data = nullptr);
 
   template <typename T>
-  static void
-  DefineClass(Napi::Env env, const char *utf8name,
-              const std::vector<PropertyDescriptor> &properties,
-              ClassVisibility visibility = ClassVisibility::kDefault,
-              void *data = nullptr);
+  static void DefineClass(
+      Napi::Env env, const char *utf8name,
+      const std::vector<PropertyDescriptor> &properties,
+      ClassVisibility visibility = ClassVisibility::kDefault,
+      void *data = nullptr);
 
   template <typename T, typename Base>
-  static void
-  DefineClass(Napi::Env env, const char *utf8name,
-              const std::initializer_list<PropertyDescriptor> &properties,
-              ClassVisibility visibility = ClassVisibility::kDefault,
-              void *data = nullptr);
+  static void DefineClass(
+      Napi::Env env, const char *utf8name,
+      const std::initializer_list<PropertyDescriptor> &properties,
+      ClassVisibility visibility = ClassVisibility::kDefault,
+      void *data = nullptr);
 
   template <typename T, typename Base>
-  static void
-  DefineClass(Napi::Env env, const char *utf8name,
-              const std::vector<PropertyDescriptor> &properties,
-              ClassVisibility visibility = ClassVisibility::kDefault,
-              void *data = nullptr);
+  static void DefineClass(
+      Napi::Env env, const char *utf8name,
+      const std::vector<PropertyDescriptor> &properties,
+      ClassVisibility visibility = ClassVisibility::kDefault,
+      void *data = nullptr);
   template <typename T>
   using InstanceVoidMethodCallback = void (T::*)(const Napi::CallbackInfo &);
   template <typename T>
@@ -201,46 +243,62 @@ public:
                                              const Napi::Value &);
 
   template <typename T, IHObjectWrap::InstanceMethodCallback<T> method>
-  static PropertyDescriptor
-  InstanceMethod(const char *utf8name,
-                 napi_property_attributes attributes = napi_default,
-                 void *data = nullptr);
+  static PropertyDescriptor InstanceMethod(
+      const char *utf8name, napi_property_attributes attributes = napi_default,
+      void *data = nullptr);
   template <typename T, InstanceGetterCallback<T> getter,
             InstanceSetterCallback<T> setter = nullptr>
-  static PropertyDescriptor
-  InstanceAccessor(const char *utf8name,
-                   napi_property_attributes attributes = napi_default,
-                   void *data = nullptr);
-  template <typename T> static Napi_IH::FunctionWrapper FindClass();
+  static PropertyDescriptor InstanceAccessor(
+      const char *utf8name, napi_property_attributes attributes = napi_default,
+      void *data = nullptr);
+  template <typename T>
+  static Napi_IH::FunctionWrapper FindClass();
 
-  template <typename T> static T *UnWrap(Napi::Object object);
+  template <typename T>
+  static T *UnWrap(Napi::Object object);
 
-private:
+ private:
   template <typename T, typename Base = NonBase>
-  static void
-  DefineClass(Napi::Env env, const char *utf8name, const size_t props_count,
-              const napi_property_descriptor *descriptors,
-              ClassVisibility visibility = ClassVisibility::kDefault,
-              void *data = nullptr);
+  static void DefineClass(
+      Napi::Env env, const char *utf8name, const size_t props_count,
+      const napi_property_descriptor *descriptors,
+      ClassVisibility visibility = ClassVisibility::kDefault,
+      void *data = nullptr);
 
-protected:
+ protected:
   static Napi::FunctionReference js_class_constructor_;
   std::function<void *(Napi::CallbackInfo &info)> init_parent_;
 };
 
-} // namespace Napi_IH
+}  // namespace Napi_IH
 
-#define NAPI_IH_API_MODULE(modname, regfunc)                                   \
-  static napi_value __napi_##regfunc(napi_env env, napi_value exports) {       \
-    napi_value ret = Napi::RegisterModule(env, exports, regfunc);              \
-    Napi::details::WrapCallback([&] {                                          \
-      Napi_IH::Registration::StartRegistration(Napi::Env(env),                 \
-                                               Napi::Object(env, exports));    \
-      return nullptr;                                                          \
-    });                                                                        \
-    return ret;                                                                \
-  }                                                                            \
-  NAPI_MODULE(modname, __napi_##regfunc)
+#define NAPI_IH_C_CTOR(fn)                           \
+  static void fn(void) __attribute__((constructor)); \
+  static void fn(void)
+
+#define NAPI_IH_MODULE_X(modname, regfunc, priv, flags)                   \
+  EXTERN_C_START                                                          \
+  static napi_module _module = {                                          \
+      NAPI_MODULE_VERSION, flags, __FILE__, regfunc, #modname, priv, {0}, \
+  };                                                                      \
+  NAPI_IH_C_CTOR(_register_##modname) { napi_module_register(&_module); } \
+  EXTERN_C_END
+
+#define NAPI_IH_MODULE(modname, regfunc)   \
+  NAPI_IH_MODULE_X(modname, regfunc, NULL, \
+                   0)  // NOLINT (readability/null_usage)
+
+#define NAPI_IH_API_MODULE(modname, regfunc)                                \
+  static napi_value __napi_##regfunc(napi_env env, napi_value exports) {    \
+    napi_value ret = Napi::RegisterModule(env, exports, regfunc);           \
+    Napi::details::WrapCallback([&] {                                       \
+      Napi_IH::Registration::StartRegistration(Napi::Env(env),              \
+                                               Napi::Object(env, exports)); \
+      return nullptr;                                                       \
+    });                                                                     \
+    return ret;                                                             \
+  }                                                                         \
+  NAPI_IH_MODULE(modname, __napi_##regfunc)
 
 #include "napi_ih_inl.hpp"
-#endif // NAPI_IH_HPP
+#endif  // NAPI_IH_HPP

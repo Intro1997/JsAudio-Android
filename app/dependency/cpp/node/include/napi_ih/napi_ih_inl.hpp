@@ -6,7 +6,6 @@ namespace Napi_IH {
 
 inline bool VerifyExactInstanceType(const Napi::Object &object,
                                     const std::string &napi_type_name) {
-
   if (!object.Has("constructor") || !object.Get("constructor").IsFunction()) {
     return false;
   }
@@ -21,18 +20,20 @@ inline bool VerifyExactInstanceType(const Napi::Object &object,
   return true;
 }
 
-template <typename T> inline bool VerifyInstanceOf(const Napi::Object &object) {
+template <typename T>
+inline bool VerifyInstanceOf(const Napi::Object &object) {
   if (!object.InstanceOf(IHObjectWrap::FindClass<T>().InnerFunction())) {
     return false;
   }
   return true;
 }
 
-template <typename T> class ClassMetaInfoInstance {
-public:
+template <typename T>
+class ClassMetaInfoInstance {
+ public:
   static ClassMetaInfo &GetInstance() { return meta_info_; }
 
-private:
+ private:
   static ClassMetaInfo meta_info_;
 };
 
@@ -40,25 +41,22 @@ inline FunctionWrapper::FunctionWrapper(const Napi::Function &function)
     : function_(function) {}
 
 template <typename T, typename... Args>
-inline Napi::MaybeOrValue<Napi::Object>
-FunctionWrapper::NewWithArgs(const std::initializer_list<napi_value> &args,
-                             Args... ctor_args) const {
+inline Napi::MaybeOrValue<Napi::Object> FunctionWrapper::NewWithArgs(
+    const std::initializer_list<napi_value> &args, Args... ctor_args) const {
   return FunctionWrapper::NewWithArgs<T>(args.size(), args.begin(),
                                          ctor_args...);
 }
 
 template <typename T, typename... Args>
-inline Napi::MaybeOrValue<Napi::Object>
-FunctionWrapper::NewWithArgs(const std::vector<napi_value> &args,
-                             Args... ctor_args) const {
+inline Napi::MaybeOrValue<Napi::Object> FunctionWrapper::NewWithArgs(
+    const std::vector<napi_value> &args, Args... ctor_args) const {
   return FunctionWrapper::NewWithArgs<T>(args.size(), args.data(),
                                          ctor_args...);
 }
 
 template <typename T, typename... Args>
-inline Napi::MaybeOrValue<Napi::Object>
-FunctionWrapper::NewWithArgs(size_t argc, const napi_value *args,
-                             Args... ctor_args) const {
+inline Napi::MaybeOrValue<Napi::Object> FunctionWrapper::NewWithArgs(
+    size_t argc, const napi_value *args, Args... ctor_args) const {
   if (function_.IsEmpty()) {
     return {};
   }
@@ -68,8 +66,12 @@ FunctionWrapper::NewWithArgs(size_t argc, const napi_value *args,
       [=](const Napi_IH::IHCallbackInfo &info,
           WrappedDeleterType *deleter) -> std::unique_ptr<IHObjectWrap> {
     *deleter = [](std::unique_ptr<IHObjectWrap> &wrapped) {
+      // FIXME(intro): may cause android tagged pointer here,
+      // you should add android:allowNativeHeapPointerTagging="false"
+      // to Manifest.xml of native module
       std::unique_ptr<T> origin_type_ptr(static_cast<T *>(wrapped.release()));
     };
+
     return std::move(std::make_unique<T>(info, ctor_args...));
   };
 
@@ -79,16 +81,16 @@ FunctionWrapper::NewWithArgs(size_t argc, const napi_value *args,
   return ret_object;
 }
 
-inline Napi::MaybeOrValue<Napi::Object>
-FunctionWrapper::New(const std::initializer_list<napi_value> &args) const {
+inline Napi::MaybeOrValue<Napi::Object> FunctionWrapper::New(
+    const std::initializer_list<napi_value> &args) const {
   return FunctionWrapper::New(args.size(), args.begin());
 }
-inline Napi::MaybeOrValue<Napi::Object>
-FunctionWrapper::New(const std::vector<napi_value> &args) const {
+inline Napi::MaybeOrValue<Napi::Object> FunctionWrapper::New(
+    const std::vector<napi_value> &args) const {
   return FunctionWrapper::New(args.size(), args.data());
 }
-inline Napi::MaybeOrValue<Napi::Object>
-FunctionWrapper::New(size_t argc, const napi_value *args) const {
+inline Napi::MaybeOrValue<Napi::Object> FunctionWrapper::New(
+    size_t argc, const napi_value *args) const {
   return function_.New(argc, args);
 }
 
@@ -126,7 +128,8 @@ inline const Napi::CallbackInfo &IHCallbackInfo::InnerCallbackInfo() const {
   return info_;
 }
 
-template <typename T> ClassMetaInfo ClassMetaInfoInstance<T>::meta_info_;
+template <typename T>
+ClassMetaInfo ClassMetaInfoInstance<T>::meta_info_;
 
 inline std::map<ClassMetaInfo *, Napi::FunctionReference>
     Registration::ctor_table_;
@@ -137,7 +140,7 @@ class MethodWrapper : public Napi::ObjectWrap<MethodWrapper> {
   using PropertyDescriptor = Napi::ClassPropertyDescriptor<MethodWrapper>;
   friend class IHObjectWrap;
 
-public:
+ public:
   using WrappedDeleterType =
       std::function<void(std::unique_ptr<IHObjectWrap> &wrapped)>;
 
@@ -159,9 +162,9 @@ public:
   }
 
   template <typename T>
-  static std::unique_ptr<IHObjectWrap>
-  ConstructObject(const Napi_IH::IHCallbackInfo &info,
-                  WrappedDeleterType *deleter = nullptr) {
+  static std::unique_ptr<IHObjectWrap> ConstructObject(
+      const Napi_IH::IHCallbackInfo &info,
+      WrappedDeleterType *deleter = nullptr) {
     if (!std::is_base_of<IHObjectWrap, T>::value) {
       return nullptr;
     }
@@ -175,16 +178,14 @@ public:
   }
 
   template <typename T>
-  static std::unique_ptr<IHObjectWrap>
-  IllegalConstructor(const Napi_IH::IHCallbackInfo &info,
-                     Napi_IH::WrappedDeleterType *) {
+  static std::unique_ptr<IHObjectWrap> IllegalConstructor(
+      const Napi_IH::IHCallbackInfo &info, Napi_IH::WrappedDeleterType *) {
     throw Napi::TypeError::New(info.Env(), "Illegal constructor\n");
   }
 
-  static Napi::Function
-  DefineClass(Napi::Env env, const char *name,
-              const std::vector<PropertyDescriptor> descriptors,
-              void *data = nullptr) {
+  static Napi::Function DefineClass(
+      Napi::Env env, const char *name,
+      const std::vector<PropertyDescriptor> descriptors, void *data = nullptr) {
     return Napi::ObjectWrap<MethodWrapper>::DefineClass(env, name, descriptors,
                                                         data);
   }
@@ -225,10 +226,9 @@ public:
   }
 
   template <typename T, Napi::Value (T::*method)(const Napi::CallbackInfo &)>
-  static PropertyDescriptor
-  InstanceMethod(const char *utf8name,
-                 napi_property_attributes attributes = napi_default,
-                 void *data = nullptr) {
+  static PropertyDescriptor InstanceMethod(
+      const char *utf8name, napi_property_attributes attributes = napi_default,
+      void *data = nullptr) {
     return ObjectWrap<MethodWrapper>::InstanceMethod(
         utf8name, &MethodWrapper::CallInstanceMethodCallback<T, method>,
         attributes, data);
@@ -238,22 +238,22 @@ public:
             Napi::Value (T::*getter)(const Napi::CallbackInfo &info),
             void (T::*setter)(const Napi::CallbackInfo &info,
                               const Napi::Value &value)>
-  static PropertyDescriptor
-  InstanceAccessor(const char *utf8name,
-                   napi_property_attributes attributes = napi_default,
-                   void *data = nullptr) {
+  static PropertyDescriptor InstanceAccessor(
+      const char *utf8name, napi_property_attributes attributes = napi_default,
+      void *data = nullptr) {
     return ObjectWrap<MethodWrapper>::InstanceAccessor(
         utf8name, &MethodWrapper::CallInstanceGetterCallback<T, getter>,
         &MethodWrapper::CallInstanceSetterCallback<T, setter>, attributes,
         data);
   }
 
-private:
+ private:
   std::unique_ptr<IHObjectWrap> wrapped_;
   std::function<void(std::unique_ptr<IHObjectWrap> &)> wrapper_deleter_;
 };
 
-template <typename T> inline T Error::InnerNew(Napi::Env env, const char *msg) {
+template <typename T>
+inline T Error::InnerNew(Napi::Env env, const char *msg) {
   return T::New(env, msg);
 }
 
@@ -279,7 +279,7 @@ inline Napi::RangeError RangeError::New(Napi::Env env, const char *format,
 template <typename... Args>
 inline std::string Error::string_format(const char *format, Args... args) {
   int size_s =
-      std::snprintf(nullptr, 0, format, args...) + 1; // Extra space for '\0'
+      std::snprintf(nullptr, 0, format, args...) + 1;  // Extra space for '\0'
   if (size_s <= 0) {
     return "";
   }
@@ -287,7 +287,7 @@ inline std::string Error::string_format(const char *format, Args... args) {
   std::unique_ptr<char[]> buf(new char[size]);
   std::snprintf(buf.get(), size, format, args...);
   return std::string(buf.get(),
-                     buf.get() + size - 1); // We don't want the '\0' inside
+                     buf.get() + size - 1);  // We don't want the '\0' inside
 }
 
 inline IHObjectWrap::IHObjectWrap(const Napi_IH::IHCallbackInfo &) {}
@@ -335,9 +335,8 @@ inline void IHObjectWrap::DefineClass(
 }
 
 template <typename T, IHObjectWrap::InstanceMethodCallback<T> method>
-inline IHObjectWrap::PropertyDescriptor
-IHObjectWrap::InstanceMethod(const char *utf8name,
-                             napi_property_attributes attributes, void *data) {
+inline IHObjectWrap::PropertyDescriptor IHObjectWrap::InstanceMethod(
+    const char *utf8name, napi_property_attributes attributes, void *data) {
   return MethodWrapper::InstanceMethod<T, method>(utf8name, attributes, data);
 }
 
@@ -354,7 +353,8 @@ inline Napi_IH::FunctionWrapper IHObjectWrap::FindClass() {
   return Registration::FindClass<T>();
 }
 
-template <typename T> T *IHObjectWrap::UnWrap(Napi::Object object) {
+template <typename T>
+T *IHObjectWrap::UnWrap(Napi::Object object) {
   MethodWrapper *method_wrapper_ptr =
       Napi::ObjectWrap<MethodWrapper>::Unwrap(object);
   if (std::is_base_of<IHObjectWrap, T>::value && method_wrapper_ptr) {
@@ -376,7 +376,7 @@ void IHObjectWrap::DefineClass(Napi::Env env, const char *utf8name,
   }
 
   info_handle.ctor = MethodWrapper::ConstructObject<T>;
-  info_handle.descriptors = {descriptors, descriptors + props_count};
+  info_handle.InitDescriptors(descriptors, props_count);
   info_handle.data = data;
   info_handle.export_type = true;
   info_handle.ctor_helper = nullptr;
@@ -417,7 +417,8 @@ inline void Registration::AddClassMetaInfo(const char *name,
   class_meta_infos[name] = info;
 }
 
-template <typename T> Napi_IH::FunctionWrapper Registration::FindClass() {
+template <typename T>
+Napi_IH::FunctionWrapper Registration::FindClass() {
   const auto &ctor_element =
       ctor_table_.find(&(ClassMetaInfoInstance<T>::GetInstance()));
   if (ctor_element == ctor_table_.end()) {
@@ -437,11 +438,7 @@ inline void Registration::ProcessClassMetaInfo(
   if (parent != nullptr) {
     // TODO: this can be optimized mem space by while loop
     ProcessClassMetaInfo(env, exports, parent, ctor_table);
-    info->descriptors.reserve(info->descriptors.size() +
-                              parent->descriptors.size());
-    info->descriptors.insert(info->descriptors.end(),
-                             parent->descriptors.begin(),
-                             parent->descriptors.end());
+    info->AddDescriptors(parent->descriptors, parent->descriptors.size());
   }
 
   Napi::Function clazz =
@@ -467,6 +464,6 @@ inline void Registration::ProcessClassMetaInfo(
   }
 }
 
-} // namespace Napi_IH
+}  // namespace Napi_IH
 
-#endif // NAPI_IH_INL_HPP
+#endif  // NAPI_IH_INL_HPP
