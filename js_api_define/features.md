@@ -1,6 +1,6 @@
 NOTE:
 
-1. `All Support`: support all properties listed in [web audio](https://webaudio.github.io/web-audio-api/)
+1. All supported properties of [web audio](https://webaudio.github.io/web-audio-api/) are listed here.
 2. All passed wpt test are list in [wpt_test](../js_tests/wpt_test) folder.
 
 ## AudioBuffer
