@@ -33,3 +33,18 @@ The `libnode.so ` built with [nodejs-mobile](https://github.com/nodejs-mobile/no
 ### NAPI_IH
 
 The goal of the project architecture is to make the structure of the napi layer consistent with the cpp layer. But NAPI do not support inheritance, so we make a patch to NAPI, that is [NAPI_IH](./napi_ih_api.md).
+
+## Issues
+
+If you meet crash, please follow the steps below to clean all cache of cpp and android:
+
+1. delete `app/build` folder
+2. delete `app/audio/.cxx` and `app/audio/build` folder
+3. delete `app/node_env/.cxx` and `app/node_env/build` folder
+4. open Android Studio, select Build -> Clean Project
+5. open Android Studio, select File -> Invalidate Cache, check all options that you can check, then select Invalidate and Restart.
+6. Rebuild project and run
+
+If crash still exists, please create issues with your android studio log.
+
+It's also a good idea to debug with debug version of NodeJS so.

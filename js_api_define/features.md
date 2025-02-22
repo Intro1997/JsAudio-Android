@@ -53,7 +53,7 @@ All Support
 
 ### Feature
 
-All Support
+Part Support
 
 ### WPT Test
 
