@@ -1,6 +1,8 @@
 #include "AudioBuffer.hpp"
-#include "logger.hpp"
+
 #include <cstdint>
+
+#include "logger.hpp"
 namespace js_audio {
 AudioBuffer::AudioBuffer(const uint32_t &number_of_channel,
                          const uint32_t &length, const float &sample_rate)
@@ -27,7 +29,6 @@ AudioBuffer::AudioBuffer(std::vector<std::vector<float>> &&src)
     length_ = min_len;
   }
 }
-
 uint32_t AudioBuffer::number_of_channel() const { return number_of_channel_; }
 
 uint32_t AudioBuffer::length() const { return length_; }
@@ -36,8 +37,7 @@ float AudioBuffer::sample_rate() const { return sample_rate_; }
 
 double AudioBuffer::duration() const { return duration_; }
 
-void AudioBuffer::CopyToChannel(const float *source_ptr,
-                                const uint32_t &source_size,
+void AudioBuffer::CopyToChannel(const float *source_ptr, uint32_t source_size,
                                 const uint32_t channel_number,
                                 const uint32_t &dst_start_idx) {
   if (source_ptr == nullptr) {
@@ -54,9 +54,14 @@ void AudioBuffer::CopyToChannel(const float *source_ptr,
          channel_number, number_of_channel_);
     return;
   }
+
   try {
     std::vector<float> &channel_buffer =
         audio_channel_buffers_.at(channel_number);
+
+    if (source_size > channel_buffer.size()) {
+      source_size = channel_buffer.size();
+    }
 
     std::copy(source_ptr, source_ptr + source_size,
               channel_buffer.begin() + dst_start_idx);
