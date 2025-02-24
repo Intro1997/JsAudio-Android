@@ -1,10 +1,12 @@
 #include "NodeEnv.hpp"
+
+#include <node/node.h>
+#include <node/uv.h>
+
 #include "Argv.hpp"
 #include "logger.hpp"
 #include "preload_script.hpp"
 #include "sleeper.hpp"
-#include <node/node.h>
-#include <node/uv.h>
 
 #define NI_SUCCESS 0
 #define NI_NODE_CREATE_ISOLATE_DATA_FAILED 1
@@ -26,7 +28,7 @@ NodeEnv::NodeEnv() : is_pause_(false) {}
 
 NodeEnv::~NodeEnv() {
   if (platform_) {
-    this->Stop();
+    this->InnerStop();
     this->Destroy();
   }
 }
@@ -74,6 +76,11 @@ bool NodeEnv::is_pause() {
   return is_pause_;
 }
 
+bool NodeEnv::is_stop() {
+  std::lock_guard<std::mutex> guard(is_stop_lock_);
+  return is_stop_;
+}
+
 void NodeEnv::Pause() {
   LOGD("Pause Node Instance!");
   std::lock_guard<std::mutex> guard(is_pause_lock_);
@@ -91,10 +98,18 @@ void NodeEnv::Resume() {
 }
 
 void NodeEnv::Stop() {
+  LOGD("Stop Node Instance!");
+  std::lock_guard<std::mutex> guard(is_stop_lock_);
+  if (!is_stop_) {
+    is_stop_ = true;
+  }
+}
+
+void NodeEnv::InnerStop() {
   if (node_env_) {
     v8::Locker locker(isolate_);
     v8::Isolate::Scope isolate_scope(isolate_);
-    node::EmitExit(node_env_);
+    node::EmitProcessExit(node_env_);
     node::Stop(node_env_);
   }
 }
@@ -152,6 +167,10 @@ void NodeEnv::SpinEventLoop() {
     v8::SealHandleScope seal(instance_->isolate_);
     bool more;
     do {
+      if (is_stop()) {
+        InnerStop();
+        break;
+      }
       while (is_pause()) {
         sleep_for_ms(16);
       }
@@ -165,7 +184,7 @@ void NodeEnv::SpinEventLoop() {
         continue;
       }
 
-      node::EmitBeforeExit(instance_->node_env_);
+      node::EmitProcessBeforeExit(instance_->node_env_);
 
       more = uv_loop_alive(&instance_->loop_);
 
@@ -191,14 +210,22 @@ int NodeEnv::PrepareUvloop(const std::vector<std::string> &vec_argv) {
 
 int NodeEnv::PrepareNodeEnv(std::vector<std::string> &argv) {
   std::vector<std::string> exec_argv;
-  std::vector<std::string> errors;
 
-  if (node::InitializeNodeWithArgs(&argv, &exec_argv, &errors) != NI_SUCCESS) {
+  std::unique_ptr<node::InitializationResult> result =
+      node::InitializeOncePerProcess(
+          argv,
+          {node::ProcessInitializationFlags::kNoInitializeV8,
+           node::ProcessInitializationFlags::kNoInitializeNodeV8Platform});
+
+  auto &ret_errors = result->errors();
+  if (!ret_errors.empty()) {
     LOGE("Init NodeJs failed!\n");
-    for (const auto &e : errors) {
-      LOGE("%s\n", e.c_str());
+    for (const std::string &error : ret_errors)
+      LOGE("%s: %s\n", argv[0].c_str(), error.c_str());
+    if (result->early_return() != 0) {
+      LOGE("Error with early return.\n");
+      return NI_NODE_INITIALIZE_WITH_ARGS_FAILED;
     }
-    return NI_NODE_INITIALIZE_WITH_ARGS_FAILED;
   }
 
   instance_->platform_ = node::MultiIsolatePlatform::Create(4);
@@ -258,7 +285,7 @@ void NodeEnv::LoadInternalModules() {
   for (const auto &module : internal_modules_) {
     preload_script_ += module.module_preload_script;
     node::AddLinkedBinding(instance_->node_env_, module.module_name,
-                           module.init_fn, NULL);
+                           module.init_fn, nullptr);
   }
 }
 

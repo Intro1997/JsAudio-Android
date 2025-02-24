@@ -132,8 +132,7 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
         // NOTE: NODE CANNOT BE STOP!
         // 1. if node start, it can only be pause or destroy
         // 2. if destroy, you cannot create new node in current process!
-        innerNodeEnvHandler?.pauseNativeNode()
-
+        innerNodeEnvHandler?.stopNativeNode()
         registeredModuleHandler.forEach { handler ->
             handler.stop()
         }
@@ -172,6 +171,8 @@ class NodeEnvHandler private constructor() : NodeModuleHandler {
     private external fun createNativeNode(preloadScript: String): Boolean
 
     private external fun pauseNativeNode()
+
+    private external fun stopNativeNode()
 
     private external fun resumeNativeNode()
 

@@ -69,6 +69,17 @@ Java_com_example_node_1env_NodeEnvHandler_pauseNativeNode(JNIEnv *env,
     LOGW("Pause node failed, global node instance is invalid\n");
   }
 }
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_node_1env_NodeEnvHandler_stopNativeNode(JNIEnv *env,
+                                                         jobject thiz) {
+  if (global_node) {
+    global_node->Stop();
+  } else {
+    LOGW("Stop node failed, global node instance is invalid\n");
+  }
+}
+
 extern "C" JNIEXPORT void JNICALL
 Java_com_example_node_1env_NodeEnvHandler_resumeNativeNode(JNIEnv *env,
                                                            jobject thiz) {

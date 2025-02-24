@@ -39,7 +39,7 @@ more detail info is descript [here](./js_api_define/features.md).
 After running app, you can see five buttons:
 
 1. `START`: Start running js code in `index.js`
-2. `STOP`: Stop js event loop. You need to press `RESTART` button to re-run js code.
+2. `STOP`: Stop js event loop. You need to press `RESTART` button to re-run js code. NOTE: Stop cannt stop `while() loop` in sync code!
 3. `PAUSE`: Pause js event loop.
 4. `RESUME`: Resume js event from pause.
 5. `RESTART`: Restart app.
