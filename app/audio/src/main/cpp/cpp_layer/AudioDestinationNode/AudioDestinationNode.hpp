@@ -1,12 +1,13 @@
 #pragma once
-#include "AudioNode.hpp"
-
 #include <SLES/OpenSLES.h>
+
 #include <memory>
 #include <vector>
+
+#include "AudioNode.hpp"
 namespace js_audio {
 class AudioDestinationNode : public AudioNode {
-public:
+ public:
   AudioDestinationNode(
       const uint32_t &channel_count,
       std::shared_ptr<std::mutex> audio_context_lock_ref,
@@ -28,10 +29,8 @@ public:
 
   void SetSourceAudioNode(std::shared_ptr<AudioNode> src_node_ref);
 
-private:
-  void GetSourceNodesOutput(float *data, uint32_t sample_size);
-
+ private:
   const uint32_t max_channel_count_;
   std::vector<std::shared_ptr<AudioNode>> src_audio_node_refs_;
 };
-} // namespace js_audio
+}  // namespace js_audio
