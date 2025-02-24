@@ -272,16 +272,22 @@ class IHObjectWrap {
 
 }  // namespace Napi_IH
 
+// NOTE: This method is deprecated after v18.17.0,
+// but we have no other method to register our module.
+// To avoid our NAPI_IH_API_MODULE be recognized as
+// deprecated by IDE, we redeclare the interface here.
+inline auto napi_ih_moudle_register = napi_module_register;
+
 #define NAPI_IH_C_CTOR(fn)                           \
   static void fn(void) __attribute__((constructor)); \
   static void fn(void)
 
-#define NAPI_IH_MODULE_X(modname, regfunc, priv, flags)                   \
-  EXTERN_C_START                                                          \
-  static napi_module _module = {                                          \
-      NAPI_MODULE_VERSION, flags, __FILE__, regfunc, #modname, priv, {0}, \
-  };                                                                      \
-  NAPI_IH_C_CTOR(_register_##modname) { napi_module_register(&_module); } \
+#define NAPI_IH_MODULE_X(modname, regfunc, priv, flags)                      \
+  EXTERN_C_START                                                             \
+  static napi_module _module = {                                             \
+      NAPI_MODULE_VERSION, flags, __FILE__, regfunc, #modname, priv, {0},    \
+  };                                                                         \
+  NAPI_IH_C_CTOR(_register_##modname) { napi_ih_moudle_register(&_module); } \
   EXTERN_C_END
 
 #define NAPI_IH_MODULE(modname, regfunc)   \

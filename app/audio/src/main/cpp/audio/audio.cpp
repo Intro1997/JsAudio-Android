@@ -38,4 +38,4 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports) {
   return exports;
 }
 
-NAPI_IH_API_MODULE(audio, Init);
+NAPI_IH_API_MODULE(audio, Init)
