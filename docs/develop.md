@@ -24,6 +24,12 @@ If you write cpp layer in vscode, you should build once after Android Studio syn
 
 NOTE: if you find vscode not recognize cpp symbol, make sure to switch the Android Studio tab to `app/build.gradle.kts`, then build.
 
+## clang-tidy
+
+If you find pre-commit in husky run when execute `git commit` will occurs some errors about system header, but these errors are disappear when execute `npx lint-staged` in terminal, just ignore them with `--no-verify` such as `git commit -m "xxx" --no-verify`.
+
+Or if you fix that, please tell me how to do it by create `Issue`, Thanks!
+
 ## NAPI
 
 ### NodeJS
