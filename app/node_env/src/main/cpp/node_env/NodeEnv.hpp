@@ -28,6 +28,7 @@ class NodeEnv {
   bool Eval(const std::string &code, std::string &result);
   bool is_pause();
   bool is_stop();
+  bool is_destroy();
   static void Clear();
 
  public:
@@ -35,6 +36,7 @@ class NodeEnv {
 
  private:
   void InnerStop();
+  void InnerDestroy();
   static int PrepareUvloop(const std::vector<std::string> &vec_argv);
   static int PrepareNodeEnv(std::vector<std::string> &args);
   static void LoadInternalModules();
@@ -53,6 +55,8 @@ class NodeEnv {
   std::mutex is_pause_lock_;
   bool is_stop_;
   std::mutex is_stop_lock_;
+  bool is_destroy_;
+  std::mutex is_destroy_lock_;
 
   static std::vector<InternalModule> internal_modules_;
 

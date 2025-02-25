@@ -29,7 +29,7 @@ NodeEnv::NodeEnv() : is_pause_(false) {}
 NodeEnv::~NodeEnv() {
   if (platform_) {
     this->InnerStop();
-    this->Destroy();
+    this->InnerDestroy();
   }
 }
 
@@ -81,6 +81,11 @@ bool NodeEnv::is_stop() {
   return is_stop_;
 }
 
+bool NodeEnv::is_destroy() {
+  std::lock_guard<std::mutex> guard(is_destroy_lock_);
+  return is_stop_;
+}
+
 void NodeEnv::Pause() {
   LOGD("Pause Node Instance!");
   std::lock_guard<std::mutex> guard(is_pause_lock_);
@@ -105,6 +110,14 @@ void NodeEnv::Stop() {
   }
 }
 
+void NodeEnv::Destroy() {
+  LOGD("Destroy Node Instance!");
+  std::lock_guard<std::mutex> guard(is_stop_lock_);
+  if (!is_stop_) {
+    is_stop_ = true;
+  }
+}
+
 void NodeEnv::InnerStop() {
   if (node_env_) {
     v8::Locker locker(isolate_);
@@ -114,7 +127,7 @@ void NodeEnv::InnerStop() {
   }
 }
 
-void NodeEnv::Destroy() {
+void NodeEnv::InnerDestroy() {
   preload_script_ = NODE_INSTANCE_PRELOAD_SCRIPT;
 
   if (!instance_) {
@@ -167,8 +180,12 @@ void NodeEnv::SpinEventLoop() {
     v8::SealHandleScope seal(instance_->isolate_);
     bool more;
     do {
-      if (is_stop()) {
+      if (is_stop() || is_destroy()) {
         InnerStop();
+        break;
+      }
+      if (is_destroy()) {
+        InnerDestroy();
         break;
       }
       while (is_pause()) {
